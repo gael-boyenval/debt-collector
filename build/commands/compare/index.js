@@ -501,6 +501,7 @@ var getFileRulesErrors = function (config, file, data) {
   var utils = {
     directoryDepth: directoryDepth.length,
     content: data,
+    file: file,
     isImportingFrom: isImportingFrom,
     find: find
   };
@@ -691,7 +692,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var getEslintRulesErrors = function (config, data, eslint) {
+var getEslintRulesErrors = function (config, file, data, eslint) {
   return __awaiter(void 0, void 0, void 0, function () {
     var results, err_1, errors, containRuleIdMessage, containMessageFromPlugin, utils;
 
@@ -748,7 +749,8 @@ var getEslintRulesErrors = function (config, data, eslint) {
           utils = {
             containRuleIdMessage: containRuleIdMessage,
             containMessageFromPlugin: containMessageFromPlugin,
-            errors: errors
+            results: results[0],
+            file: file
           };
           return [2
           /*return*/
@@ -990,7 +992,7 @@ var runFileChecks = function (config, file, eslint) {
           fileResults = updateResults(config, fileRulesResults, fileResults, "fileRules");
           return [4
           /*yield*/
-          , (0, getEslintRulesErrors_1.default)(config, data, eslint)];
+          , (0, getEslintRulesErrors_1.default)(config, file, data, eslint)];
 
         case 1:
           eslintResults = _a.sent();
@@ -1831,13 +1833,15 @@ var validateConfig = function (configPath) {
           /*return*/
           , {
             isConfigValid: false,
-            verifiedConfig: config
+            verifiedConfig: config,
+            configErrors: ["Impossible to load a valid config file at ".concat(configPath, ", create a config file or provide a path to a valid config using the \"--config\" flag")]
           }];
 
         case 3:
           returnValues = {
             isConfigValid: true,
-            verifiedConfig: config.default
+            verifiedConfig: config.default,
+            configErrors: []
           };
           hasCollectFromKey = !!config.collectFrom;
           hasFileRules = !!config.fileRules;
@@ -1848,6 +1852,18 @@ var validateConfig = function (configPath) {
 
           if (!hasCollectFromKey || !hasSomeRules || !hasEslintRulesAndPathToConfig) {
             returnValues.isConfigValid = false;
+
+            if (!hasCollectFromKey) {
+              returnValues.configErrors.push('Provide a "collectFrom" key with a glob pattern in your configuration ex: "./**/*"');
+            }
+
+            if (!hasSomeRules) {
+              returnValues.configErrors.push('Your config does not have any rules, please create "fileRules" or/and "eslintRules"');
+            }
+
+            if (!hasEslintRulesAndPathToConfig) {
+              returnValues.configErrors.push('You provided "eslintRules" but no path to an eslint config file');
+            }
           }
 
           fileRules = config.fileRules.map(function (rule) {
@@ -1855,7 +1871,8 @@ var validateConfig = function (configPath) {
           });
           eslintRules = config.eslintRules.map(function (rule) {
             return __assign(__assign({}, defaultEslintRuleConfig), rule);
-          });
+          }); // TODO : validate individual rules
+
           return [2
           /*return*/
           , __assign(__assign({}, returnValues), {
@@ -2039,10 +2056,14 @@ var useValidatedConfig = function (config) {
       updatedConfig = _b[0],
       setUpdatedConfig = _b[1];
 
+  var _c = (0, react_1.useState)(null),
+      configErrors = _c[0],
+      setConfigErrors = _c[1];
+
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(void 0, void 0, void 0, function () {
-        var configPath, _a, isConfigValid, verifiedConfig;
+        var configPath, _a, isConfigValid, verifiedConfig, configErrors;
 
         return __generator(this, function (_b) {
           switch (_b.label) {
@@ -2053,9 +2074,10 @@ var useValidatedConfig = function (config) {
               , (0, validateConfig_1.default)(configPath)];
 
             case 1:
-              _a = _b.sent(), isConfigValid = _a.isConfigValid, verifiedConfig = _a.verifiedConfig;
+              _a = _b.sent(), isConfigValid = _a.isConfigValid, verifiedConfig = _a.verifiedConfig, configErrors = _a.configErrors;
               setUpdatedConfig(verifiedConfig);
               setIsConfigValidated(isConfigValid);
+              setConfigErrors(configErrors);
               return [2
               /*return*/
               ];
@@ -2066,7 +2088,8 @@ var useValidatedConfig = function (config) {
   }, []);
   return {
     isConfigValidated: isConfigValidated,
-    updatedConfig: updatedConfig
+    updatedConfig: updatedConfig,
+    configErrors: configErrors
   };
 };
 
@@ -2416,9 +2439,6 @@ var Compare = function (_a) {
       isConfigValidated = _o.isConfigValidated,
       updatedConfig = _o.updatedConfig;
 
-  var cleanTags = tags === null || tags === void 0 ? void 0 : tags.filter(function (tag) {
-    return tag !== undefined;
-  });
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(void 0, void 0, void 0, function () {
@@ -2576,9 +2596,6 @@ var Compare = function (_a) {
       });
     })();
   }, [revisionResults]);
-  var tagFilters = cleanTags.length > 0 && " [tags : ".concat(cleanTags, "]");
-  var and = cleanTags.length > 0 && rule ? ' &' : '';
-  var ruleFilter = rule ? " [rule id : ".concat(rule, "]") : '';
   return react_1.default.createElement(react_1.default.Fragment, null, react_1.default.createElement(ink_task_list_1.TaskList, null, react_1.default.createElement(ink_task_list_1.Task, {
     state: isConfigValidated === null ? 'loading' : isConfigValidated ? 'success' : 'error',
     label: "validating configuration",
@@ -2613,8 +2630,7 @@ Compare.shortFlags = {
   rule: 'r',
   tags: 't',
   collectFrom: 'g',
-  config: 'c',
-  reportFormat: 'f'
+  config: 'c'
 };
 exports.default = Compare;
 },{"../../lib/getFilesList":"../lib/getFilesList.ts","../../lib/checkFileList":"../lib/checkFileList.ts","../../components/Reporter":"../components/Reporter.tsx","../../lib/useValidatedConfig":"../lib/useValidatedConfig.ts"}]},{},["compare/index.tsx"], null)

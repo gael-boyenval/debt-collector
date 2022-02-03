@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Text, Box } from 'ink';
 import { TaskList, Task } from 'ink-task-list';
-import getFilesList from '../lib/getFilesList'
-import checkFileList from '../lib/checkFileList';
-import { Results, ResultsFileOnly, ResultsNoMatchRule } from '../components/Reporter'
-import useValidatedConfig from '../lib/useValidatedConfig';
+import getFilesList from '../../lib/getFilesList'
+import checkFileList from '../../lib/checkFileList';
+import { Results, ResultsFileOnly, ResultsNoMatchRule } from '../../components/Reporter'
+import useValidatedConfig from '../../lib/useValidatedConfig';
 
 const All = ({
 	rule = null, 
@@ -23,6 +23,7 @@ const All = ({
 	const {
 		isConfigValidated,
 		updatedConfig,
+		configErrors
 	} = useValidatedConfig(config)
 
 	const cleanTags = tags?.filter((tag) => tag !== undefined)
@@ -73,8 +74,8 @@ const All = ({
 				/>
 			</TaskList>
 
-			{isConfigValidated === false && (
-				<Text color="red">Error during config</Text>
+			{isConfigValidated === false && configErrors?.length > 0 && (
+				configErrors.map((error, i) => <Text key={i} color="red">{error}</Text>)
 			)}
 			
 			{results !== null && reportFormat === 'standard' && <Results results={results} limitTop={limitTop} />}

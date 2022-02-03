@@ -50,7 +50,7 @@ const runFileChecks = async (config, file, eslint) => {
     "fileRules"
   );
 
-  const eslintResults = await getEslintRulesErrors(config, data, eslint);
+  const eslintResults = await getEslintRulesErrors(config, file, data, eslint);
 
   fileResults = updateResults(
     config,

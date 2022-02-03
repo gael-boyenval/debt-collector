@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Text, Box } from 'ink';
+import { Text } from 'ink';
 import { TaskList, Task } from 'ink-task-list';
 import getFilesList from '../../lib/getFilesList'
 import checkFileList from '../../lib/checkFileList';
@@ -25,7 +25,7 @@ const checkoutTo = async (revision) => {
   
   const changes = status.files.length
   
-  if (changes > 0) {
+  if (changes > 0) {		
     hasStashed = true
     await git.stash()
   }
@@ -41,8 +41,6 @@ const checkoutBackToCurrent = async () => {
     hasStashed = false
   }
 }
-
-
  
 const Compare = ({
   revision = null,
@@ -63,8 +61,6 @@ const Compare = ({
 		isConfigValidated,
 		updatedConfig,
 	} = useValidatedConfig(config)
-
-	const cleanTags = tags?.filter((tag) => tag !== undefined)
 
 	useEffect(() => {
 		(async() => {
@@ -120,11 +116,6 @@ const Compare = ({
 			}
 		})()
 	}, [revisionResults])
-
-
-	const tagFilters = cleanTags.length > 0 && ` [tags : ${cleanTags}]`
-	const and = (cleanTags.length > 0 && rule) ? ' &': ''
-	const ruleFilter = rule ? ` [rule id : ${rule}]` : ''
 	
 	return (
 		<>
@@ -173,7 +164,6 @@ Compare.shortFlags = {
   tags: 't',
  	collectFrom: 'g',
   config: 'c',
-	reportFormat: 'f',
 };
 
 export default Compare;

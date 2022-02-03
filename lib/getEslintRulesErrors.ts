@@ -1,4 +1,4 @@
-const getEslintRulesErrors =  async (config, data, eslint) => {
+const getEslintRulesErrors =  async (config, file, data, eslint) => {
   let results
   try {
     results = await eslint.lintText(data, { warnIgnored: true });
@@ -24,7 +24,8 @@ const getEslintRulesErrors =  async (config, data, eslint) => {
   const utils = {
     containRuleIdMessage,
     containMessageFromPlugin,
-    errors
+    results: results[0],
+    file
   }
 
   return config.eslintRules.reduce((acc, rule) => {

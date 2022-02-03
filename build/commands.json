@@ -73,9 +73,9 @@
 					"positional": false
 				}
 			],
-			"isIndex": true,
-			"name": "*",
-			"path": "index.tsx",
+			"isIndex": false,
+			"name": "check",
+			"path": "check/index.tsx",
 			"subCommands": []
 		},
 		{
