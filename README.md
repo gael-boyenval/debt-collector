@@ -41,14 +41,14 @@ we will check if we find the string `foo` within the file. Each time we encounte
 
 ### commands common options
 
-`--help`
+#### `--help`
 
 => display help
 
 ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
 
-`--version`
+#### `--version`
 
 => display version
 
@@ -56,28 +56,28 @@ ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
 
 
-`--collect-from`, `-g`: **glob**
+#### `--collect-from`, `-g`: **glob**
 
 => filters files by path 
 
 ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
 
-`--rule`, `-r`: **string**
+#### `--rule`, `-r`: **string**
 
 => filter a specific rule (by ID) 
 
 ex: `debt-collector [command] --rule=FILE_TOO_LONG` 
 or `debt-collector [command] -r RULE_ID`
 
-`--tags`, `-t`: **array**
+#### `--tags`, `-t`: **array**
 
 => filter rules by tags 
 
 ex: `debt-collector [command] --tags=forms styles`
 or `debt-collector [command] -t forms styles`
 
-`--config`, `-c`: **string**
+#### `--config`, `-c`: **string**
 
 => a path to DC config file
 
@@ -94,17 +94,17 @@ this command will check all files and output a debt report, as well as a total s
 
 the availables options are
 
-`--limit-top`: **number**
+#### `--limit-top`: **number**
 
 => limit results to X files ordered by debt score
 
-`--changed-since`, `-s`: **string**
+#### `--changed-since`, `-s`: **string**
 
 => filters only files that have changed since a git revision : local commit, branch or tag (make sure to be up to date)
 ex: `debt-collector check --changed-since=master`
 or `debt-collector check -s master`
 
-`--report-format`, `-f`: **string**
+#### `--report-format`, `-f`: **string**
 
 => **filesOnly** list only files with debt scores
 
