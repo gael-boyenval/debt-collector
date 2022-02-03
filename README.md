@@ -42,32 +42,45 @@ we will check if we find the string `foo` within the file. Each time we encounte
 ### commands common options
 
 `--help`
+
 => display help
+
 ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
 
 `--version`
+
 => display version
+
 ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
 
+
 `--collect-from`, `-g`: **glob**
+
 => filters files by path 
+
 ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
 
 `--rule`, `-r`: **string**
+
 => filter a specific rule (by ID) 
+
 ex: `debt-collector [command] --rule=FILE_TOO_LONG` 
 or `debt-collector [command] -r RULE_ID`
 
 `--tags`, `-t`: **array**
+
 => filter rules by tags 
+
 ex: `debt-collector [command] --tags=forms styles`
 or `debt-collector [command] -t forms styles`
 
 `--config`, `-c`: **string**
+
 => a path to DC config file
+
 ex: `debt-collector [command] --config="./path/to/config"`
 or `debt-collector [command] -c ./path/to/config`
 
@@ -82,28 +95,35 @@ this command will check all files and output a debt report, as well as a total s
 the availables options are
 
 `--limit-top`: **number**
+
 => limit results to X files ordered by debt score
 
 `--changed-since`, `-s`: **string**
+
 => filters only files that have changed since a git revision : local commit, branch or tag (make sure to be up to date)
 ex: `debt-collector check --changed-since=master`
 or `debt-collector check -s master`
 
 `--report-format`, `-f`: **string**
+
 => **filesOnly** list only files with debt scores
+
 ex: `debt-collector check --report-format=filesOnly`
 or `debt-collector check -f filesOnly`
 
 => **noMatchRules** list only rules that did not match anything 
+
 (useful to filter old rules or to identify bugged ones)
 ex: `debt-collector check --report-format=noMatchRules`
 or `debt-collector check -f noMatchRules`
 
 => **standard** default option, all files with every rules / scores
+
 ex: `debt-collector check --report-format=standard`
 or `debt-collector check -f standard`
 
 ### compare command
+
 `debt-collector compare --revision [rev]` ou `npx debt-collector compare --revision [rev]`
 
 This command will check every file that have changed since the revision (created, renamed, modified or deleted files) once for the revision, and one for the current HEAD and compare results to provide a compared results. 
