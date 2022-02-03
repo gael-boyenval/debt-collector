@@ -501,6 +501,7 @@ var getFileRulesErrors = function (config, file, data) {
   var utils = {
     directoryDepth: directoryDepth.length,
     content: data,
+    file: file,
     isImportingFrom: isImportingFrom,
     find: find
   };
@@ -691,7 +692,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var getEslintRulesErrors = function (config, data, eslint) {
+var getEslintRulesErrors = function (config, file, data, eslint) {
   return __awaiter(void 0, void 0, void 0, function () {
     var results, err_1, errors, containRuleIdMessage, containMessageFromPlugin, utils;
 
@@ -748,7 +749,8 @@ var getEslintRulesErrors = function (config, data, eslint) {
           utils = {
             containRuleIdMessage: containRuleIdMessage,
             containMessageFromPlugin: containMessageFromPlugin,
-            errors: errors
+            results: results[0],
+            file: file
           };
           return [2
           /*return*/
@@ -990,7 +992,7 @@ var runFileChecks = function (config, file, eslint) {
           fileResults = updateResults(config, fileRulesResults, fileResults, "fileRules");
           return [4
           /*yield*/
-          , (0, getEslintRulesErrors_1.default)(config, data, eslint)];
+          , (0, getEslintRulesErrors_1.default)(config, file, data, eslint)];
 
         case 1:
           eslintResults = _a.sent();
@@ -1831,13 +1833,15 @@ var validateConfig = function (configPath) {
           /*return*/
           , {
             isConfigValid: false,
-            verifiedConfig: config
+            verifiedConfig: config,
+            configErrors: ["Impossible to load a valid config file at ".concat(configPath, ", create a config file or provide a path to a valid config using the \"--config\" flag")]
           }];
 
         case 3:
           returnValues = {
             isConfigValid: true,
-            verifiedConfig: config.default
+            verifiedConfig: config.default,
+            configErrors: []
           };
           hasCollectFromKey = !!config.collectFrom;
           hasFileRules = !!config.fileRules;
@@ -1848,6 +1852,18 @@ var validateConfig = function (configPath) {
 
           if (!hasCollectFromKey || !hasSomeRules || !hasEslintRulesAndPathToConfig) {
             returnValues.isConfigValid = false;
+
+            if (!hasCollectFromKey) {
+              returnValues.configErrors.push('Provide a "collectFrom" key with a glob pattern in your configuration ex: "./**/*"');
+            }
+
+            if (!hasSomeRules) {
+              returnValues.configErrors.push('Your config does not have any rules, please create "fileRules" or/and "eslintRules"');
+            }
+
+            if (!hasEslintRulesAndPathToConfig) {
+              returnValues.configErrors.push('You provided "eslintRules" but no path to an eslint config file');
+            }
           }
 
           fileRules = config.fileRules.map(function (rule) {
@@ -1855,7 +1871,8 @@ var validateConfig = function (configPath) {
           });
           eslintRules = config.eslintRules.map(function (rule) {
             return __assign(__assign({}, defaultEslintRuleConfig), rule);
-          });
+          }); // TODO : validate individual rules
+
           return [2
           /*return*/
           , __assign(__assign({}, returnValues), {
@@ -2039,10 +2056,14 @@ var useValidatedConfig = function (config) {
       updatedConfig = _b[0],
       setUpdatedConfig = _b[1];
 
+  var _c = (0, react_1.useState)(null),
+      configErrors = _c[0],
+      setConfigErrors = _c[1];
+
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(void 0, void 0, void 0, function () {
-        var configPath, _a, isConfigValid, verifiedConfig;
+        var configPath, _a, isConfigValid, verifiedConfig, configErrors;
 
         return __generator(this, function (_b) {
           switch (_b.label) {
@@ -2053,9 +2074,10 @@ var useValidatedConfig = function (config) {
               , (0, validateConfig_1.default)(configPath)];
 
             case 1:
-              _a = _b.sent(), isConfigValid = _a.isConfigValid, verifiedConfig = _a.verifiedConfig;
+              _a = _b.sent(), isConfigValid = _a.isConfigValid, verifiedConfig = _a.verifiedConfig, configErrors = _a.configErrors;
               setUpdatedConfig(verifiedConfig);
               setIsConfigValidated(isConfigValid);
+              setConfigErrors(configErrors);
               return [2
               /*return*/
               ];
@@ -2066,12 +2088,13 @@ var useValidatedConfig = function (config) {
   }, []);
   return {
     isConfigValidated: isConfigValidated,
-    updatedConfig: updatedConfig
+    updatedConfig: updatedConfig,
+    configErrors: configErrors
   };
 };
 
 exports.default = useValidatedConfig;
-},{"./utils":"../lib/utils.ts","./validateConfig":"../lib/validateConfig.ts"}],"index.tsx":[function(require,module,exports) {
+},{"./utils":"../lib/utils.ts","./validateConfig":"../lib/validateConfig.ts"}],"check/index.tsx":[function(require,module,exports) {
 "use strict";
 
 var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
@@ -2265,13 +2288,13 @@ var ink_1 = require("ink");
 
 var ink_task_list_1 = require("ink-task-list");
 
-var getFilesList_1 = __importDefault(require("../lib/getFilesList"));
+var getFilesList_1 = __importDefault(require("../../lib/getFilesList"));
 
-var checkFileList_1 = __importDefault(require("../lib/checkFileList"));
+var checkFileList_1 = __importDefault(require("../../lib/checkFileList"));
 
-var Reporter_1 = require("../components/Reporter");
+var Reporter_1 = require("../../components/Reporter");
 
-var useValidatedConfig_1 = __importDefault(require("../lib/useValidatedConfig"));
+var useValidatedConfig_1 = __importDefault(require("../../lib/useValidatedConfig"));
 
 var All = function (_a) {
   var _b = _a.rule,
@@ -2303,7 +2326,8 @@ var All = function (_a) {
 
   var _m = (0, useValidatedConfig_1.default)(config),
       isConfigValidated = _m.isConfigValidated,
-      updatedConfig = _m.updatedConfig;
+      updatedConfig = _m.updatedConfig,
+      configErrors = _m.configErrors;
 
   var cleanTags = tags === null || tags === void 0 ? void 0 : tags.filter(function (tag) {
     return tag !== undefined;
@@ -2389,9 +2413,12 @@ var All = function (_a) {
     state: results === null ? 'loading' : 'success',
     label: "checking files",
     status: "".concat(checkedFileCount, "/").concat(fileList === null ? '?' : fileList.length, " files")
-  })), isConfigValidated === false && react_1.default.createElement(ink_1.Text, {
-    color: "red"
-  }, "Error during config"), results !== null && reportFormat === 'standard' && react_1.default.createElement(Reporter_1.Results, {
+  })), isConfigValidated === false && (configErrors === null || configErrors === void 0 ? void 0 : configErrors.length) > 0 && configErrors.map(function (error, i) {
+    return react_1.default.createElement(ink_1.Text, {
+      key: i,
+      color: "red"
+    }, error);
+  }), results !== null && reportFormat === 'standard' && react_1.default.createElement(Reporter_1.Results, {
     results: results,
     limitTop: limitTop
   }), results !== null && reportFormat === 'filesOnly' && react_1.default.createElement(Reporter_1.ResultsFileOnly, {
@@ -2431,5 +2458,5 @@ All.shortFlags = {
   changedSince: 's'
 };
 exports.default = All;
-},{"../lib/getFilesList":"../lib/getFilesList.ts","../lib/checkFileList":"../lib/checkFileList.ts","../components/Reporter":"../components/Reporter.tsx","../lib/useValidatedConfig":"../lib/useValidatedConfig.ts"}]},{},["index.tsx"], null)
-//# sourceMappingURL=/index.js.map
+},{"../../lib/getFilesList":"../lib/getFilesList.ts","../../lib/checkFileList":"../lib/checkFileList.ts","../../components/Reporter":"../components/Reporter.tsx","../../lib/useValidatedConfig":"../lib/useValidatedConfig.ts"}]},{},["check/index.tsx"], null)
+//# sourceMappingURL=/check/index.js.map

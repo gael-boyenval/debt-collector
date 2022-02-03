@@ -23,6 +23,7 @@ const getFileRulesErrors = (config, file, data) => {
   const utils = {
     directoryDepth: directoryDepth.length,
     content: data,
+    file,
     isImportingFrom,
     find,
   }
