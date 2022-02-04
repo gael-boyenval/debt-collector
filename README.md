@@ -43,14 +43,13 @@ we will check if we find the string `foo` within the file. Each time we encounte
 
 #### `--help`
 
-=> display help
+display help
 
-ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
-or `debt-collector [command] -g "./src/components/**/*.tsx"`
+ex: `debt-collector [command] --help`
 
 #### `--version`
 
-=> display version
+display version
 
 ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
@@ -58,28 +57,28 @@ or `debt-collector [command] -g "./src/components/**/*.tsx"`
 
 #### `--collect-from`, `-g`: **glob**
 
-=> filters files by path 
+filters files by path 
 
 ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
 
 #### `--rule`, `-r`: **string**
 
-=> filter a specific rule (by ID) 
+filter a specific rule (by ID) 
 
 ex: `debt-collector [command] --rule=FILE_TOO_LONG` 
 or `debt-collector [command] -r RULE_ID`
 
 #### `--tags`, `-t`: **array**
 
-=> filter rules by tags 
+filter rules by tags 
 
 ex: `debt-collector [command] --tags=forms styles`
 or `debt-collector [command] -t forms styles`
 
 #### `--config`, `-c`: **string**
 
-=> a path to DC config file
+a path to DC config file
 
 ex: `debt-collector [command] --config="./path/to/config"`
 or `debt-collector [command] -c ./path/to/config`
@@ -96,7 +95,7 @@ the availables options are
 
 #### `--limit-top`: **number**
 
-=> limit results to X files ordered by debt score
+limit results to X files ordered by debt score
 
 #### `--changed-since`, `-s`: **string**
 
@@ -106,18 +105,18 @@ or `debt-collector check -s master`
 
 #### `--report-format`, `-f`: **string**
 
-=> **filesOnly** list only files with debt scores
+**filesOnly** list only files with debt scores
 
 ex: `debt-collector check --report-format=filesOnly`
 or `debt-collector check -f filesOnly`
 
-=> **noMatchRules** list only rules that did not match anything 
+**noMatchRules** list only rules that did not match anything 
 
 (useful to filter old rules or to identify bugged ones)
 ex: `debt-collector check --report-format=noMatchRules`
 or `debt-collector check -f noMatchRules`
 
-=> **standard** default option, all files with every rules / scores
+**standard** default option, all files with every rules / scores
 
 ex: `debt-collector check --report-format=standard`
 or `debt-collector check -f standard`
