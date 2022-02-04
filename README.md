@@ -99,7 +99,8 @@ limit results to X files ordered by debt score
 
 #### `--changed-since`, `-s`: **string**
 
-=> filters only files that have changed since a git revision : local commit, branch or tag (make sure to be up to date)
+filters only files that have changed since a git revision : local commit, branch or tag (make sure to be up to date)
+
 ex: `debt-collector check --changed-since=master`
 or `debt-collector check -s master`
 
@@ -113,6 +114,7 @@ or `debt-collector check -f filesOnly`
 **noMatchRules** list only rules that did not match anything 
 
 (useful to filter old rules or to identify bugged ones)
+
 ex: `debt-collector check --report-format=noMatchRules`
 or `debt-collector check -f noMatchRules`
 
