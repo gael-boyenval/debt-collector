@@ -261,6 +261,31 @@ var __generator = this && this.__generator || function (thisArg, body) {
   }
 };
 
+var __read = this && this.__read || function (o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
+};
+
 var __importDefault = this && this.__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
@@ -317,7 +342,7 @@ var getFileList = function (config, compare, globOption) {
                   filesAndStatuses = results.replace(/\t/g, '|').split('\n').filter(function (item) {
                     return item !== '';
                   }).map(function (item) {
-                    var _a = item.split('|'),
+                    var _a = __read(item.split('|'), 2),
                         status = _a[0],
                         filePath = _a[1];
 
@@ -346,7 +371,12 @@ var getFileList = function (config, compare, globOption) {
       , new Promise(function (resolve, reject) {
         (0, glob_1.default)(globFilter, {}, function (err, files) {
           if (err) reject(err);
-          resolve(files);
+          var filteredFiles = files.map(function (file) {
+            return file.replace('./', '');
+          }).filter(function (file) {
+            return file.includes('.');
+          });
+          resolve(filteredFiles);
         });
       })];
     });
@@ -421,7 +451,7 @@ var filtersRulesFromOptions = function (options, ruleId, tags) {
 
   var fileRules = options.fileRules;
   var eslintRules = options.eslintRules;
-  var cleanTag = tags.filter(function (tag) {
+  var cleanTag = tags && tags.filter(function (tag) {
     return !!tag;
   });
 
@@ -452,6 +482,31 @@ var __assign = this && this.__assign || function () {
   };
 
   return __assign.apply(this, arguments);
+};
+
+var __read = this && this.__read || function (o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
 };
 
 var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
@@ -509,7 +564,7 @@ var getFileRulesErrors = function (config, file, data) {
     var nbErrors = rule.matchRule(__assign({}, utils));
 
     if (nbErrors > 0) {
-      return __spreadArray(__spreadArray([], acc, true), [{
+      return __spreadArray(__spreadArray([], __read(acc), false), [{
         resultId: rule.id,
         occurences: nbErrors
       }], false);
@@ -678,6 +733,31 @@ var __generator = this && this.__generator || function (thisArg, body) {
   }
 };
 
+var __read = this && this.__read || function (o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
+};
+
 var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
   if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
     if (ar || !(i in from)) {
@@ -756,7 +836,7 @@ var getEslintRulesErrors = function (config, file, data, eslint) {
           /*return*/
           , config.eslintRules.reduce(function (acc, rule) {
             var nbErrors = rule.matchESLintRule(__assign({}, utils));
-            return nbErrors > 0 ? __spreadArray(__spreadArray([], acc, true), [{
+            return nbErrors > 0 ? __spreadArray(__spreadArray([], __read(acc), false), [{
               resultId: rule.id,
               occurences: nbErrors
             }], false) : acc;
@@ -1186,6 +1266,31 @@ var __generator = this && this.__generator || function (thisArg, body) {
   }
 };
 
+var __read = this && this.__read || function (o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
+};
+
 var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
   if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
     if (ar || !(i in from)) {
@@ -1208,8 +1313,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var eslint_1 = require("eslint");
 
-var path_1 = __importDefault(require("path"));
-
 var getFileResult_1 = __importDefault(require("../lib/getFileResult"));
 
 var filterRules_1 = require("../lib/filterRules");
@@ -1224,14 +1327,14 @@ exports.default = function (fileList, config, rule, tags, increment) {
           fileListConfig = __assign(__assign({}, config), filteredRules);
           eslint = new eslint_1.ESLint({
             useEslintrc: false,
-            baseConfig: require(path_1.default.resolve(process.cwd(), fileListConfig.eslintConfigPath))
+            baseConfig: config.eslintConfig
           });
           getFilesResults = fileList.map(function (file) {
             return (0, getFileResult_1.default)(fileListConfig, file, increment, eslint);
           });
           return [4
           /*yield*/
-          , Promise.all(__spreadArray([], getFilesResults, true))];
+          , Promise.all(__spreadArray([], __read(getFilesResults), false))];
 
         case 1:
           results = _a.sent();
@@ -1257,6 +1360,31 @@ var __assign = this && this.__assign || function () {
   };
 
   return __assign.apply(this, arguments);
+};
+
+var __read = this && this.__read || function (o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
 };
 
 var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
@@ -1290,15 +1418,15 @@ var splitStringIfTooLong = function (str, max) {
   if (str.length < max) return str;
   var charArr = str.split('');
 
-  var strStart = __spreadArray([], charArr, true).filter(function (_char, i) {
+  var strStart = __spreadArray([], __read(charArr), false).filter(function (_char, i) {
     return i >= 0 && i < max / 2;
   });
 
-  var strEnd = __spreadArray([], charArr, true).filter(function (_char, i) {
+  var strEnd = __spreadArray([], __read(charArr), false).filter(function (_char, i) {
     return i > str.length - max / 2 && i < str.length;
   });
 
-  return __spreadArray(__spreadArray(__spreadArray([], strStart, true), ['....'], false), strEnd, true).join('');
+  return __spreadArray(__spreadArray(__spreadArray([], __read(strStart), false), ['....'], false), __read(strEnd), false).join('');
 };
 
 var formatResults = function (results) {
@@ -1418,21 +1546,21 @@ var ResultsFileOnly = function (_a) {
 exports.ResultsFileOnly = ResultsFileOnly;
 
 var filterNoMatch = function (results, initialConfig) {
-  var allRules = __spreadArray(__spreadArray([], initialConfig.fileRules.map(function (_a) {
+  var allRules = __spreadArray(__spreadArray([], __read(initialConfig.fileRules.map(function (_a) {
     var id = _a.id,
         title = _a.title;
     return {
       id: id,
       title: title
     };
-  }), true), initialConfig.eslintRules.map(function (_a) {
+  })), false), __read(initialConfig.eslintRules.map(function (_a) {
     var id = _a.id,
         title = _a.title;
     return {
       id: id,
       title: title
     };
-  }), true);
+  })), false);
 
   var allFilesRules = [].concat.apply([], results.map(function (file) {
     return file.rules.map(function (_a) {
@@ -1440,7 +1568,7 @@ var filterNoMatch = function (results, initialConfig) {
       return id;
     });
   }));
-  var existingRules = Array.from(new Set(__spreadArray([], allFilesRules, true)));
+  var existingRules = Array.from(new Set(__spreadArray([], __read(allFilesRules), false)));
   var filteredRules = allRules.filter(function (_a) {
     var id = _a.id;
     return !existingRules.includes(id);
@@ -1794,9 +1922,18 @@ var __generator = this && this.__generator || function (thisArg, body) {
   }
 };
 
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var path_1 = __importDefault(require("path"));
+
 var defaultFileRuleConfig = {
   matchGlob: "**/*",
   matchRule: function () {
@@ -1833,7 +1970,8 @@ var validateConfig = function (configPath) {
           /*return*/
           , {
             isConfigValid: false,
-            verifiedConfig: config,
+            verifiedConfig: {},
+            eslintConfig: null,
             configErrors: ["Impossible to load a valid config file at ".concat(configPath, ", create a config file or provide a path to a valid config using the \"--config\" flag")]
           }];
 
@@ -1841,6 +1979,8 @@ var validateConfig = function (configPath) {
           returnValues = {
             isConfigValid: true,
             verifiedConfig: config.default,
+            defaultConfig: config.default,
+            eslintConfig: null,
             configErrors: []
           };
           hasCollectFromKey = !!config.collectFrom;
@@ -1873,10 +2013,25 @@ var validateConfig = function (configPath) {
             return __assign(__assign({}, defaultEslintRuleConfig), rule);
           }); // TODO : validate individual rules
 
+          if (hasEslintConfigPath) {
+            try {
+              returnValues.verifiedConfig.eslintConfig = require(path_1.default.resolve(process.cwd(), config.default.eslintConfigPath));
+            } catch (e) {
+              return [2
+              /*return*/
+              , {
+                isConfigValid: false,
+                verifiedConfig: {},
+                eslintConfig: null,
+                configErrors: ["Impossible to load the eslint config file"]
+              }];
+            }
+          }
+
           return [2
           /*return*/
           , __assign(__assign({}, returnValues), {
-            verifiedConfig: __assign(__assign({}, config), {
+            verifiedConfig: __assign(__assign({}, returnValues.verifiedConfig), {
               eslintRules: eslintRules,
               fileRules: fileRules
             })
@@ -2031,6 +2186,31 @@ var __generator = this && this.__generator || function (thisArg, body) {
   }
 };
 
+var __read = this && this.__read || function (o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
+};
+
 var __importDefault = this && this.__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
@@ -2048,22 +2228,26 @@ var utils_1 = require("./utils");
 var validateConfig_1 = __importDefault(require("./validateConfig"));
 
 var useValidatedConfig = function (config) {
-  var _a = (0, react_1.useState)(null),
+  var _a = __read((0, react_1.useState)(null), 2),
       isConfigValidated = _a[0],
       setIsConfigValidated = _a[1];
 
-  var _b = (0, react_1.useState)(null),
+  var _b = __read((0, react_1.useState)(null), 2),
       updatedConfig = _b[0],
       setUpdatedConfig = _b[1];
 
-  var _c = (0, react_1.useState)(null),
+  var _c = __read((0, react_1.useState)(null), 2),
       configErrors = _c[0],
       setConfigErrors = _c[1];
+
+  var _d = __read((0, react_1.useState)(null), 2),
+      defaultConfig = _d[0],
+      setDefaultConfig = _d[1];
 
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(void 0, void 0, void 0, function () {
-        var configPath, _a, isConfigValid, verifiedConfig, configErrors;
+        var configPath, _a, isConfigValid, verifiedConfig, configErrors, defaultConfig;
 
         return __generator(this, function (_b) {
           switch (_b.label) {
@@ -2074,7 +2258,8 @@ var useValidatedConfig = function (config) {
               , (0, validateConfig_1.default)(configPath)];
 
             case 1:
-              _a = _b.sent(), isConfigValid = _a.isConfigValid, verifiedConfig = _a.verifiedConfig, configErrors = _a.configErrors;
+              _a = _b.sent(), isConfigValid = _a.isConfigValid, verifiedConfig = _a.verifiedConfig, configErrors = _a.configErrors, defaultConfig = _a.defaultConfig;
+              setDefaultConfig(defaultConfig);
               setUpdatedConfig(verifiedConfig);
               setIsConfigValidated(isConfigValid);
               setConfigErrors(configErrors);
@@ -2089,7 +2274,8 @@ var useValidatedConfig = function (config) {
   return {
     isConfigValidated: isConfigValidated,
     updatedConfig: updatedConfig,
-    configErrors: configErrors
+    configErrors: configErrors,
+    defaultConfig: defaultConfig
   };
 };
 
@@ -2270,6 +2456,31 @@ var __generator = this && this.__generator || function (thisArg, body) {
   }
 };
 
+var __read = this && this.__read || function (o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
+};
+
 var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
   if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
     if (ar || !(i in from)) {
@@ -2411,27 +2622,27 @@ var Compare = function (_a) {
       _f = _a.collectFrom,
       collectFrom = _f === void 0 ? null : _f;
 
-  var _g = (0, react_1.useState)(null),
+  var _g = __read((0, react_1.useState)(null), 2),
       results = _g[0],
       setResults = _g[1];
 
-  var _h = (0, react_1.useState)(null),
+  var _h = __read((0, react_1.useState)(null), 2),
       fileList = _h[0],
       setFileList = _h[1];
 
-  var _j = (0, react_1.useState)(0),
+  var _j = __read((0, react_1.useState)(0), 2),
       checkedFileCount = _j[0],
       setCheckedFileCount = _j[1];
 
-  var _k = (0, react_1.useState)(null),
+  var _k = __read((0, react_1.useState)(null), 2),
       revisionResults = _k[0],
       setRevisionResults = _k[1];
 
-  var _l = (0, react_1.useState)(0),
+  var _l = __read((0, react_1.useState)(0), 2),
       checkedRevisionFileCount = _l[0],
       setRevisionCheckedFileCount = _l[1];
 
-  var _m = (0, react_1.useState)(null),
+  var _m = __read((0, react_1.useState)(null), 2),
       finalResult = _m[0],
       setFinalResult = _m[1];
 
@@ -2560,7 +2771,7 @@ var Compare = function (_a) {
             case 1:
               _a.sent();
 
-              finalResults = Object.assign.apply(Object, __spreadArray([{}], fileList.map(function (fileName) {
+              finalResults = Object.assign.apply(Object, __spreadArray([{}], __read(fileList.map(function (fileName) {
                 var _a;
 
                 var currentScore = results.find(function (_a) {
@@ -2583,7 +2794,7 @@ var Compare = function (_a) {
                   }).totalScore,
                   tendency: tendency
                 }, _a;
-              }), false));
+              })), false));
               setFinalResult(finalResults);
               _a.label = 2;
 

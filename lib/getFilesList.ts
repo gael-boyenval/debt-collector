@@ -44,7 +44,8 @@ const getFileList = async (config, compare, globOption) => {
   return new Promise((resolve, reject) => {
     glob(globFilter, {}, (err, files) => {
       if (err) reject(err)
-      resolve(files)
+      const filteredFiles = files.map((file) => file.replace('./', '')).filter(file => file.includes('.'))
+      resolve(filteredFiles)
     })
   })
 }

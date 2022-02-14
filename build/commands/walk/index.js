@@ -1345,373 +1345,7 @@ exports.default = function (fileList, config, rule, tags, increment) {
     });
   });
 };
-},{"../lib/getFileResult":"../lib/getFileResult.ts","../lib/filterRules":"../lib/filterRules.ts"}],"../components/Reporter.tsx":[function(require,module,exports) {
-"use strict";
-
-var __assign = this && this.__assign || function () {
-  __assign = Object.assign || function (t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-      s = arguments[i];
-
-      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-    }
-
-    return t;
-  };
-
-  return __assign.apply(this, arguments);
-};
-
-var __read = this && this.__read || function (o, n) {
-  var m = typeof Symbol === "function" && o[Symbol.iterator];
-  if (!m) return o;
-  var i = m.call(o),
-      r,
-      ar = [],
-      e;
-
-  try {
-    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-  } catch (error) {
-    e = {
-      error: error
-    };
-  } finally {
-    try {
-      if (r && !r.done && (m = i["return"])) m.call(i);
-    } finally {
-      if (e) throw e.error;
-    }
-  }
-
-  return ar;
-};
-
-var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
-  if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-    if (ar || !(i in from)) {
-      if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-      ar[i] = from[i];
-    }
-  }
-  return to.concat(ar || Array.prototype.slice.call(from));
-};
-
-var __importDefault = this && this.__importDefault || function (mod) {
-  return mod && mod.__esModule ? mod : {
-    "default": mod
-  };
-};
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ResultsCompare = exports.ResultsNoMatchRule = exports.ResultsFileOnly = exports.Results = void 0;
-
-var react_1 = __importDefault(require("react"));
-
-var ink_table_1 = __importDefault(require("ink-table"));
-
-var ink_1 = require("ink");
-
-var splitStringIfTooLong = function (str, max) {
-  if (str.length < max) return str;
-  var charArr = str.split('');
-
-  var strStart = __spreadArray([], __read(charArr), false).filter(function (_char, i) {
-    return i >= 0 && i < max / 2;
-  });
-
-  var strEnd = __spreadArray([], __read(charArr), false).filter(function (_char, i) {
-    return i > str.length - max / 2 && i < str.length;
-  });
-
-  return __spreadArray(__spreadArray(__spreadArray([], __read(strStart), false), ['....'], false), __read(strEnd), false).join('');
-};
-
-var formatResults = function (results) {
-  var filteredResults = results.filter(function (result) {
-    return result.totalScore > 0;
-  });
-  var formatedResult = filteredResults.map(function (_a) {
-    var file = _a.file,
-        rules = _a.rules,
-        totalScore = _a.totalScore;
-    return {
-      file: splitStringIfTooLong(file, 80),
-      totalScore: totalScore,
-      rules: rules.map(function (_a) {
-        var title = _a.title,
-            occurences = _a.occurences,
-            debtScore = _a.debtScore;
-        return {
-          error: title,
-          nb: occurences,
-          score: debtScore * occurences
-        };
-      })
-    };
-  });
-  var totalDeptScore = formatedResult.reduce(function (acc, res) {
-    return acc + res.totalScore;
-  }, 0);
-  return {
-    formatedResult: formatedResult,
-    totalDeptScore: totalDeptScore
-  };
-};
-
-var Results = function (_a) {
-  var results = _a.results,
-      limitTop = _a.limitTop;
-
-  var _b = formatResults(results),
-      formatedResult = _b.formatedResult,
-      totalDeptScore = _b.totalDeptScore;
-
-  var displayResults = formatedResult;
-
-  if (limitTop) {
-    displayResults = formatedResult.sort(function (a, b) {
-      return b.totalScore - a.totalScore;
-    }).filter(function (_item, index) {
-      return index < limitTop;
-    });
-  }
-
-  return react_1.default.createElement(react_1.default.Fragment, null, displayResults.length > 0 && displayResults.map(function (result) {
-    return react_1.default.createElement(ink_1.Box, {
-      key: result.file,
-      flexDirection: "column",
-      marginTop: 1
-    }, react_1.default.createElement(ink_1.Text, {
-      bold: true,
-      color: "red",
-      underline: true
-    }, result.file), react_1.default.createElement(ink_table_1.default, {
-      data: result.rules
-    }), react_1.default.createElement(ink_1.Text, {
-      bold: true,
-      color: "red"
-    }, "Total Debt Score : ", result.totalScore));
-  }), react_1.default.createElement(ink_1.Box, {
-    marginTop: 1
-  }, react_1.default.createElement(ink_1.Text, {
-    bold: true,
-    backgroundColor: "#880000",
-    color: "white"
-  }, " Debt Score : ", totalDeptScore, " / Impacted files : ", formatedResult.length)));
-};
-
-exports.Results = Results;
-
-var ResultsFileOnly = function (_a) {
-  var results = _a.results,
-      limitTop = _a.limitTop;
-
-  var _b = formatResults(results),
-      formatedResult = _b.formatedResult,
-      totalDeptScore = _b.totalDeptScore;
-
-  var displayResults = formatedResult;
-
-  if (limitTop) {
-    displayResults = formatedResult.sort(function (a, b) {
-      return b.totalScore - a.totalScore;
-    }).filter(function (_item, index) {
-      return index < limitTop;
-    });
-  }
-
-  return react_1.default.createElement(react_1.default.Fragment, null, react_1.default.createElement(ink_1.Box, {
-    marginTop: 1
-  }), formatedResult.length > 0 && react_1.default.createElement(ink_table_1.default, {
-    data: displayResults.map(function (_a) {
-      var file = _a.file,
-          totalScore = _a.totalScore;
-      return {
-        file: file,
-        score: totalScore
-      };
-    })
-  }), react_1.default.createElement(ink_1.Box, {
-    marginTop: 1
-  }, react_1.default.createElement(ink_1.Text, {
-    bold: true,
-    backgroundColor: "#880000",
-    color: "white"
-  }, " Debt Score : ", totalDeptScore, " / Impacted files : ", formatedResult.length, " ")));
-};
-
-exports.ResultsFileOnly = ResultsFileOnly;
-
-var filterNoMatch = function (results, initialConfig) {
-  var allRules = __spreadArray(__spreadArray([], __read(initialConfig.fileRules.map(function (_a) {
-    var id = _a.id,
-        title = _a.title;
-    return {
-      id: id,
-      title: title
-    };
-  })), false), __read(initialConfig.eslintRules.map(function (_a) {
-    var id = _a.id,
-        title = _a.title;
-    return {
-      id: id,
-      title: title
-    };
-  })), false);
-
-  var allFilesRules = [].concat.apply([], results.map(function (file) {
-    return file.rules.map(function (_a) {
-      var id = _a.id;
-      return id;
-    });
-  }));
-  var existingRules = Array.from(new Set(__spreadArray([], __read(allFilesRules), false)));
-  var filteredRules = allRules.filter(function (_a) {
-    var id = _a.id;
-    return !existingRules.includes(id);
-  });
-  return {
-    notMatchRules: filteredRules,
-    rulesCount: allRules.length,
-    existingRulesCount: existingRules.length
-  };
-};
-
-var ResultsNoMatchRule = function (_a) {
-  var results = _a.results,
-      initialConfig = _a.initialConfig;
-
-  var _b = filterNoMatch(results, initialConfig),
-      notMatchRules = _b.notMatchRules,
-      rulesCount = _b.rulesCount;
-
-  return react_1.default.createElement(react_1.default.Fragment, null, react_1.default.createElement(ink_1.Box, {
-    marginTop: 1
-  }), notMatchRules.length > 0 && react_1.default.createElement(ink_table_1.default, {
-    data: notMatchRules
-  }), react_1.default.createElement(ink_1.Box, {
-    marginTop: 1
-  }, react_1.default.createElement(ink_1.Text, {
-    bold: true,
-    backgroundColor: "#880000",
-    color: "white"
-  }, "Nb of rules with no match : ", notMatchRules.length, " / ", rulesCount)));
-};
-
-exports.ResultsNoMatchRule = ResultsNoMatchRule;
-
-var ResultsCompare = function (_a) {
-  var results = _a.results;
-  var tableResults = Object.keys(results).map(function (fileName) {
-    var result = results[fileName];
-    return {
-      file: splitStringIfTooLong(fileName, 60),
-      rev: result.rev,
-      current: result.current,
-      trend: result.tendency
-    };
-  }).filter(function (file) {
-    return file.rev !== 0 && file.current !== 0;
-  });
-  var totalScores = tableResults.reduce(function (acc, res) {
-    var revScore = res.rev + acc.rev;
-    var currentScore = res.current + acc.cur;
-    return {
-      rev: revScore,
-      cur: currentScore,
-      solde: revScore - currentScore
-    };
-  }, {
-    rev: 0,
-    cur: 0,
-    solde: 0
-  });
-  var noChangesFiles = tableResults.filter(function (item) {
-    return item.trend === 0;
-  }).map(function (file) {
-    return __assign(__assign({}, file), {
-      trend: '='
-    });
-  });
-  var moreDeptFiles = tableResults.filter(function (item) {
-    return item.trend > 0;
-  }).map(function (file) {
-    return __assign(__assign({}, file), {
-      trend: "\u25B2 ".concat(file.trend)
-    });
-  });
-  var lessDeptFiles = tableResults.filter(function (item) {
-    return item.trend < 0;
-  }).map(function (file) {
-    return __assign(__assign({}, file), {
-      trend: "\u25BC ".concat(file.trend)
-    });
-  });
-
-  var resultColor = function (nb) {
-    if (nb > 0) return 'red';
-    if (nb < 0) return 'green';
-    return 'grey';
-  };
-
-  return react_1.default.createElement(react_1.default.Fragment, null, react_1.default.createElement(ink_1.Box, {
-    marginTop: 1
-  }), noChangesFiles.length > 0 && react_1.default.createElement(ink_1.Box, {
-    marginTop: 1,
-    flexDirection: "column"
-  }, react_1.default.createElement(ink_1.Text, {
-    underline: true,
-    bold: true,
-    color: "grey"
-  }, "Files with no changes in debt score"), react_1.default.createElement(ink_table_1.default, {
-    data: noChangesFiles
-  })), lessDeptFiles.length > 0 && react_1.default.createElement(ink_1.Box, {
-    marginTop: 1,
-    flexDirection: "column"
-  }, react_1.default.createElement(ink_1.Text, {
-    underline: true,
-    bold: true,
-    color: "green"
-  }, "Files with less debt"), react_1.default.createElement(ink_table_1.default, {
-    data: lessDeptFiles
-  })), moreDeptFiles.length > 0 && react_1.default.createElement(ink_1.Box, {
-    marginTop: 1,
-    flexDirection: "column"
-  }, react_1.default.createElement(ink_1.Text, {
-    underline: true,
-    bold: true,
-    color: "red"
-  }, "Files with more debt"), react_1.default.createElement(ink_table_1.default, {
-    data: moreDeptFiles
-  })), react_1.default.createElement(ink_1.Box, {
-    marginTop: 1
-  }, react_1.default.createElement(ink_1.Box, {
-    paddingLeft: 1,
-    paddingRight: 1,
-    borderStyle: "round",
-    flexDirection: "column"
-  }, react_1.default.createElement(ink_1.Text, null, "REVISION :", ' ', react_1.default.createElement(ink_1.Text, null, totalScores.rev.toString()))), react_1.default.createElement(ink_1.Box, {
-    paddingLeft: 1,
-    paddingRight: 1,
-    borderStyle: "round",
-    flexDirection: "column"
-  }, react_1.default.createElement(ink_1.Text, null, "CURRENT :", ' ', react_1.default.createElement(ink_1.Text, null, totalScores.cur.toString()))), react_1.default.createElement(ink_1.Box, {
-    paddingLeft: 1,
-    paddingRight: 1,
-    borderStyle: "round",
-    flexDirection: "column"
-  }, react_1.default.createElement(ink_1.Text, {
-    bold: true,
-    color: resultColor(totalScores.solde),
-    dimmed: true
-  }, "DIFF : ", totalScores.solde.toString()))));
-};
-
-exports.ResultsCompare = ResultsCompare;
-},{}],"../lib/utils.ts":[function(require,module,exports) {
+},{"../lib/getFileResult":"../lib/getFileResult.ts","../lib/filterRules":"../lib/filterRules.ts"}],"../lib/utils.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -2280,8 +1914,135 @@ var useValidatedConfig = function (config) {
 };
 
 exports.default = useValidatedConfig;
-},{"./utils":"../lib/utils.ts","./validateConfig":"../lib/validateConfig.ts"}],"check/index.tsx":[function(require,module,exports) {
+},{"./utils":"../lib/utils.ts","./validateConfig":"../lib/validateConfig.ts"}],"../lib/template.ts":[function(require,module,exports) {
 "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports.default = function (data) {
+  return "\n\n<!DOCTYPE html>\n<html>\n<head>\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.14.0/babel.min.js\"></script>\n    <script type=\"text/babel\" data-presets=\"es2017, stage-3\" data-plugins=\"syntax-async-functions,transform-class-properties\"></script>\n    <script src=\"https://unpkg.com/react/umd/react.production.min.js\"></script>\n    <script src=\"https://unpkg.com/react-dom/umd/react-dom.production.min.js\"></script>\n    <script src=\"https://unpkg.com/prop-types/prop-types.min.js\"></script>\n    <script src=\"https://unpkg.com/recharts/umd/Recharts.js\"></script>\n     <style type=\"text/css\">\n      body {\n        font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n      }\n    </style>\n</head>\n<body>\n<div id=\"app\"></div>\n<script type=\"text/babel\">\n\nconst result = ".concat(data, "\nconst { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts\n\nconst parseDataBy = (key) => Object.keys(result.results).map((commit) => {\n  const rulesScores = Object.keys(result.results[commit]).map(rule => ({\n    [rule]: result.results[commit][rule][key]\n  })).reduce((acc, res) => ({...acc, ...res}), {})\n  \n  return {\n    commit,\n    ...rulesScores\n  }\n})\n\nfunction getRandomColor() {\n  var letters = '0123456789ABCDEF';\n  var color = '#';\n  for (var i = 0; i < 6; i++) {\n    color += letters[Math.floor(Math.random() * 16)];\n  }\n  return color;\n}\n\nfunction shadeColor(color, percent) {\n  const channel = (chan) => {\n    let colChan = parseInt(chan, 16);\n    colChan = parseInt(colChan * (100 + percent) / 100);\n    colChan = colChan < 255 ? colChan : 255;\n    colChan = colChan.toString(16).length === 1 \n      ? \"0\" + colChan.toString(16)\n      : colChan.toString(16);\n    return colChan\n  }\n\n  const RR = channel(color.substring(1,3));\n  const GG = channel(color.substring(3,5));\n  const BB = channel(color.substring(5,7));\n\n  return \"#\"+RR+GG+BB;\n}\n\nconst colors = Array(100).fill('').map(() =>  shadeColor(getRandomColor(), -20))\nconst newData = parseDataBy('score')\n\nconst baseButtonStyles = {\n  padding: 4,\n  textAlign: 'left',\n  marginBottom: 6,\n  marginRight: 6,\n  border: 'none',\n  outline: 'none', \n  fontWeight: 'bold',\n}\n\nconst rules = Object.keys(newData[0]).filter(key => key !== 'commit')\nconst rulesActives = rules.reduce((acc, rule) => {\n  acc[rule] = true\n  return acc\n}, {})\n\n const App = () => {\n   const [data, setData] = React.useState(newData)\n   const [valueType, setValueType] = React.useState('score')\n   const [activeRules, setActiveRules] = React.useState(rulesActives)\n   const [tagFilter, setTagFilter] = React.useState(null)\n   \n   const toggleRule = (id) => {\n    setTagFilter(null)\n    setActiveRules(prev => ({\n      ...prev,\n      [id]: !prev[id]\n    }))\n   }\n\n   const switchDataBy = (key) => {\n      setValueType(key)\n      setData(parseDataBy(key))\n   }\n\n   const toggleAll = () => {\n     setTagFilter(null)\n     setActiveRules(prev => {\n       const rulesKeys = Object.keys(prev)\n       const firstIsActive = !!prev[rulesKeys[0]]\n       return rulesKeys.reduce((rules, rule) => {\n         rules[rule] = !firstIsActive\n         return rules\n       }, {})\n     })\n   }\n\n   const toggleTag = (tag) => {\n     if (tagFilter === null || tagFilter !== tag) {\n       setTagFilter(tag)\n     } else {\n       setTagFilter(null)\n     }\n   }\n\n   const renderTooltip = ({label, payload}) => {\n    if (!payload.length) { return null}\n   \n     return <div style={{ backgroundColor: 'white', padding: 15, borderRadius: 10, boxShadow: '0 0 10px rgba(0,0,0,0.2)' }}>\n        <h2 style={{ margin: 0, marginBottom: 5}}>{label}</h2>\n        <h3 style={{ margin: 0, marginBottom: 15}}>Total {valueType} : { \n        payload.reduce((acc, cur) => {\n          acc += Number(cur.value)\n          return acc\n        }, 0)\n        } </h3>\n        {payload.reverse().map(item => (\n          <div key={item.dataKey} style={{ display: 'flex', justifyContent:'center', fontSize: 12, marginBottom: 4}}>\n            <span style={{ backgroundColor: item.color, display: 'inline-block', width: 15, height: 15, borderRadius: 3, marginRight: 7}}></span>\n            <div style={{ flex: 1, marginRight: 25}}>\n              <span>{item.name.replace(/_/g, ' ')}</span>\n            </div>\n            <span style={{ fontWeight: 'bold'}}>{item.value}</span>\n          </div>\n        ))}\n      </div>\n   }\n\n  React.useEffect(() => {\n    if (tagFilter) {\n      setActiveRules(rules => Object.keys(rules).reduce((acc, rule) => {\n        if (result.tags[tagFilter].includes(rule)) {\n          acc[rule] = true\n        } else {\n          acc[rule] = false\n        }\n        return acc\n      }, {}))\n    }\n  }, [tagFilter])\n   \n   return (\n     <div style={{display: 'flex', overflow: 'hidden', width: '100vw', height:'100vh', position:'fixed'}}>\n      <div style={{width: '80vw', height:'100vh'}}>\n        <ResponsiveContainer width=\"100%\" height=\"90%\">\n          <AreaChart\n            width={500}\n            height={400}\n            data={data}\n            margin={{\n              top: 10,\n              right: 30,\n              left: 0,\n              bottom: 0,\n            }}\n          >\n            <CartesianGrid strokeDasharray=\"3 3\" />\n            <XAxis dataKey=\"commit\" />\n            <YAxis />\n            <Tooltip\n              content={renderTooltip} \n              itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}\n              labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}\n            />\n            {Object.keys(activeRules).map((rule, index) => activeRules[rule] && \n              <Area\n                type=\"monotone\"\n                dataKey={rule}\n                stackId=\"1\"\n                stroke={colors[Object.keys(activeRules).indexOf(rule)]}\n                fill={colors[Object.keys(activeRules).indexOf(rule)]} />\n            )}\n          </AreaChart>\n        </ResponsiveContainer>\n        </div>\n        <div style={{width: '20vw', minWidth: 400, height:'100vh', overflowY: 'auto', padding: 20}}>\n          <h3>Rules</h3>\n          {Object.keys(activeRules).map(rule => \n            <button \n              key={rule}\n              onClick={() => toggleRule(rule)}\n              style={{\n                ...baseButtonStyles,\n                backgroundColor: activeRules[rule] ? 'green' : '#F5F5F5',\n                color: activeRules[rule] ? 'white' : 'grey'\n              }}\n            >\n              {rule}\n            </button>\n          )}\n          <div style={{ marginTop: 15 }}>\n            <button onClick={() => toggleAll()}>TOGGLE ALL RULES</button>\n          </div>\n          <hr />\n          <h3>Tags</h3>\n          {Object.keys(result.tags).map(tag => \n            <button \n              key={tag}\n              onClick={() => toggleTag(tag)}\n              style={{\n                ...baseButtonStyles,\n                display: 'inline-block',\n                backgroundColor: tagFilter === tag ? 'green' : '#F5F5F5',\n                color: tagFilter === tag ? 'white' : 'grey'\n              }}\n            >\n              {tag}\n            </button>\n          )}\n          <hr />\n          <h3>Display values</h3>\n          <button \n            onClick={() => switchDataBy('score')}\n            style={{\n              ...baseButtonStyles,\n              display: 'inline-block',\n              backgroundColor: valueType === 'score' ? 'green' : '#F5F5F5',\n              color: valueType === 'score' ? 'white' : 'grey'\n            }}>\n              BY SCORE\n          </button>\n          <button \n            onClick={() => switchDataBy('occurences')}\n            style={{\n              ...baseButtonStyles,\n              display: 'inline-block',\n              backgroundColor: valueType === 'occurences' ? 'green' : '#F5F5F5',\n              color: valueType === 'occurences' ? 'white' : 'grey'\n            }}>\n              BY OCCURENCES\n          </button>\n          <hr />\n        </div>\n      </div>\n    );\n}\n\nReactDOM.render(<App/>, document.getElementById('app'));\n</script>\n</body>\n</html>\n");
+};
+},{}],"../lib/buildWalkReport.ts":[function(require,module,exports) {
+"use strict";
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var fs_1 = __importDefault(require("fs"));
+
+var child_process_1 = require("child_process");
+
+var template_1 = __importDefault(require("./template"));
+
+var cachePath = "".concat(process.cwd(), "/node_modules/.cache/debt-collector");
+var resultPath = "".concat(cachePath, "/result.html");
+
+var buildWalkReport = function (defaultConfig, tags, results) {
+  setTimeout(function () {
+    // waiting for file system to correctly switch all files after checkout
+    var jsonResults = JSON.stringify({
+      initialConfig: defaultConfig,
+      tags: tags,
+      results: results
+    }, null, 2);
+    var data = (0, template_1.default)(jsonResults);
+    fs_1.default.mkdir(cachePath, {
+      recursive: true
+    }, function (err) {
+      if (err) throw err;
+      fs_1.default.writeFileSync(resultPath, data);
+      (0, child_process_1.spawn)('open', [resultPath]);
+    });
+  }, 330);
+};
+
+exports.default = buildWalkReport;
+},{"./template":"../lib/template.ts"}],"../lib/getTagListFromConfig.ts":[function(require,module,exports) {
+"use strict";
+
+var __read = this && this.__read || function (o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
+};
+
+var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
+  if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+    if (ar || !(i in from)) {
+      if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+      ar[i] = from[i];
+    }
+  }
+  return to.concat(ar || Array.prototype.slice.call(from));
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var getTagListFromConfig = function (config) {
+  var allRules = __spreadArray(__spreadArray([], __read(config.fileRules), false), __read(config.eslintRules), false);
+
+  var tagList = allRules.reduce(function (acc, rule) {
+    rule.tags.forEach(function (tag) {
+      if (!acc[tag]) {
+        acc[tag] = [rule.id];
+      }
+
+      if (acc[tag] && !acc[tag].includes(rule.id)) {
+        acc[tag].push(rule.id);
+      }
+    });
+    return acc;
+  }, {});
+  return tagList;
+};
+
+exports.default = getTagListFromConfig;
+},{}],"walk/index.tsx":[function(require,module,exports) {
+"use strict";
+
+var __assign = this && this.__assign || function () {
+  __assign = Object.assign || function (t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+
+      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+    }
+
+    return t;
+  };
+
+  return __assign.apply(this, arguments);
+};
 
 var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
   if (k2 === undefined) k2 = k;
@@ -2481,6 +2242,33 @@ var __read = this && this.__read || function (o, n) {
   return ar;
 };
 
+var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
+  if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+    if (ar || !(i in from)) {
+      if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+      ar[i] = from[i];
+    }
+  }
+  return to.concat(ar || Array.prototype.slice.call(from));
+};
+
+var __values = this && this.__values || function (o) {
+  var s = typeof Symbol === "function" && Symbol.iterator,
+      m = s && o[s],
+      i = 0;
+  if (m) return m.call(o);
+  if (o && typeof o.length === "number") return {
+    next: function () {
+      if (o && i >= o.length) o = void 0;
+      return {
+        value: o && o[i++],
+        done: !o
+      };
+    }
+  };
+  throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+
 var __importDefault = this && this.__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
@@ -2495,74 +2283,273 @@ var react_1 = __importStar(require("react"));
 
 var prop_types_1 = __importDefault(require("prop-types"));
 
-var ink_1 = require("ink");
-
 var ink_task_list_1 = require("ink-task-list");
 
 var getFilesList_1 = __importDefault(require("../../lib/getFilesList"));
 
 var checkFileList_1 = __importDefault(require("../../lib/checkFileList"));
 
-var Reporter_1 = require("../../components/Reporter");
-
 var useValidatedConfig_1 = __importDefault(require("../../lib/useValidatedConfig"));
 
-var All = function (_a) {
-  var _b = _a.rule,
-      rule = _b === void 0 ? null : _b,
-      _c = _a.tags,
-      tags = _c === void 0 ? null : _c,
-      _d = _a.config,
-      config = _d === void 0 ? null : _d,
-      _e = _a.collectFrom,
-      collectFrom = _e === void 0 ? null : _e,
-      _f = _a.reportFormat,
-      reportFormat = _f === void 0 ? 'standard' : _f,
-      _g = _a.changedSince,
-      changedSince = _g === void 0 ? null : _g,
-      _h = _a.limitTop,
-      limitTop = _h === void 0 ? null : _h;
+var buildWalkReport_1 = __importDefault(require("../../lib/buildWalkReport"));
 
-  var _j = __read((0, react_1.useState)(null), 2),
-      results = _j[0],
-      setResults = _j[1];
+var getTagListFromConfig_1 = __importDefault(require("../../lib/getTagListFromConfig"));
 
-  var _k = __read((0, react_1.useState)(null), 2),
-      fileList = _k[0],
-      setFileList = _k[1];
+var simple_git_1 = __importDefault(require("simple-git"));
 
-  var _l = __read((0, react_1.useState)(0), 2),
-      checkedFileCount = _l[0],
-      setCheckedFileCount = _l[1];
+var fs_1 = __importDefault(require("fs"));
 
-  var _m = (0, useValidatedConfig_1.default)(config),
-      isConfigValidated = _m.isConfigValidated,
-      updatedConfig = _m.updatedConfig,
-      configErrors = _m.configErrors;
+var path_1 = __importDefault(require("path"));
 
-  var cleanTags = tags === null || tags === void 0 ? void 0 : tags.filter(function (tag) {
-    return tag !== undefined;
+var gitOptions = {
+  baseDir: process.cwd(),
+  binary: 'git',
+  maxConcurrentProcesses: 6
+};
+var git = (0, simple_git_1.default)(gitOptions);
+var currentBranch;
+
+var getCommitList = function (nth) {
+  return __awaiter(void 0, void 0, Promise, function () {
+    var list, listArray;
+    return __generator(this, function (_a) {
+      switch (_a.label) {
+        case 0:
+          return [4
+          /*yield*/
+          , git.revparse(['--abbrev-ref', 'HEAD'])];
+
+        case 1:
+          currentBranch = _a.sent();
+          return [4
+          /*yield*/
+          , git.tag(['-l', 'v*.0.0', '--sort', 'v:refname', '--format', '%(refname:strip=2)'])];
+
+        case 2:
+          list = _a.sent();
+          listArray = list.split(/\r?\n/).reverse().filter(function (tag) {
+            return tag !== '';
+          }).slice(0, nth).reverse();
+          return [2
+          /*return*/
+          , listArray];
+      }
+    });
   });
+};
+
+var formatCommitTotal = function (config, results) {
+  var configRules = __spreadArray(__spreadArray([], __read(config.fileRules.map(function (rule) {
+    return rule.id;
+  })), false), __read(config.eslintRules.map(function (rule) {
+    return rule.id;
+  })), false).reduce(function (acc, id) {
+    var _a;
+
+    return __assign(__assign({}, acc), (_a = {}, _a[id] = {
+      score: 0,
+      occurences: 0
+    }, _a));
+  }, {});
+
+  Object.keys(results).forEach(function (file) {
+    var currentFile = results[file];
+
+    if (currentFile.rules.length > 0) {
+      currentFile.rules.forEach(function (_a) {
+        var id = _a.id,
+            debtScore = _a.debtScore,
+            occurences = _a.occurences;
+        configRules[id].score = configRules[id].score + debtScore * occurences;
+        configRules[id].occurences = configRules[id].occurences + occurences;
+      });
+    }
+  });
+  return configRules;
+};
+
+var Compare = function (_a) {
+  var _b = _a.revlength,
+      revlength = _b === void 0 ? 10 : _b,
+      config = _a.config,
+      _c = _a.collectFrom,
+      collectFrom = _c === void 0 ? null : _c;
+
+  var _d = __read((0, react_1.useState)({}), 2),
+      results = _d[0],
+      setResults = _d[1];
+
+  var _e = __read((0, react_1.useState)({
+    commit: '',
+    index: 0
+  }), 2),
+      currentCommit = _e[0],
+      setCurrentCommit = _e[1];
+
+  var _f = __read((0, react_1.useState)(false), 2),
+      isReady = _f[0],
+      setIsReady = _f[1];
+
+  var _g = __read((0, react_1.useState)({}), 2),
+      tags = _g[0],
+      setTags = _g[1];
+
+  var _h = (0, useValidatedConfig_1.default)(config),
+      isConfigValidated = _h.isConfigValidated,
+      updatedConfig = _h.updatedConfig,
+      configErrors = _h.configErrors,
+      defaultConfig = _h.defaultConfig;
+
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(void 0, void 0, void 0, function () {
-        var result;
-        return __generator(this, function (_a) {
-          switch (_a.label) {
+        var commitsList, previousResults, _loop_1, _a, _b, _c, index, commit, e_1_1;
+
+        var e_1, _d;
+
+        return __generator(this, function (_e) {
+          switch (_e.label) {
             case 0:
               if (!isConfigValidated) return [3
               /*break*/
-              , 2];
+              , 11];
+              setTags((0, getTagListFromConfig_1.default)(defaultConfig));
               return [4
               /*yield*/
-              , (0, getFilesList_1.default)(updatedConfig, changedSince, collectFrom)];
+              , getCommitList(revlength)];
 
             case 1:
-              result = _a.sent();
-              setFileList(result);
-              _a.label = 2;
+              commitsList = _e.sent();
+              previousResults = void 0;
+
+              _loop_1 = function (index, commit) {
+                var since, fileList, results_1, mergedResults, resultsByRules;
+                return __generator(this, function (_f) {
+                  switch (_f.label) {
+                    case 0:
+                      setCurrentCommit({
+                        commit: commit,
+                        index: index + 1
+                      });
+                      return [4
+                      /*yield*/
+                      , git.checkout([commit])];
+
+                    case 1:
+                      _f.sent();
+
+                      since = index === 0 ? null : commitsList[index - 1];
+                      return [4
+                      /*yield*/
+                      , (0, getFilesList_1.default)(updatedConfig, since, collectFrom)];
+
+                    case 2:
+                      fileList = _f.sent();
+                      return [4
+                      /*yield*/
+                      , (0, checkFileList_1.default)(fileList, updatedConfig, null, null, function () {
+                        return null;
+                      })];
+
+                    case 3:
+                      results_1 = _f.sent();
+                      mergedResults = results_1.reduce(function (acc, res) {
+                        acc[res.file] = res;
+                        return acc;
+                      }, {});
+
+                      if (previousResults) {
+                        mergedResults = __assign(__assign({}, previousResults), mergedResults);
+                        mergedResults = Object.keys(mergedResults).reduce(function (acc, file) {
+                          var fileStillExist = fs_1.default.existsSync(path_1.default.resolve(process.cwd(), "./".concat(file)));
+
+                          if (fileStillExist) {
+                            acc[file] = mergedResults[file];
+                          }
+
+                          return acc;
+                        }, {});
+                      }
+
+                      previousResults = mergedResults;
+                      resultsByRules = formatCommitTotal(defaultConfig, mergedResults);
+                      setResults(function (prevRes) {
+                        var _a;
+
+                        return __assign(__assign({}, prevRes), (_a = {}, _a[commit] = resultsByRules, _a));
+                      });
+                      return [2
+                      /*return*/
+                      ];
+                  }
+                });
+              };
+
+              _e.label = 2;
 
             case 2:
+              _e.trys.push([2, 7, 8, 9]);
+
+              _a = __values(commitsList.entries()), _b = _a.next();
+              _e.label = 3;
+
+            case 3:
+              if (!!_b.done) return [3
+              /*break*/
+              , 6];
+              _c = __read(_b.value, 2), index = _c[0], commit = _c[1];
+              return [5
+              /*yield**/
+              , _loop_1(index, commit)];
+
+            case 4:
+              _e.sent();
+
+              _e.label = 5;
+
+            case 5:
+              _b = _a.next();
+              return [3
+              /*break*/
+              , 3];
+
+            case 6:
+              return [3
+              /*break*/
+              , 9];
+
+            case 7:
+              e_1_1 = _e.sent();
+              e_1 = {
+                error: e_1_1
+              };
+              return [3
+              /*break*/
+              , 9];
+
+            case 8:
+              try {
+                if (_b && !_b.done && (_d = _a.return)) _d.call(_a);
+              } finally {
+                if (e_1) throw e_1.error;
+              }
+
+              return [7
+              /*endfinally*/
+              ];
+
+            case 9:
+              return [4
+              /*yield*/
+              , git.checkout([currentBranch])];
+
+            case 10:
+              _e.sent();
+
+              setIsReady(true);
+              _e.label = 11;
+
+            case 11:
               return [2
               /*return*/
               ];
@@ -2574,100 +2561,38 @@ var All = function (_a) {
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(void 0, void 0, void 0, function () {
-        var increment, results_1;
         return __generator(this, function (_a) {
-          switch (_a.label) {
-            case 0:
-              if (!(fileList !== null)) return [3
-              /*break*/
-              , 2];
-
-              increment = function () {
-                return setCheckedFileCount(function (prevCount) {
-                  return prevCount += 1;
-                });
-              };
-
-              return [4
-              /*yield*/
-              , (0, checkFileList_1.default)(fileList, updatedConfig, rule, tags, increment)];
-
-            case 1:
-              results_1 = _a.sent();
-              setResults(results_1);
-              _a.label = 2;
-
-            case 2:
-              return [2
-              /*return*/
-              ];
+          if (isReady) {
+            (0, buildWalkReport_1.default)(defaultConfig, tags, results);
           }
+
+          return [2
+          /*return*/
+          ];
         });
       });
     })();
-  }, [fileList]);
-  var collectingFrom = "Collecting debt from ".concat(changedSince ? "files changed since ".concat(changedSince) : collectFrom ? collectFrom : 'all files');
-  var hasFilters = cleanTags.length || rule;
-  var tagFilters = cleanTags.length > 0 && " [tags : ".concat(cleanTags, "]");
-  var and = cleanTags.length > 0 && rule ? ' &' : '';
-  var ruleFilter = rule ? " [rule id : ".concat(rule, "]") : '';
-  var withFilters = "With rules filters on ".concat(tagFilters).concat(and).concat(ruleFilter);
-  return react_1.default.createElement(react_1.default.Fragment, null, react_1.default.createElement(ink_task_list_1.TaskList, null, react_1.default.createElement(ink_task_list_1.Task, {
-    state: isConfigValidated === null ? 'loading' : isConfigValidated ? 'success' : 'error',
-    label: "validating configuration",
-    status: isConfigValidated === null ? 'checking configuration' : isConfigValidated ? 'success' : 'error'
+  }, [isReady]);
+  return react_1.default.createElement(ink_task_list_1.TaskList, null, react_1.default.createElement(ink_task_list_1.Task, {
+    state: !isReady ? 'loading' : 'success',
+    label: "checking the last ".concat(revlength, " commits"),
+    status: "checking commit ".concat(currentCommit.index, "/").concat(revlength, " : ").concat(currentCommit.commit)
   }), react_1.default.createElement(ink_task_list_1.Task, {
-    state: fileList === null ? 'loading' : 'success',
-    label: "defining file to check",
-    status: fileList === null ? null : "".concat(fileList.length, " files")
-  }), react_1.default.createElement(ink_task_list_1.Task, {
-    state: results === null ? 'loading' : 'success',
-    label: "checking files",
-    status: "".concat(checkedFileCount, "/").concat(fileList === null ? '?' : fileList.length, " files")
-  })), isConfigValidated === false && (configErrors === null || configErrors === void 0 ? void 0 : configErrors.length) > 0 && configErrors.map(function (error, i) {
-    return react_1.default.createElement(ink_1.Text, {
-      key: i,
-      color: "red"
-    }, error);
-  }), results !== null && reportFormat === 'standard' && react_1.default.createElement(Reporter_1.Results, {
-    results: results,
-    limitTop: limitTop
-  }), results !== null && reportFormat === 'filesOnly' && react_1.default.createElement(Reporter_1.ResultsFileOnly, {
-    results: results,
-    limitTop: limitTop
-  }), results !== null && reportFormat === 'noMatchRules' && react_1.default.createElement(Reporter_1.ResultsNoMatchRule, {
-    results: results,
-    initialConfig: updatedConfig
-  }), react_1.default.createElement(ink_1.Box, {
-    marginTop: 1,
-    flexDirection: "column",
-    border: true
-  }, react_1.default.createElement(ink_1.Text, {
-    color: "grey"
-  }, collectingFrom), hasFilters && react_1.default.createElement(ink_1.Text, {
-    color: "grey"
-  }, withFilters), react_1.default.createElement(ink_1.Text, {
-    color: "grey"
-  }, "Reporting : ", reportFormat, " ", limitTop && "\u2022 top ".concat(limitTop, " biggest score"))));
+    state: !isReady ? 'pending' : 'loading',
+    label: "Building a report"
+  }));
 };
 
-All.propTypes = {
-  limitTop: prop_types_1.default.number,
-  collectFrom: prop_types_1.default.string,
-  rule: prop_types_1.default.string,
-  tags: prop_types_1.default.array,
+Compare.propTypes = {
+  revlength: prop_types_1.default.number,
   config: prop_types_1.default.string,
-  changedSince: prop_types_1.default.string,
-  reportFormat: prop_types_1.default.oneOf(['filesOnly', 'noMatchRules', 'standard'])
+  collectFrom: prop_types_1.default.string
 };
-All.shortFlags = {
-  rule: 'r',
-  tags: 't',
-  collectFrom: 'g',
+Compare.shortFlags = {
+  revlength: 'n',
   config: 'c',
-  reportFormat: 'f',
-  changedSince: 's'
+  collectFrom: 'f'
 };
-exports.default = All;
-},{"../../lib/getFilesList":"../lib/getFilesList.ts","../../lib/checkFileList":"../lib/checkFileList.ts","../../components/Reporter":"../components/Reporter.tsx","../../lib/useValidatedConfig":"../lib/useValidatedConfig.ts"}]},{},["check/index.tsx"], null)
-//# sourceMappingURL=/check/index.js.map
+exports.default = Compare;
+},{"../../lib/getFilesList":"../lib/getFilesList.ts","../../lib/checkFileList":"../lib/checkFileList.ts","../../lib/useValidatedConfig":"../lib/useValidatedConfig.ts","../../lib/buildWalkReport":"../lib/buildWalkReport.ts","../../lib/getTagListFromConfig":"../lib/getTagListFromConfig.ts"}]},{},["walk/index.tsx"], null)
+//# sourceMappingURL=/walk/index.js.map
