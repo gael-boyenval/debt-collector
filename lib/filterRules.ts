@@ -39,7 +39,7 @@ const getRules = (rules, ruleId, tags) => rules
 export const filtersRulesFromOptions = (options, ruleId = null, tags = null) => {
   let fileRules = options.fileRules
   let eslintRules = options.eslintRules
-  const cleanTag = tags.filter(tag => !!tag)
+  const cleanTag = tags && tags.filter(tag => !!tag)
   
   
   if (ruleId || cleanTag?.length) {

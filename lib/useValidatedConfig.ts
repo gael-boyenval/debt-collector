@@ -6,12 +6,13 @@ const useValidatedConfig = (config) => {
   const [isConfigValidated, setIsConfigValidated] = useState(null)
   const [updatedConfig, setUpdatedConfig] = useState(null)
   const [configErrors, setConfigErrors] = useState(null)
+  const [defaultConfig, setDefaultConfig] = useState(null)
 
   useEffect(() => {
 		(async() => {
 			const configPath = getConfigPath(config)
-			const { isConfigValid, verifiedConfig, configErrors } = await validateConfig(configPath)
-			
+			const { isConfigValid, verifiedConfig, configErrors, defaultConfig } = await validateConfig(configPath)
+			setDefaultConfig(defaultConfig)
 			setUpdatedConfig(verifiedConfig)
 			setIsConfigValidated(isConfigValid)
       setConfigErrors(configErrors)
@@ -21,7 +22,8 @@ const useValidatedConfig = (config) => {
   return {
     isConfigValidated,
     updatedConfig,
-    configErrors
+    configErrors,
+    defaultConfig
   }
 }
 

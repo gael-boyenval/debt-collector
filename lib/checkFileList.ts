@@ -13,7 +13,7 @@ export default async (fileList, config, rule, tags, increment) => {
 
   const	eslint = new ESLint({
     useEslintrc: false,
-    baseConfig: require(path.resolve(process.cwd(), fileListConfig.eslintConfigPath)),
+    baseConfig: config.eslintConfig,
   });
 
   const getFilesResults = fileList.map(file => getFileResult(fileListConfig, file, increment, eslint))

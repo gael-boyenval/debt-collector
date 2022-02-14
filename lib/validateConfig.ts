@@ -1,3 +1,5 @@
+import path from 'path'
+
 const defaultFileRuleConfig = {
   matchGlob: "**/*",
   matchRule: () => 1,
@@ -15,7 +17,8 @@ const validateConfig = async (configPath: string) => {
   } catch (e) {
     return {
       isConfigValid: false,
-      verifiedConfig: config,
+      verifiedConfig: {},
+      eslintConfig: null,
       configErrors: [
         `Impossible to load a valid config file at ${configPath}, create a config file or provide a path to a valid config using the "--config" flag`
       ]
@@ -25,6 +28,8 @@ const validateConfig = async (configPath: string) => {
   const returnValues = {
     isConfigValid: true,
     verifiedConfig: config.default,
+    defaultConfig: config.default,
+    eslintConfig: null,
     configErrors: []
   };
 
@@ -68,11 +73,28 @@ const validateConfig = async (configPath: string) => {
   }));
 
   // TODO : validate individual rules
+  
+  if (hasEslintConfigPath) {
+    try {
+      returnValues.verifiedConfig.eslintConfig = require(
+        path.resolve(process.cwd(), config.default.eslintConfigPath)
+      )
+    } catch (e) {      
+      return {
+        isConfigValid: false,
+        verifiedConfig: {},
+        eslintConfig: null,
+        configErrors: [
+          `Impossible to load the eslint config file`
+        ]
+      };
+    }
+  }
 
   return {
     ...returnValues,
     verifiedConfig: {
-      ...config,
+      ...returnValues.verifiedConfig,
       eslintRules,
       fileRules,
     },
