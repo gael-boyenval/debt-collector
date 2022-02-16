@@ -8,6 +8,7 @@ import { ResultsCompare } from '../../components/Reporter'
 import useValidatedConfig from '../../lib/useValidatedConfig';
 import simpleGit from 'simple-git'
 
+
 let currentRev
 let hasStashed = false
 

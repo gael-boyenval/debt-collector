@@ -1,10 +1,10 @@
 {
   "name": "debt-collector",
-  "version": "0.0.1",
+  "version": "v1.0.0-alpha",
   "description": "a nodejs tool to identify, track and mesure technical debt",
   "bin": "./build/cli.js",
   "engines": {
-    "node": ">=8"
+    "node": ">=14"
   },
   "scripts": {
     "dev": "pastel dev",
@@ -29,26 +29,17 @@
   },
   "homepage": "https://github.com/gael-boyenval/debt-collector#readme",
   "dependencies": {
-    "chalk": "~4",
-    "clear": "^0.1.0",
-    "clui": "^0.3.6",
-    "escape-string-regexp": "^5.0.0",
     "escape-string-regexp-node": "^1.0.2",
-    "figlet": "^1.5.2",
     "glob": "^7.2.0",
     "ink": "^3.0.0",
     "ink-big-text": "^1.2.0",
     "ink-table": "^3.0.0",
     "ink-task-list": "^1.1.0",
     "inquirer": "^8.2.0",
-    "install": "^0.13.0",
     "minimatch": "^3.0.4",
-    "minimist": "^1.2.5",
-    "npm": "^8.3.2",
     "prop-types": "^15.8.1",
-    "react": "^16.14.0",
-    "simple-git": "^3.0.3",
-    "touch": "^3.1.0"
+    "react": "^17.0.2",
+    "simple-git": "^3.0.3"
   },
   "devDependencies": {
     "pastel": "^1.1.1",
