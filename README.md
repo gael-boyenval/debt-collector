@@ -15,7 +15,7 @@ Note that debt-collector is an alpha version and is not yet available trough the
 
 ## How does it works ?
 
-Debt collector as two comands : `check` and `compare`. 
+Debt collector has three commands : `check`, `compare` and `walk`. 
 
 DC works by checking every files matching a `collectFrom` glob pattern, provided by a configuration file.
 Each file is then checked for each rule defined in `fileRules`, for example : 
@@ -47,13 +47,6 @@ display help
 
 ex: `debt-collector [command] --help`
 
-#### `--version`
-
-display version
-
-ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
-or `debt-collector [command] -g "./src/components/**/*.tsx"`
-
 
 #### `--collect-from`, `-g`: **glob**
 
@@ -62,20 +55,6 @@ filters files by path
 ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
 
-#### `--rule`, `-r`: **string**
-
-filter a specific rule (by ID) 
-
-ex: `debt-collector [command] --rule=FILE_TOO_LONG` 
-or `debt-collector [command] -r RULE_ID`
-
-#### `--tags`, `-t`: **array**
-
-filter rules by tags 
-
-ex: `debt-collector [command] --tags=forms styles`
-or `debt-collector [command] -t forms styles`
-
 #### `--config`, `-c`: **string**
 
 a path to DC config file
@@ -83,15 +62,29 @@ a path to DC config file
 ex: `debt-collector [command] --config="./path/to/config"`
 or `debt-collector [command] -c ./path/to/config`
 
-### check command
+## check command
 
 `debt-collector check` or `npx debt-collector check`
 
 this command will check all files and output a debt report, as well as a total score
 
-#### Available check option
+### Available check option
 
 the availables options are
+
+#### `--rule`, `-r`: **string**
+
+filter a specific rule (by ID) 
+
+ex: `debt-collector check --rule=FILE_TOO_LONG` 
+or `debt-collector check -r RULE_ID`
+
+#### `--tags`, `-t`: **array**
+
+filter rules by tags 
+
+ex: `debt-collector check --tags="design system" "forms" "styles"`
+or `debt-collector check -t "design system" "forms" "styles"`
 
 #### `--limit-top`: **number**
 
@@ -123,7 +116,7 @@ or `debt-collector check -f noMatchRules`
 ex: `debt-collector check --report-format=standard`
 or `debt-collector check -f standard`
 
-### compare command
+## compare command
 
 `debt-collector compare --revision [rev]` ou `npx debt-collector compare --revision [rev]`
 
@@ -132,6 +125,42 @@ This command will check every file that have changed since the revision (created
 It will output files with no changes in bebt scores, files with less debt and files with more debt, as well as a totalm score comparaison.
 
 Particularly usefull when creating a pull request, and we want to compare the main branch with the current pull request debt scores.
+
+### Available compare option
+
+#### `--rule`, `-r`: **string**
+
+filter a specific rule (by ID) 
+
+ex: `debt-collector compare --rule=FILE_TOO_LONG` 
+or `debt-collector compare -r RULE_ID`
+
+#### `--tags`, `-t`: **array**
+
+filter rules by tags 
+
+ex: `debt-collector compare --tags="design system" "forms" "styles"`
+or `debt-collector compare -t "design system" "forms" "styles"`
+
+## walk command
+
+`debt-collector walk` ou `npx debt-collector walk`
+
+This command will check every releases tags and run a diagnostic. 
+
+It will then output a HTML report with a detailled graph and will try to open it in the browser. 
+If the openning fails, the report will be saved in `node_modules/.cache/debt-collector/report.html`
+
+/!\ please note that for now, the walk command should only work in the context of the the passculture project (for wich this library was initialy created), but a configuration should be added in the future to allow you to check any revisions you want (tags or commits) with fine controls. 
+
+### Available walk options
+
+#### `--revlength`, `-n`: **number**
+
+limit the number of revision to check
+
+ex: `debt-collector walk --revlength=10` 
+or `debt-collector walk -n 10`
 
 ## Configuration
 
