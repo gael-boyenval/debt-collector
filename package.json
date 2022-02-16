@@ -37,12 +37,12 @@
     "ink-task-list": "^1.1.0",
     "inquirer": "^8.2.0",
     "minimatch": "^3.0.4",
+    "pastel": "^1.1.1",
     "prop-types": "^15.8.1",
     "react": "^17.0.2",
     "simple-git": "^3.0.3"
   },
   "devDependencies": {
-    "pastel": "^1.1.1",
     "typescript": "^4.5.5"
   },
   "peerDependencies": {
