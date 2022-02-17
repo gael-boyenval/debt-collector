@@ -16,13 +16,13 @@ ${createTable(data.noChangesFiles)}
 ${data.lessDeptFiles.length > 0 && `
 <h3 color="green">Files with less debt </h3>
 
-${createTable(data.noChangesFiles)}
+${createTable(data.lessDeptFiles)}
 `}
 
 ${data.moreDeptFiles.length > 0 && `
 <h3 color="red">Files with more debt </h3>
 
-${createTable(data.noChangesFiles)}
+${createTable(data.moreDeptFiles)}
 `}
 </br>
 

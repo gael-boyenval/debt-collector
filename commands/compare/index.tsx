@@ -91,9 +91,7 @@ const Compare = ({
 					console.log(e);
 				}
         const increment = () => setRevisionCheckedFileCount(prevCount => prevCount += 1)	
-				const result = await checkFileList(fileList, updatedConfig, rule, tags, increment)
-				console.log(result);
-				
+				const result = await checkFileList(fileList, updatedConfig, rule, tags, increment)				
 				setRevisionResults(result)
 			}
 		})()
