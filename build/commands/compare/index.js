@@ -1345,7 +1345,25 @@ exports.default = function (fileList, config, rule, tags, increment) {
     });
   });
 };
-},{"../lib/getFileResult":"../lib/getFileResult.ts","../lib/filterRules":"../lib/filterRules.ts"}],"../components/Reporter.tsx":[function(require,module,exports) {
+},{"../lib/getFileResult":"../lib/getFileResult.ts","../lib/filterRules":"../lib/filterRules.ts"}],"../lib/compareHtmlReport.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var createTable = function (data) {
+  return "\n<table>\n  <thead>\n    <tr>\n      <th>File</th>\n      <th>Prev</th>\n      <th>Current</th>\n      <th>trend</th>\n    </tr>\n  </thead>\n  <tbody>\n    ".concat(data.map(function (file) {
+    return "\n      <tr>\n        <td>".concat(file.file, "</td>\n        <td>").concat(file.rev, "</td>\n        <td>").concat(file.current, "</td>\n        <td>").concat(file.trend, "</td>\n      </tr>\n    ");
+  }).join(' '), "\n  </tbody>\n</table>\n");
+};
+
+var compareHtmlReport = function (data) {
+  return "\n<h2> Debt collector report </h2>\n\n".concat(data.noChangesFiles.length > 0 && "\n  <h3 color=\"#999\">Files with same debt :</h3>\n  ".concat(createTable(data.noChangesFiles), "\n"), "\n\n").concat(data.lessDeptFiles.length > 0 && "\n  <h3 color=\"green\">Files with less debt </h3>\n  ".concat(createTable(data.noChangesFiles), "\n"), "\n\n").concat(data.moreDeptFiles.length > 0 && "\n  <h3 color=\"red\">Files with more debt </h3>\n  ".concat(createTable(data.noChangesFiles), "\n"), "\n</br>\n\n<h4>Previous debt : ").concat(data.totalScores.rev.toString(), "<h4>\n<h4>Current debt : ").concat(data.totalScores.cur.toString(), "<h4>\n<h2 color=\"").concat(data.resultColor(data.totalScores.solde), "\">\n  ").concat(data.totalScores.solde.toString(), "\n<h2>\n\n<p>To get a file by file report, please run debt-collector check --changed-since=\"[REVISION]\"</p>\n");
+};
+
+exports.default = compareHtmlReport;
+},{}],"../components/Reporter.tsx":[function(require,module,exports) {
 "use strict";
 
 var __assign = this && this.__assign || function () {
@@ -1360,6 +1378,38 @@ var __assign = this && this.__assign || function () {
   };
 
   return __assign.apply(this, arguments);
+};
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function () {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+
+  __setModuleDefault(result, mod);
+
+  return result;
 };
 
 var __read = this && this.__read || function (o, n) {
@@ -1408,11 +1458,18 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ResultsCompare = exports.ResultsNoMatchRule = exports.ResultsFileOnly = exports.Results = void 0;
 
-var react_1 = __importDefault(require("react"));
+var react_1 = __importStar(require("react"));
 
 var ink_table_1 = __importDefault(require("ink-table"));
 
 var ink_1 = require("ink");
+
+var compareHtmlReport_1 = __importDefault(require("../lib/compareHtmlReport"));
+
+var fs_1 = __importDefault(require("fs"));
+
+var cachePath = "".concat(process.cwd(), "/node_modules/.cache/debt-collector");
+var resultPath = "".concat(cachePath, "/report.html");
 
 var splitStringIfTooLong = function (str, max) {
   if (str.length < max) return str;
@@ -1604,7 +1661,8 @@ var ResultsNoMatchRule = function (_a) {
 exports.ResultsNoMatchRule = ResultsNoMatchRule;
 
 var ResultsCompare = function (_a) {
-  var results = _a.results;
+  var results = _a.results,
+      outputHtml = _a.outputHtml;
   var tableResults = Object.keys(results).map(function (fileName) {
     var result = results[fileName];
     return {
@@ -1657,6 +1715,31 @@ var ResultsCompare = function (_a) {
     return 'grey';
   };
 
+  (0, react_1.useEffect)(function () {
+    console.log('no outputHtml');
+
+    if (outputHtml) {
+      console.log('outputHtml');
+      setTimeout(function () {
+        var html = (0, compareHtmlReport_1.default)({
+          noChangesFiles: noChangesFiles,
+          moreDeptFiles: moreDeptFiles,
+          lessDeptFiles: lessDeptFiles,
+          resultColor: resultColor,
+          totalScores: totalScores
+        });
+        console.log(html);
+        console.log('process.cwd()');
+        console.log(process.cwd());
+        fs_1.default.mkdir(cachePath, {
+          recursive: true
+        }, function (err) {
+          if (err) throw err;
+          fs_1.default.writeFileSync(resultPath, html);
+        });
+      }, 1000);
+    }
+  }, []);
   return react_1.default.createElement(react_1.default.Fragment, null, react_1.default.createElement(ink_1.Box, {
     marginTop: 1
   }), noChangesFiles.length > 0 && react_1.default.createElement(ink_1.Box, {
@@ -1711,7 +1794,7 @@ var ResultsCompare = function (_a) {
 };
 
 exports.ResultsCompare = ResultsCompare;
-},{}],"../lib/utils.ts":[function(require,module,exports) {
+},{"../lib/compareHtmlReport":"../lib/compareHtmlReport.ts"}],"../lib/utils.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -2620,35 +2703,37 @@ var Compare = function (_a) {
       _e = _a.config,
       config = _e === void 0 ? null : _e,
       _f = _a.collectFrom,
-      collectFrom = _f === void 0 ? null : _f;
-
-  var _g = __read((0, react_1.useState)(null), 2),
-      results = _g[0],
-      setResults = _g[1];
+      collectFrom = _f === void 0 ? null : _f,
+      _g = _a.outputHtml,
+      outputHtml = _g === void 0 ? false : _g;
 
   var _h = __read((0, react_1.useState)(null), 2),
-      fileList = _h[0],
-      setFileList = _h[1];
+      results = _h[0],
+      setResults = _h[1];
 
-  var _j = __read((0, react_1.useState)(0), 2),
-      checkedFileCount = _j[0],
-      setCheckedFileCount = _j[1];
+  var _j = __read((0, react_1.useState)(null), 2),
+      fileList = _j[0],
+      setFileList = _j[1];
 
-  var _k = __read((0, react_1.useState)(null), 2),
-      revisionResults = _k[0],
-      setRevisionResults = _k[1];
+  var _k = __read((0, react_1.useState)(0), 2),
+      checkedFileCount = _k[0],
+      setCheckedFileCount = _k[1];
 
-  var _l = __read((0, react_1.useState)(0), 2),
-      checkedRevisionFileCount = _l[0],
-      setRevisionCheckedFileCount = _l[1];
+  var _l = __read((0, react_1.useState)(null), 2),
+      revisionResults = _l[0],
+      setRevisionResults = _l[1];
 
-  var _m = __read((0, react_1.useState)(null), 2),
-      finalResult = _m[0],
-      setFinalResult = _m[1];
+  var _m = __read((0, react_1.useState)(0), 2),
+      checkedRevisionFileCount = _m[0],
+      setRevisionCheckedFileCount = _m[1];
 
-  var _o = (0, useValidatedConfig_1.default)(config),
-      isConfigValidated = _o.isConfigValidated,
-      updatedConfig = _o.updatedConfig;
+  var _o = __read((0, react_1.useState)(null), 2),
+      finalResult = _o[0],
+      setFinalResult = _o[1];
+
+  var _p = (0, useValidatedConfig_1.default)(config),
+      isConfigValidated = _p.isConfigValidated,
+      updatedConfig = _p.updatedConfig;
 
   (0, react_1.useEffect)(function () {
     (function () {
@@ -2716,20 +2801,37 @@ var Compare = function (_a) {
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(void 0, void 0, void 0, function () {
-        var increment, result;
+        var e_1, increment, result;
         return __generator(this, function (_a) {
           switch (_a.label) {
             case 0:
               if (!(results !== null)) return [3
               /*break*/
-              , 3];
+              , 6];
+              _a.label = 1;
+
+            case 1:
+              _a.trys.push([1, 3,, 4]);
+
               return [4
               /*yield*/
               , checkoutTo(revision)];
 
-            case 1:
+            case 2:
               _a.sent();
 
+              return [3
+              /*break*/
+              , 4];
+
+            case 3:
+              e_1 = _a.sent();
+              console.log(e_1);
+              return [3
+              /*break*/
+              , 4];
+
+            case 4:
               increment = function () {
                 return setRevisionCheckedFileCount(function (prevCount) {
                   return prevCount += 1;
@@ -2740,12 +2842,13 @@ var Compare = function (_a) {
               /*yield*/
               , (0, checkFileList_1.default)(fileList, updatedConfig, rule, tags, increment)];
 
-            case 2:
+            case 5:
               result = _a.sent();
+              console.log(result);
               setRevisionResults(result);
-              _a.label = 3;
+              _a.label = 6;
 
-            case 3:
+            case 6:
               return [2
               /*return*/
               ];
@@ -2757,20 +2860,37 @@ var Compare = function (_a) {
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(void 0, void 0, void 0, function () {
-        var finalResults;
+        var e_2, finalResults;
         return __generator(this, function (_a) {
           switch (_a.label) {
             case 0:
               if (!(revisionResults !== null)) return [3
               /*break*/
-              , 2];
+              , 5];
+              _a.label = 1;
+
+            case 1:
+              _a.trys.push([1, 3,, 4]);
+
               return [4
               /*yield*/
               , checkoutBackToCurrent()];
 
-            case 1:
+            case 2:
               _a.sent();
 
+              return [3
+              /*break*/
+              , 4];
+
+            case 3:
+              e_2 = _a.sent();
+              console.log(err);
+              return [3
+              /*break*/
+              , 4];
+
+            case 4:
               finalResults = Object.assign.apply(Object, __spreadArray([{}], __read(fileList.map(function (fileName) {
                 var _a;
 
@@ -2796,9 +2916,9 @@ var Compare = function (_a) {
                 }, _a;
               })), false));
               setFinalResult(finalResults);
-              _a.label = 2;
+              _a.label = 5;
 
-            case 2:
+            case 5:
               return [2
               /*return*/
               ];
@@ -2826,7 +2946,8 @@ var Compare = function (_a) {
   })), isConfigValidated === false && react_1.default.createElement(ink_1.Text, {
     color: "red"
   }, "Error during config"), finalResult !== null && react_1.default.createElement(Reporter_1.ResultsCompare, {
-    results: finalResult
+    results: finalResult,
+    outputHtml: outputHtml
   }));
 };
 
@@ -2835,7 +2956,8 @@ Compare.propTypes = {
   collectFrom: prop_types_1.default.string,
   rule: prop_types_1.default.string,
   tags: prop_types_1.default.array,
-  config: prop_types_1.default.string
+  config: prop_types_1.default.string,
+  htmlReport: prop_types_1.default.bool
 };
 Compare.shortFlags = {
   rule: 'r',

@@ -1,8 +1,12 @@
 
-import React from 'react'
+import React, {useEffect} from 'react'
 import Table from 'ink-table'
 import { Text, Box } from 'ink';
-import BigText from 'ink-big-text';
+import compareHtmlReport from '../lib/compareHtmlReport'
+import fs from 'fs'
+
+const cachePath = `${process.cwd()}/node_modules/.cache/debt-collector`
+const resultPath = `${cachePath}/report.html`
 
 const splitStringIfTooLong = (str, max) => {
   if (str.length < max) return str  
@@ -128,7 +132,7 @@ export const ResultsNoMatchRule = ({results, initialConfig}) => {
 	)
 }
 
-export const ResultsCompare = ({results}) => {
+export const ResultsCompare = ({results, outputHtml}) => {
   const tableResults = Object.keys(results).map((fileName) => {
     const result = results[fileName]
     return {
@@ -180,6 +184,33 @@ export const ResultsCompare = ({results}) => {
     if (nb < 0) return 'green'
     return 'grey'
   }
+
+  useEffect(() => {
+    console.log('no outputHtml');
+    if (outputHtml) {
+      console.log('outputHtml');
+      
+      setTimeout(() => {
+        const html = compareHtmlReport({
+          noChangesFiles,
+          moreDeptFiles,
+          lessDeptFiles,
+          resultColor,
+          totalScores,
+        })
+
+        console.log(html);
+        console.log('process.cwd()';
+        console.log(process.cwd();
+        
+
+        fs.mkdir(cachePath, { recursive: true }, (err) => {
+          if (err) throw err;
+          fs.writeFileSync(resultPath, html)
+        })
+      }, 1000)
+    }
+  }, [])
   
   return (
 		<>

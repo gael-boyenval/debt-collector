@@ -3,7 +3,7 @@ import { spawn } from 'child_process'
 import template from './template';
 
 const cachePath = `${process.cwd()}/node_modules/.cache/debt-collector`
-const resultPath = `${cachePath}/result.html`
+const resultPath = `${cachePath}/report.html`
 
 const buildWalkReport = (defaultConfig, tags, results) => {
   setTimeout(() => {

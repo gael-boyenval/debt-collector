@@ -8,7 +8,6 @@ import { ResultsCompare } from '../../components/Reporter'
 import useValidatedConfig from '../../lib/useValidatedConfig';
 import simpleGit from 'simple-git'
 
-
 let currentRev
 let hasStashed = false
 
@@ -49,6 +48,7 @@ const Compare = ({
   tags = null,
   config = null,
  	collectFrom = null,
+	outputHtml = false
 }) => {
 	const [results, setResults] = useState(null)
 	const [fileList, setFileList] = useState(null)
@@ -85,9 +85,15 @@ const Compare = ({
   useEffect(() => {
 		(async() => {
 			if (results !== null) {
-				await checkoutTo(revision)
+				try {
+					await checkoutTo(revision)
+				} catch (e) {
+					console.log(e);
+				}
         const increment = () => setRevisionCheckedFileCount(prevCount => prevCount += 1)	
 				const result = await checkFileList(fileList, updatedConfig, rule, tags, increment)
+				console.log(result);
+				
 				setRevisionResults(result)
 			}
 		})()
@@ -96,7 +102,11 @@ const Compare = ({
   useEffect(() => {
 		(async() => {
 			if (revisionResults !== null) {
-        await checkoutBackToCurrent()
+				try {
+					await checkoutBackToCurrent()
+				} catch(e) {
+					console.log(err);
+				}
         
         const finalResults = Object.assign({}, ...fileList.map(fileName => {
           const currentScore = results.find(({file}) => file === fileName).totalScore
@@ -147,7 +157,7 @@ const Compare = ({
 				<Text color="red">Error during config</Text>
 			)}
 
-      { finalResult !== null && <ResultsCompare results={finalResult} />}
+      { finalResult !== null && <ResultsCompare results={finalResult} outputHtml={outputHtml} />}
 		</>
 	)
 };
@@ -158,6 +168,7 @@ Compare.propTypes = {
 	rule: PropTypes.string, 
   tags: PropTypes.array,
   config: PropTypes.string,
+	htmlReport: PropTypes.bool
 };
 
 Compare.shortFlags = {

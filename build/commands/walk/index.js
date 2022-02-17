@@ -1944,7 +1944,7 @@ var child_process_1 = require("child_process");
 var template_1 = __importDefault(require("./template"));
 
 var cachePath = "".concat(process.cwd(), "/node_modules/.cache/debt-collector");
-var resultPath = "".concat(cachePath, "/result.html");
+var resultPath = "".concat(cachePath, "/report.html");
 
 var buildWalkReport = function (defaultConfig, tags, results) {
   setTimeout(function () {
