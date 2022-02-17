@@ -150,7 +150,7 @@ export const ResultsCompare = ({results, outputHtml}) => {
     return {
       rev: revScore,
       cur: currentScore,
-      solde: revScore - currentScore,
+      solde: currentScore - revScore,
     }
   }, {
     rev: 0,
