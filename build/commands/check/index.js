@@ -1359,7 +1359,7 @@ var createTable = function (data) {
 };
 
 var compareHtmlReport = function (data) {
-  return "\n## Debt collector report:\n\n".concat(data.noChangesFiles.length > 0 && "\n<h3 color=\"#999\">Files with same debt :</h3>\n\n".concat(createTable(data.noChangesFiles), "\n"), "\n\n").concat(data.lessDeptFiles.length > 0 && "\n<h3 color=\"green\">Files with less debt </h3>\n\n".concat(createTable(data.lessDeptFiles), "\n"), "\n\n").concat(data.moreDeptFiles.length > 0 && "\n<h3 color=\"red\">Files with more debt </h3>\n\n".concat(createTable(data.moreDeptFiles), "\n"), "\n</br>\n\n#### Previous debt : ").concat(data.totalScores.rev.toString(), "\n#### Current debt : ").concat(data.totalScores.cur.toString(), "\n\n<h2 color=\"").concat(data.resultColor(data.totalScores.solde), "\">\n  ").concat(data.totalScores.solde.toString(), "\n</h2>\n\n<p>To get a file by file report, please run debt-collector check --changed-since=\"[REVISION]\"</p>\n");
+  return "\n## Debt collector report:\n\n".concat(data.noChangesFiles.length > 0 ? "\n<h3 color=\"#999\">Files with same debt :</h3>\n\n".concat(createTable(data.noChangesFiles), "\n") : null, "\n\n").concat(data.lessDeptFiles.length > 0 ? "\n<h3 color=\"green\">Files with less debt </h3>\n\n".concat(createTable(data.lessDeptFiles), "\n") : null, "\n\n").concat(data.moreDeptFiles.length > 0 ? "\n<h3 color=\"red\">Files with more debt </h3>\n\n".concat(createTable(data.moreDeptFiles), "\n") : null, "\n</br>\n\n##### Previous debt : ").concat(data.totalScores.rev.toString(), "\n##### Current debt : ").concat(data.totalScores.cur.toString(), "\n\n<h2 color=\"").concat(data.resultColor(data.totalScores.solde), "\">\n  Debt ").concat(data.totalScores.solde > 0 ? 'increased' : 'decreased', " by ").concat(data.totalScores.solde.toString(), " Points\n</h2>\n\n<p>To get a file by file report, please run debt-collector check --changed-since=\"[REVISION]\"</p>\n");
 };
 
 exports.default = compareHtmlReport;
@@ -1680,7 +1680,7 @@ var ResultsCompare = function (_a) {
     return {
       rev: revScore,
       cur: currentScore,
-      solde: revScore - currentScore
+      solde: currentScore - revScore
     };
   }, {
     rev: 0,

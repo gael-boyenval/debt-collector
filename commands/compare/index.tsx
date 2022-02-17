@@ -110,8 +110,8 @@ const Compare = ({
           const currentScore = results.find(({file}) => file === fileName).totalScore
           const revisionScore = revisionResults.find(({file}) => file === fileName).totalScore
 
-          const tendency = revisionScore - currentScore
-          
+          const tendency = currentScore - revisionScore
+
           return {
             [fileName] : {
               'rev': revisionResults.find(({file}) => file === fileName).totalScore,
