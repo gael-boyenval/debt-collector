@@ -1353,13 +1353,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var createTable = function (data) {
-  return "\n<table>\n  <thead>\n    <tr>\n      <th>File</th>\n      <th>Prev</th>\n      <th>Current</th>\n      <th>trend</th>\n    </tr>\n  </thead>\n  <tbody>\n    ".concat(data.map(function (file) {
-    return "\n      <tr>\n        <td>".concat(file.file, "</td>\n        <td>").concat(file.rev, "</td>\n        <td>").concat(file.current, "</td>\n        <td>").concat(file.trend, "</td>\n      </tr>\n    ");
-  }).join(' '), "\n  </tbody>\n</table>\n");
+  return "\n|File|Prev|Current|trend|\n|--|--|--|--|\n".concat(data.map(function (file) {
+    return "|".concat(file.file, "|").concat(file.rev, "|").concat(file.current, "|").concat(file.trend, "|");
+  }).join('\n'), "\n");
 };
 
 var compareHtmlReport = function (data) {
-  return "\n<h2> Debt collector report </h2>\n\n".concat(data.noChangesFiles.length > 0 && "\n  <h3 color=\"#999\">Files with same debt :</h3>\n  ".concat(createTable(data.noChangesFiles), "\n"), "\n\n").concat(data.lessDeptFiles.length > 0 && "\n  <h3 color=\"green\">Files with less debt </h3>\n  ".concat(createTable(data.noChangesFiles), "\n"), "\n\n").concat(data.moreDeptFiles.length > 0 && "\n  <h3 color=\"red\">Files with more debt </h3>\n  ".concat(createTable(data.noChangesFiles), "\n"), "\n</br>\n\n<h4>Previous debt : ").concat(data.totalScores.rev.toString(), "<h4>\n<h4>Current debt : ").concat(data.totalScores.cur.toString(), "<h4>\n<h2 color=\"").concat(data.resultColor(data.totalScores.solde), "\">\n  ").concat(data.totalScores.solde.toString(), "\n<h2>\n\n<p>To get a file by file report, please run debt-collector check --changed-since=\"[REVISION]\"</p>\n");
+  return "\n## Debt collector report:\n\n".concat(data.noChangesFiles.length > 0 && "\n<h3 color=\"#999\">Files with same debt :</h3>\n\n".concat(createTable(data.noChangesFiles), "\n"), "\n\n").concat(data.lessDeptFiles.length > 0 && "\n<h3 color=\"green\">Files with less debt </h3>\n\n".concat(createTable(data.noChangesFiles), "\n"), "\n\n").concat(data.moreDeptFiles.length > 0 && "\n<h3 color=\"red\">Files with more debt </h3>\n\n".concat(createTable(data.noChangesFiles), "\n"), "\n</br>\n\n#### Previous debt : ").concat(data.totalScores.rev.toString(), "\n#### Current debt : ").concat(data.totalScores.cur.toString(), "\n\n<h2 color=\"").concat(data.resultColor(data.totalScores.solde), "\">\n  ").concat(data.totalScores.solde.toString(), "\n</h2>\n\n<p>To get a file by file report, please run debt-collector check --changed-since=\"[REVISION]\"</p>\n");
 };
 
 exports.default = compareHtmlReport;
@@ -1716,10 +1716,7 @@ var ResultsCompare = function (_a) {
   };
 
   (0, react_1.useEffect)(function () {
-    console.log('no outputHtml');
-
     if (outputHtml) {
-      console.log('outputHtml');
       setTimeout(function () {
         var html = (0, compareHtmlReport_1.default)({
           noChangesFiles: noChangesFiles,
@@ -1728,9 +1725,6 @@ var ResultsCompare = function (_a) {
           resultColor: resultColor,
           totalScores: totalScores
         });
-        console.log(html);
-        console.log('process.cwd()');
-        console.log(process.cwd());
         fs_1.default.mkdir(cachePath, {
           recursive: true
         }, function (err) {

@@ -186,10 +186,7 @@ export const ResultsCompare = ({results, outputHtml}) => {
   }
 
   useEffect(() => {
-    console.log('no outputHtml');
-    if (outputHtml) {
-      console.log('outputHtml');
-      
+    if (outputHtml) {      
       setTimeout(() => {
         const html = compareHtmlReport({
           noChangesFiles,
@@ -198,11 +195,6 @@ export const ResultsCompare = ({results, outputHtml}) => {
           resultColor,
           totalScores,
         })
-
-        console.log(html);
-        console.log('process.cwd()';
-        console.log(process.cwd();
-        
 
         fs.mkdir(cachePath, { recursive: true }, (err) => {
           if (err) throw err;
