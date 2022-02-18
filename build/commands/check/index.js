@@ -1021,7 +1021,7 @@ var getfileRulesErrors_1 = __importDefault(require("./getfileRulesErrors"));
 
 var getEslintRulesErrors_1 = __importDefault(require("./getEslintRulesErrors"));
 
-var fs = require("fs");
+var fs = require('fs');
 
 var updateResults = function (config, fileErrors, fileResults, ruleName) {
   var updatedFileResults = __assign({}, fileResults);
@@ -1069,14 +1069,14 @@ var runFileChecks = function (config, file, eslint) {
           }
 
           fileRulesResults = (0, getfileRulesErrors_1.default)(config, file, data);
-          fileResults = updateResults(config, fileRulesResults, fileResults, "fileRules");
+          fileResults = updateResults(config, fileRulesResults, fileResults, 'fileRules');
           return [4
           /*yield*/
           , (0, getEslintRulesErrors_1.default)(config, file, data, eslint)];
 
         case 1:
           eslintResults = _a.sent();
-          fileResults = updateResults(config, eslintResults, fileResults, "eslintRules");
+          fileResults = updateResults(config, eslintResults, fileResults, 'eslintRules');
           return [2
           /*return*/
           , fileResults];
@@ -1464,9 +1464,9 @@ var ink_table_1 = __importDefault(require("ink-table"));
 
 var ink_1 = require("ink");
 
-var compareHtmlReport_1 = __importDefault(require("../lib/compareHtmlReport"));
-
 var fs_1 = __importDefault(require("fs"));
+
+var compareHtmlReport_1 = __importDefault(require("../lib/compareHtmlReport"));
 
 var cachePath = "".concat(process.cwd(), "/node_modules/.cache/debt-collector");
 var resultPath = "".concat(cachePath, "/report.html");
@@ -1518,7 +1518,7 @@ var formatResults = function (results) {
   };
 };
 
-var Results = function (_a) {
+function Results(_a) {
   var results = _a.results,
       limitTop = _a.limitTop;
 
@@ -1550,19 +1550,19 @@ var Results = function (_a) {
     }), react_1.default.createElement(ink_1.Text, {
       bold: true,
       color: "red"
-    }, "Total Debt Score : ", result.totalScore));
+    }, "Total Debt Score :", result.totalScore));
   }), react_1.default.createElement(ink_1.Box, {
     marginTop: 1
   }, react_1.default.createElement(ink_1.Text, {
     bold: true,
     backgroundColor: "#880000",
     color: "white"
-  }, " Debt Score : ", totalDeptScore, " / Impacted files : ", formatedResult.length)));
-};
+  }, ' ', "Debt Score :", totalDeptScore, ' ', "/ Impacted files :", formatedResult.length)));
+}
 
 exports.Results = Results;
 
-var ResultsFileOnly = function (_a) {
+function ResultsFileOnly(_a) {
   var results = _a.results,
       limitTop = _a.limitTop;
 
@@ -1597,8 +1597,8 @@ var ResultsFileOnly = function (_a) {
     bold: true,
     backgroundColor: "#880000",
     color: "white"
-  }, " Debt Score : ", totalDeptScore, " / Impacted files : ", formatedResult.length, " ")));
-};
+  }, ' ', "Debt Score :", totalDeptScore, ' ', "/ Impacted files :", formatedResult.length)));
+}
 
 exports.ResultsFileOnly = ResultsFileOnly;
 
@@ -1637,7 +1637,7 @@ var filterNoMatch = function (results, initialConfig) {
   };
 };
 
-var ResultsNoMatchRule = function (_a) {
+function ResultsNoMatchRule(_a) {
   var results = _a.results,
       initialConfig = _a.initialConfig;
 
@@ -1655,12 +1655,12 @@ var ResultsNoMatchRule = function (_a) {
     bold: true,
     backgroundColor: "#880000",
     color: "white"
-  }, "Nb of rules with no match : ", notMatchRules.length, " / ", rulesCount)));
-};
+  }, "Nb of rules with no match :", ' ', notMatchRules.length, ' ', "/", rulesCount)));
+}
 
 exports.ResultsNoMatchRule = ResultsNoMatchRule;
 
-var ResultsCompare = function (_a) {
+function ResultsCompare(_a) {
   var results = _a.results,
       outputHtml = _a.outputHtml;
   var tableResults = Object.keys(results).map(function (fileName) {
@@ -1784,8 +1784,8 @@ var ResultsCompare = function (_a) {
     bold: true,
     color: resultColor(totalScores.solde),
     dimmed: true
-  }, "DIFF : ", totalScores.solde.toString()))));
-};
+  }, "DIFF :", ' ', totalScores.solde.toString()))));
+}
 
 exports.ResultsCompare = ResultsCompare;
 },{"../lib/compareHtmlReport":"../lib/compareHtmlReport.ts"}],"../lib/utils.ts":[function(require,module,exports) {
@@ -2012,13 +2012,13 @@ Object.defineProperty(exports, "__esModule", {
 var path_1 = __importDefault(require("path"));
 
 var defaultFileRuleConfig = {
-  matchGlob: "**/*",
+  matchGlob: '**/*',
   matchRule: function () {
     return 1;
   }
 };
 var defaultEslintRuleConfig = {
-  matchGlob: "**/*"
+  matchGlob: '**/*'
 };
 
 var validateConfig = function (configPath) {
@@ -2100,7 +2100,7 @@ var validateConfig = function (configPath) {
                 isConfigValid: false,
                 verifiedConfig: {},
                 eslintConfig: null,
-                configErrors: ["Impossible to load the eslint config file"]
+                configErrors: ['Impossible to load the eslint config file']
               }];
             }
           }
@@ -2584,7 +2584,9 @@ var Reporter_1 = require("../../components/Reporter");
 
 var useValidatedConfig_1 = __importDefault(require("../../lib/useValidatedConfig"));
 
-var All = function (_a) {
+function All(_a) {
+  var _this = this;
+
   var _b = _a.rule,
       rule = _b === void 0 ? null : _b,
       _c = _a.tags,
@@ -2622,7 +2624,7 @@ var All = function (_a) {
   });
   (0, react_1.useEffect)(function () {
     (function () {
-      return __awaiter(void 0, void 0, void 0, function () {
+      return __awaiter(_this, void 0, void 0, function () {
         var result;
         return __generator(this, function (_a) {
           switch (_a.label) {
@@ -2650,7 +2652,7 @@ var All = function (_a) {
   }, [isConfigValidated]);
   (0, react_1.useEffect)(function () {
     (function () {
-      return __awaiter(void 0, void 0, void 0, function () {
+      return __awaiter(_this, void 0, void 0, function () {
         var increment, results_1;
         return __generator(this, function (_a) {
           switch (_a.label) {
@@ -2683,7 +2685,7 @@ var All = function (_a) {
       });
     })();
   }, [fileList]);
-  var collectingFrom = "Collecting debt from ".concat(changedSince ? "files changed since ".concat(changedSince) : collectFrom ? collectFrom : 'all files');
+  var collectingFrom = "Collecting debt from ".concat(changedSince ? "files changed since ".concat(changedSince) : collectFrom || 'all files');
   var hasFilters = cleanTags.length || rule;
   var tagFilters = cleanTags.length > 0 && " [tags : ".concat(cleanTags, "]");
   var and = cleanTags.length > 0 && rule ? ' &' : '';
@@ -2725,8 +2727,8 @@ var All = function (_a) {
     color: "grey"
   }, withFilters), react_1.default.createElement(ink_1.Text, {
     color: "grey"
-  }, "Reporting : ", reportFormat, " ", limitTop && "\u2022 top ".concat(limitTop, " biggest score"))));
-};
+  }, "Reporting :", reportFormat, ' ', limitTop && "\u2022 top ".concat(limitTop, " biggest score"))));
+}
 
 All.propTypes = {
   limitTop: prop_types_1.default.number,

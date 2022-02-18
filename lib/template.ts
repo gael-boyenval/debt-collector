@@ -254,4 +254,4 @@ ReactDOM.render(<App/>, document.getElementById('app'));
 </script>
 </body>
 </html>
-`
+`;

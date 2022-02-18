@@ -1,8 +1,8 @@
-import { getRulesForFile } from './filterRules'
-import getfileRulesErrors from './getfileRulesErrors'
-import getEslintRulesErrors from './getEslintRulesErrors'
+import { getRulesForFile } from './filterRules';
+import getfileRulesErrors from './getfileRulesErrors';
+import getEslintRulesErrors from './getEslintRulesErrors';
 
-const fs = require("fs");
+const fs = require('fs');
 
 const updateResults = (config, fileErrors, fileResults, ruleName) => {
   const updatedFileResults = {
@@ -33,13 +33,13 @@ const runFileChecks = async (config, file, eslint) => {
   if (config.eslintRules.length === 0 && config.fileRules.length === 0) {
     return fileResults;
   }
-  
-  let data
+
+  let data;
 
   try {
-    data = fs.readFileSync(file).toString()
+    data = fs.readFileSync(file).toString();
   } catch (error) {
-    data = ''
+    data = '';
   }
 
   const fileRulesResults = getfileRulesErrors(config, file, data);
@@ -47,7 +47,7 @@ const runFileChecks = async (config, file, eslint) => {
     config,
     fileRulesResults,
     fileResults,
-    "fileRules"
+    'fileRules',
   );
 
   const eslintResults = await getEslintRulesErrors(config, file, data, eslint);
@@ -56,12 +56,12 @@ const runFileChecks = async (config, file, eslint) => {
     config,
     eslintResults,
     fileResults,
-    "eslintRules"
+    'eslintRules',
   );
 
   return fileResults;
 };
- 
+
 const getFileResult = async (config, file, incrementCounter, eslint) => {
   const rulesForFile = getRulesForFile(config, file);
   const fileResult = await runFileChecks(
@@ -70,12 +70,12 @@ const getFileResult = async (config, file, incrementCounter, eslint) => {
       ...rulesForFile,
     },
     file,
-    eslint
+    eslint,
   );
 
-  incrementCounter()
+  incrementCounter();
 
-  return fileResult
-}
- 
-export default getFileResult
+  return fileResult;
+};
+
+export default getFileResult;

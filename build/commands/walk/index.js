@@ -1021,7 +1021,7 @@ var getfileRulesErrors_1 = __importDefault(require("./getfileRulesErrors"));
 
 var getEslintRulesErrors_1 = __importDefault(require("./getEslintRulesErrors"));
 
-var fs = require("fs");
+var fs = require('fs');
 
 var updateResults = function (config, fileErrors, fileResults, ruleName) {
   var updatedFileResults = __assign({}, fileResults);
@@ -1069,14 +1069,14 @@ var runFileChecks = function (config, file, eslint) {
           }
 
           fileRulesResults = (0, getfileRulesErrors_1.default)(config, file, data);
-          fileResults = updateResults(config, fileRulesResults, fileResults, "fileRules");
+          fileResults = updateResults(config, fileRulesResults, fileResults, 'fileRules');
           return [4
           /*yield*/
           , (0, getEslintRulesErrors_1.default)(config, file, data, eslint)];
 
         case 1:
           eslintResults = _a.sent();
-          fileResults = updateResults(config, eslintResults, fileResults, "eslintRules");
+          fileResults = updateResults(config, eslintResults, fileResults, 'eslintRules');
           return [2
           /*return*/
           , fileResults];
@@ -1569,13 +1569,13 @@ Object.defineProperty(exports, "__esModule", {
 var path_1 = __importDefault(require("path"));
 
 var defaultFileRuleConfig = {
-  matchGlob: "**/*",
+  matchGlob: '**/*',
   matchRule: function () {
     return 1;
   }
 };
 var defaultEslintRuleConfig = {
-  matchGlob: "**/*"
+  matchGlob: '**/*'
 };
 
 var validateConfig = function (configPath) {
@@ -1657,7 +1657,7 @@ var validateConfig = function (configPath) {
                 isConfigValid: false,
                 verifiedConfig: {},
                 eslintConfig: null,
-                configErrors: ["Impossible to load the eslint config file"]
+                configErrors: ['Impossible to load the eslint config file']
               }];
             }
           }
@@ -2285,6 +2285,12 @@ var prop_types_1 = __importDefault(require("prop-types"));
 
 var ink_task_list_1 = require("ink-task-list");
 
+var simple_git_1 = __importDefault(require("simple-git"));
+
+var fs_1 = __importDefault(require("fs"));
+
+var path_1 = __importDefault(require("path"));
+
 var getFilesList_1 = __importDefault(require("../../lib/getFilesList"));
 
 var checkFileList_1 = __importDefault(require("../../lib/checkFileList"));
@@ -2294,12 +2300,6 @@ var useValidatedConfig_1 = __importDefault(require("../../lib/useValidatedConfig
 var buildWalkReport_1 = __importDefault(require("../../lib/buildWalkReport"));
 
 var getTagListFromConfig_1 = __importDefault(require("../../lib/getTagListFromConfig"));
-
-var simple_git_1 = __importDefault(require("simple-git"));
-
-var fs_1 = __importDefault(require("fs"));
-
-var path_1 = __importDefault(require("path"));
 
 var gitOptions = {
   baseDir: process.cwd(),
@@ -2368,7 +2368,9 @@ var formatCommitTotal = function (config, results) {
   return configRules;
 };
 
-var Compare = function (_a) {
+function Compare(_a) {
+  var _this = this;
+
   var _b = _a.revlength,
       revlength = _b === void 0 ? 10 : _b,
       config = _a.config,
@@ -2402,7 +2404,7 @@ var Compare = function (_a) {
 
   (0, react_1.useEffect)(function () {
     (function () {
-      return __awaiter(void 0, void 0, void 0, function () {
+      return __awaiter(_this, void 0, void 0, function () {
         var commitsList, previousResults, _loop_1, _a, _b, _c, index, commit, e_1_1;
 
         var e_1, _d;
@@ -2560,7 +2562,7 @@ var Compare = function (_a) {
   }, [isConfigValidated]);
   (0, react_1.useEffect)(function () {
     (function () {
-      return __awaiter(void 0, void 0, void 0, function () {
+      return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
           if (isReady) {
             (0, buildWalkReport_1.default)(defaultConfig, tags, results);
@@ -2581,7 +2583,7 @@ var Compare = function (_a) {
     state: !isReady ? 'pending' : 'loading',
     label: "Building a report"
   }));
-};
+}
 
 Compare.propTypes = {
   revlength: prop_types_1.default.number,
