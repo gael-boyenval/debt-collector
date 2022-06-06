@@ -5,76 +5,6 @@
 			"positionalArgs": [],
 			"args": [
 				{
-					"key": "revlength",
-					"type": "number",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"n"
-					],
-					"positional": false
-				},
-				{
-					"key": "config",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"c"
-					],
-					"positional": false
-				},
-				{
-					"key": "include",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"f"
-					],
-					"positional": false
-				}
-			],
-			"isIndex": false,
-			"name": "walkDryRun",
-			"path": "walkDryRun/index.tsx",
-			"subCommands": []
-		},
-		{
-			"description": "",
-			"positionalArgs": [],
-			"args": [
-				{
-					"key": "config",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"c"
-					],
-					"positional": false
-				},
-				{
-					"key": "include",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"f"
-					],
-					"positional": false
-				}
-			],
-			"isIndex": false,
-			"name": "walk",
-			"path": "walk/index.tsx",
-			"subCommands": []
-		},
-		{
-			"description": "",
-			"positionalArgs": [],
-			"args": [
-				{
 					"key": "limitTop",
 					"type": "number",
 					"description": "",
@@ -212,6 +142,76 @@
 			"isIndex": false,
 			"name": "compare",
 			"path": "compare/index.tsx",
+			"subCommands": []
+		},
+		{
+			"description": "",
+			"positionalArgs": [],
+			"args": [
+				{
+					"key": "config",
+					"type": "string",
+					"description": "",
+					"isRequired": false,
+					"aliases": [
+						"c"
+					],
+					"positional": false
+				},
+				{
+					"key": "include",
+					"type": "string",
+					"description": "",
+					"isRequired": false,
+					"aliases": [
+						"f"
+					],
+					"positional": false
+				}
+			],
+			"isIndex": false,
+			"name": "walk",
+			"path": "walk/index.tsx",
+			"subCommands": []
+		},
+		{
+			"description": "",
+			"positionalArgs": [],
+			"args": [
+				{
+					"key": "revlength",
+					"type": "number",
+					"description": "",
+					"isRequired": false,
+					"aliases": [
+						"n"
+					],
+					"positional": false
+				},
+				{
+					"key": "config",
+					"type": "string",
+					"description": "",
+					"isRequired": false,
+					"aliases": [
+						"c"
+					],
+					"positional": false
+				},
+				{
+					"key": "include",
+					"type": "string",
+					"description": "",
+					"isRequired": false,
+					"aliases": [
+						"f"
+					],
+					"positional": false
+				}
+			],
+			"isIndex": false,
+			"name": "walkDryRun",
+			"path": "walkDryRun/index.tsx",
 			"subCommands": []
 		}
 	]

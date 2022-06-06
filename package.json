@@ -9,7 +9,6 @@
   "scripts": {
     "dev": "pastel dev",
     "build": "pastel build",
-    "prepare": "pastel build",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx ./commands ./components ./lib"
   },
   "files": [
