@@ -1,136 +1,75 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Text } from 'ink';
 import { TaskList, Task } from 'ink-task-list';
-import simpleGit from 'simple-git';
-import fs from 'fs';
-import path from 'path';
-import getFilesList from '../../lib/getFilesList';
-import checkFileList from '../../lib/checkFileList';
-import useValidatedConfig from '../../lib/useValidatedConfig';
-import buildWalkReport from '../../lib/buildWalkReport';
-import getTagListFromConfig from '../../lib/getTagListFromConfig';
 
-const gitOptions = {
-  baseDir: process.cwd(),
-  binary: 'git',
-  maxConcurrentProcesses: 6,
-};
+import { useValidatedConfig } from '../../lib/config';
+import buildWalkReport from '../../lib/reporters/buildWalkReport';
+import getTagListFromConfig from '../../lib/config/getTagListFromConfig';
+import { useGitUtils, WalkIteratorResult } from '../../lib/git';
 
-const git = simpleGit(gitOptions);
-let currentBranch;
+import { getCommitResult, formatWalkResults, WalkLoopResult } from './getCommitResult';
 
-const getCommitList = async (nth: number): Promise<string[]> => {
-  currentBranch = await git.revparse(['--abbrev-ref', 'HEAD']);
-  const list = await git.tag(['-l', 'v*.0.0', '--sort', 'v:refname', '--format', '%(refname:strip=2)']);
+import type { RevisionResults } from '../../lib/types'
 
-  const listArray = list.split(/\r?\n/)
-    .reverse()
-    .filter((tag) => tag !== '')
-    .slice(0, nth)
-    .reverse();
-
-  return listArray;
-};
-
-const formatCommitTotal = (config, results) => {
-  const configRules = [
-    ...config.fileRules.map((rule) => rule.id),
-    ...config.eslintRules.map((rule) => rule.id),
-  ].reduce(
-    (acc, id) => ({
-      ...acc,
-      [id]: {
-        score: 0,
-        occurences: 0,
-      },
-    }),
-    {},
-  );
-
-  Object.keys(results).forEach((file) => {
-    const currentFile = results[file];
-    if (currentFile.rules.length > 0) {
-      currentFile.rules.forEach(({ id, debtScore, occurences }) => {
-        configRules[id].score = configRules[id].score + debtScore * occurences;
-        configRules[id].occurences = configRules[id].occurences + occurences;
-      });
-    }
-  });
-
-  return configRules;
-};
-
-function Compare({
-  revlength = 10,
+function Walk({
   config,
-  collectFrom = null,
+  include = null,
 }) {
   const [results, setResults] = useState({});
   const [currentCommit, setCurrentCommit] = useState({ commit: '', index: 0 });
   const [isReady, setIsReady] = useState(false);
   const [tags, setTags] = useState({});
+  const [isFinished, setIsFinished] = useState(false);
 
   const {
-    isConfigValidated,
-    updatedConfig,
-    configErrors,
-    defaultConfig,
-  } = useValidatedConfig(config);
+    isConfigValid,
+    sanitizedConfig,
+    userConfig,
+  } = useValidatedConfig(config);  
+  
+  const { isGitReady, walkCommits, checkoutTo, currentBranch, revList } = useGitUtils(sanitizedConfig);
+
+  const revlength = isConfigValid && sanitizedConfig?.walkConfig?.limit ? sanitizedConfig.walkConfig.limit : '?'
 
   useEffect(() => {
     (async () => {
-      if (isConfigValidated) {
-        setTags(getTagListFromConfig(defaultConfig));
-
-        const commitsList = await getCommitList(revlength);
-        let previousResults;
-
-        for (const [index, commit] of commitsList.entries()) {
-          setCurrentCommit({ commit, index: index + 1 });
-          await git.checkout([commit]);
-          const since = index === 0 ? null : commitsList[index - 1];
-          const fileList = await getFilesList(updatedConfig, since, collectFrom);
-				  const results = await checkFileList(fileList, updatedConfig, null, null, () => null);
-
-          let mergedResults = results.reduce((acc, res) => {
-            acc[res.file] = res;
-            return acc;
-          }, {});
-
-          if (previousResults) {
-            mergedResults = {
-              ...previousResults,
-              ...mergedResults,
-            };
-
-            mergedResults = Object.keys(mergedResults).reduce((acc, file) => {
-              const fileStillExist = fs.existsSync(path.resolve(process.cwd(), `./${file}`));
-
-              if (fileStillExist) {
-                acc[file] = mergedResults[file];
-              }
-
-              return acc;
-            }, {});
-          }
-
-          previousResults = mergedResults;
-
-          const resultsByRules = formatCommitTotal(defaultConfig, mergedResults);
-          setResults((prevRes) => ({ ...prevRes, [commit]: resultsByRules }));
-        }
-
-        await git.checkout([currentBranch]);
+      if (isConfigValid && isGitReady) {
+        setTags(getTagListFromConfig(sanitizedConfig));
+        
+        
+        const walkResults = await walkCommits<RevisionResults, WalkLoopResult>(revList.reverse(), {
+          onCommitChange: async ({ rev, index, previousResult }) => {
+            setCurrentCommit({ commit: rev.name, index: index + 1 })
+            
+            const result = await getCommitResult(
+              previousResult?.results,
+              previousResult?.rev?.hash,
+              sanitizedConfig,
+              include
+            );
+            
+            return result
+          },
+          onError: (error) => {
+            console.log(error);
+          },
+          onEnd: async (results: WalkIteratorResult<WalkLoopResult>[]): Promise<RevisionResults[]> => {
+            const result = formatWalkResults(sanitizedConfig, results);
+            await checkoutTo(currentBranch);
+            return result;
+          },
+        });
+        setResults(walkResults);
         setIsReady(true);
       }
     })();
-  }, [isConfigValidated]);
+  }, [isConfigValid, isGitReady]);
 
   useEffect(() => {
     (async () => {
       if (isReady) {
-        buildWalkReport(defaultConfig, tags, results);
+        buildWalkReport(userConfig, tags, results);
+        setIsFinished(true);
       }
     })();
   }, [isReady]);
@@ -138,28 +77,31 @@ function Compare({
   return (
     <TaskList>
       <Task
+          state={isConfigValid === null ? 'loading' : isConfigValid ? 'success' : 'error'}
+          label="validating configuration"
+          status={isConfigValid === null ? 'checking configuration' : isConfigValid ? 'success' : 'error'}
+        />
+      <Task
         state={!isReady ? 'loading' : 'success'}
         label={`checking the last ${revlength} commits`}
         status={`checking commit ${currentCommit.index}/${revlength} : ${currentCommit.commit}`}
       />
       <Task
-        state={!isReady ? 'pending' : 'loading'}
+        state={!isReady && !isFinished ? 'pending' : isReady && !isFinished ? 'loading': 'success'}
         label="Building a report"
       />
     </TaskList>
   );
 }
 
-Compare.propTypes = {
-  revlength: PropTypes.number,
+Walk.propTypes = {
   config: PropTypes.string,
-  collectFrom: PropTypes.string,
+  include: PropTypes.string,
 };
 
-Compare.shortFlags = {
-  revlength: 'n',
+Walk.shortFlags = {
   config: 'c',
-  collectFrom: 'f',
+  include: 'f',
 };
 
-export default Compare;
+export default Walk;

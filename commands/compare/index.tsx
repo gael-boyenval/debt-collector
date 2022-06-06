@@ -2,82 +2,51 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Text } from 'ink';
 import { TaskList, Task } from 'ink-task-list';
-import simpleGit from 'simple-git';
-import getFilesList from '../../lib/getFilesList';
-import checkFileList from '../../lib/checkFileList';
-import { ResultsCompare } from '../../components/Reporter';
-import useValidatedConfig from '../../lib/useValidatedConfig';
-
-let currentRev;
-let hasStashed = false;
-
-const gitOptions = {
-  baseDir: process.cwd(),
-  binary: 'git',
-  maxConcurrentProcesses: 6,
-};
-
-const git = simpleGit(gitOptions);
-
-const checkoutTo = async (revision) => {
-  currentRev = await git.revparse(['--short', 'HEAD']);
-  const status = await git.status();
-
-  const changes = status.files.length;
-
-  if (changes > 0) {
-    hasStashed = true;
-    await git.stash();
-  }
-
-  await git.checkout([revision]);
-};
-
-const checkoutBackToCurrent = async () => {
-  await git.checkout([currentRev]);
-
-  if (hasStashed) {
-    await git.stash(['pop']);
-    hasStashed = false;
-  }
-};
+import getFilesList from '../../lib/filters/getFilesList';
+import checkFileList from '../../lib/results/checkFileList';
+import { ResultsCompare } from '../../components/ResultReporter';
+import useValidatedConfig from '../../lib/config/useValidatedConfig';
+import { useGitUtils } from '../../lib/git';
+import { FileResults } from '../../lib/types';
 
 function Compare({
   revision = null,
   rule = null,
   tags = null,
   config = null,
- 	collectFrom = null,
-  outputHtml = false,
+ 	include = null,
+  htmlReport = false,
 }) {
-  const [results, setResults] = useState(null);
+  const [results, setResults] = useState<FileResults[]|null>(null);
   const [fileList, setFileList] = useState(null);
   const [checkedFileCount, setCheckedFileCount] = useState(0);
-  const [revisionResults, setRevisionResults] = useState(null);
+  const [revisionResults, setRevisionResults] = useState<FileResults[]|null>(null);
   const [checkedRevisionFileCount, setRevisionCheckedFileCount] = useState(0);
 
   const [finalResult, setFinalResult] = useState(null);
 
   const {
-    isConfigValidated,
-    updatedConfig,
+    isConfigValid,
+    sanitizedConfig,
   } = useValidatedConfig(config);
+
+  const { isGitReady, checkoutTo, currentBranch }  = useGitUtils(sanitizedConfig);
 
   useEffect(() => {
     (async () => {
-      if (isConfigValidated) {
-        const result = await getFilesList(updatedConfig, revision, collectFrom);
-        setFileList(result);
+      if (isConfigValid && isGitReady) {
+        const fileList = await getFilesList(sanitizedConfig, revision, include);
+        setFileList(fileList);
       }
     })();
-  }, [isConfigValidated]);
+  }, [isConfigValid, isGitReady]);
 
   useEffect(() => {
     (async () => {
       if (fileList !== null) {
-        const increment = () => setCheckedFileCount((prevCount) => prevCount += 1);
-        const result = await checkFileList(fileList, updatedConfig, rule, tags, increment);
-        setResults(result);
+        const incrementFn = () => setCheckedFileCount((prevCount) => prevCount += 1);
+        const checkResult = await checkFileList(fileList, sanitizedConfig, rule, tags, incrementFn);
+        setResults(checkResult);
       }
     })();
   }, [fileList]);
@@ -90,8 +59,8 @@ function Compare({
         } catch (e) {
           console.log(e);
         }
-        const increment = () => setRevisionCheckedFileCount((prevCount) => prevCount += 1);
-        const result = await checkFileList(fileList, updatedConfig, rule, tags, increment);
+        const incrementFn = () => setRevisionCheckedFileCount((prevCount) => prevCount += 1);
+        const result = await checkFileList(fileList, sanitizedConfig, rule, tags, incrementFn);
         setRevisionResults(result);
       }
     })();
@@ -101,21 +70,21 @@ function Compare({
     (async () => {
       if (revisionResults !== null) {
         try {
-          await checkoutBackToCurrent();
+          await checkoutTo(currentBranch);
         } catch (e) {
           console.log(err);
         }
 
         const finalResults = Object.assign({}, ...fileList.map((fileName) => {
-          const currentScore = results.find(({ file }) => file === fileName).totalScore;
-          const revisionScore = revisionResults.find(({ file }) => file === fileName).totalScore;
+          const currentScore = results.find(({ filePath }) => filePath === fileName).totalScore;
+          const revisionScore = revisionResults.find(({ filePath }) => filePath === fileName).totalScore;
 
           const tendency = currentScore - revisionScore;
 
           return {
             [fileName]: {
-              rev: revisionResults.find(({ file }) => file === fileName).totalScore,
-              current: results.find(({ file }) => file === fileName).totalScore,
+              rev: revisionResults.find(({ filePath }) => filePath === fileName).totalScore,
+              current: results.find(({ filePath }) => filePath === fileName).totalScore,
               tendency,
             },
           };
@@ -130,9 +99,9 @@ function Compare({
     <>
       <TaskList>
         <Task
-          state={isConfigValidated === null ? 'loading' : isConfigValidated ? 'success' : 'error'}
+          state={isConfigValid === null ? 'loading' : isConfigValid ? 'success' : 'error'}
           label="validating configuration"
-          status={isConfigValidated === null ? 'checking configuration' : isConfigValidated ? 'success' : 'error'}
+          status={isConfigValid === null ? 'checking configuration' : isConfigValid ? 'success' : 'error'}
         />
         <Task
           state={fileList === null ? 'loading' : 'success'}
@@ -151,18 +120,18 @@ function Compare({
         />
       </TaskList>
 
-      {isConfigValidated === false && (
+      {isConfigValid === false && (
       <Text color="red">Error during config</Text>
       )}
 
-      { finalResult !== null && <ResultsCompare results={finalResult} outputHtml={outputHtml} />}
+      { finalResult !== null && <ResultsCompare results={finalResult} outputHtml={htmlReport} />}
     </>
   );
 }
 
 Compare.propTypes = {
   revision: PropTypes.string.isRequired,
- 	collectFrom: PropTypes.string,
+ 	include: PropTypes.string,
   rule: PropTypes.string,
   tags: PropTypes.array,
   config: PropTypes.string,
@@ -172,7 +141,7 @@ Compare.propTypes = {
 Compare.shortFlags = {
   rule: 'r',
   tags: 't',
- 	collectFrom: 'g',
+ 	include: 'g',
   config: 'c',
 };
 

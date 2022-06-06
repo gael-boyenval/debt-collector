@@ -2,61 +2,56 @@ import React, { useEffect } from 'react';
 import Table from 'ink-table';
 import { Text, Box } from 'ink';
 import fs from 'fs';
-import compareHtmlReport from '../lib/compareHtmlReport';
+
+import compareHtmlReport from '../lib/reporters/compareMarkdownReport';
+import { truncateString } from '../lib/utils';
+import { CheckResults, FileResults } from '../lib/types';
 
 const cachePath = `${process.cwd()}/node_modules/.cache/debt-collector`;
 const resultPath = `${cachePath}/report.html`;
 
-const splitStringIfTooLong = (str, max) => {
-  if (str.length < max) return str;
-  const charArr = str.split('');
-  const strStart = [...charArr].filter((_char, i) => i >= 0 && i < max / 2);
-  const strEnd = [...charArr].filter((_char, i) => i > (str.length - max / 2) && i < str.length);
-  return [...strStart, '....', ...strEnd].join('');
-};
-
-const formatResults = (results) => {
-  const filteredResults = results.filter((result) => result.totalScore > 0);
-  const formatedResult = filteredResults.map(({ file, rules, totalScore }) => ({
-    file: splitStringIfTooLong(file, 80),
-    totalScore,
-    rules: rules.map(({ title, occurences, debtScore }) => ({
-      error: title,
-      nb: occurences,
-      score: debtScore * occurences,
-    })),
-  }));
-
+const formatResults = (results: FileResults[], limitTop: number ) => {
+  let formatedResult = results.filter((result) => result.totalScore > 0);
+  const impactedFilesNumber = formatedResult.length
   const totalDeptScore = formatedResult.reduce((acc, res) => acc + res.totalScore, 0);
 
-  return {
-    formatedResult,
-    totalDeptScore,
-  };
-};
-
-export function Results({ results, limitTop }) {
-  const {
-    formatedResult,
-    totalDeptScore,
-  } = formatResults(results);
-
-  let displayResults = formatedResult;
-
   if (limitTop) {
-    displayResults = formatedResult
+    formatedResult = formatedResult
       .sort((a, b) => b.totalScore - a.totalScore)
       .filter((_item, index) => index < limitTop);
   }
 
+  return {
+    formatedResult,
+    totalDeptScore,
+    impactedFilesNumber,
+  };
+};
+
+interface ResultsProps {
+  results: CheckResults
+  limitTop: number 
+}
+export const Results = ({ results, limitTop }: ResultsProps )=> {
+  const {
+    formatedResult,
+    totalDeptScore,
+    impactedFilesNumber
+  } = formatResults(results.results, limitTop);
+
   return (
     <>
-      {displayResults.length > 0 && displayResults.map((result) => (
-        <Box key={result.file} flexDirection="column" marginTop={1}>
-          <Text bold color="red" underline>{result.file}</Text>
-          <Table data={result.rules} />
+      {formatedResult.length > 0 && formatedResult.map((result) => (
+        <Box key={result.fileShortPath} flexDirection="column" marginTop={1}>
+          <Text bold color="red" underline>{result.fileShortPath}</Text>
+          <Table data={result.brokenRules.map(
+            ({ruleTitle, occurences, ruleTotalSore}) => ({
+              title: ruleTitle,
+              nb: occurences,
+              score: ruleTotalSore
+            }))}/>
           <Text bold color="red">
-            Total Debt Score :
+            Total Debt Score:{' '}
             {result.totalScore}
           </Text>
         </Box>
@@ -64,11 +59,11 @@ export function Results({ results, limitTop }) {
       <Box marginTop={1}>
         <Text bold backgroundColor="#880000" color="white">
           {' '}
-          Debt Score :
+          Debt Score:{' '}
           {totalDeptScore}
           {' '}
-          / Impacted files :
-          {formatedResult.length}
+          / Impacted files:{' '}
+          {impactedFilesNumber}
         </Text>
       </Box>
     </>
@@ -79,7 +74,9 @@ export function ResultsFileOnly({ results, limitTop }) {
   const {
     formatedResult,
     totalDeptScore,
-  } = formatResults(results);
+    impactedFilesNumber
+  } = formatResults(results.results, limitTop);
+
 
   let displayResults = formatedResult;
 
@@ -93,23 +90,23 @@ export function ResultsFileOnly({ results, limitTop }) {
     <>
       <Box marginTop={1} />
       {formatedResult.length > 0 && (
-      <Table data={displayResults.map(({ file, totalScore }) => ({ file, score: totalScore }))} />
+      <Table data={displayResults.map(({ fileShortPath, totalScore }) => ({ file: fileShortPath, score: totalScore }))} />
       )}
       <Box marginTop={1}>
         <Text bold backgroundColor="#880000" color="white">
           {' '}
-          Debt Score :
+          Debt Score:{' '}
           {totalDeptScore}
           {' '}
-          / Impacted files :
-          {formatedResult.length}
+          / Impacted files:{' '}
+          {impactedFilesNumber}
         </Text>
       </Box>
     </>
   );
 }
 
-const filterNoMatch = (results, initialConfig) => {
+const filterNoMatch = (results, initialConfig: Config) => {
   const allRules = [
     ...initialConfig.fileRules.map(({ id, title }) => ({ id, title })),
     ...initialConfig.eslintRules.map(({ id, title }) => ({ id, title })),
@@ -154,7 +151,7 @@ export function ResultsCompare({ results, outputHtml }) {
   const tableResults = Object.keys(results).map((fileName) => {
     const result = results[fileName];
     return {
-      file: splitStringIfTooLong(fileName, 60),
+      file: truncateString(fileName, 60),
       rev: result.rev,
       current: result.current,
       trend: result.tendency,

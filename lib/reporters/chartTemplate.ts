@@ -1,4 +1,4 @@
-export default (data) => `
+export default (data: Result) => `
 
 <!DOCTYPE html>
 <html>
@@ -20,13 +20,14 @@ export default (data) => `
 <script type="text/babel">
 
 const result = ${data}
-const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts
+const { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts
 
-const parseDataBy = (key) => Object.keys(result.results).map((commit) => {
-  const rulesScores = Object.keys(result.results[commit]).map(rule => ({
-    [rule]: result.results[commit][rule][key]
+const parseDataBy = (key) => result.results.map((commit) => {
+
+  const rulesScores = commit.brokenRules.map(rule => ({
+    [rule.ruleId]: rule[key]
   })).reduce((acc, res) => ({...acc, ...res}), {})
-  
+
   return {
     commit,
     ...rulesScores
@@ -47,7 +48,7 @@ function shadeColor(color, percent) {
     let colChan = parseInt(chan, 16);
     colChan = parseInt(colChan * (100 + percent) / 100);
     colChan = colChan < 255 ? colChan : 255;
-    colChan = colChan.toString(16).length === 1 
+    colChan = colChan.toString(16).length === 1
       ? "0" + colChan.toString(16)
       : colChan.toString(16);
     return colChan
@@ -61,7 +62,7 @@ function shadeColor(color, percent) {
 }
 
 const colors = Array(100).fill('').map(() =>  shadeColor(getRandomColor(), -20))
-const newData = parseDataBy('score')
+const newData = parseDataBy('ruleTotalSore')
 
 const baseButtonStyles = {
   padding: 4,
@@ -69,7 +70,7 @@ const baseButtonStyles = {
   marginBottom: 6,
   marginRight: 6,
   border: 'none',
-  outline: 'none', 
+  outline: 'none',
   fontWeight: 'bold',
 }
 
@@ -81,10 +82,11 @@ const rulesActives = rules.reduce((acc, rule) => {
 
  const App = () => {
    const [data, setData] = React.useState(newData)
-   const [valueType, setValueType] = React.useState('score')
+   const [valueType, setValueType] = React.useState('ruleTotalSore')
    const [activeRules, setActiveRules] = React.useState(rulesActives)
    const [tagFilter, setTagFilter] = React.useState(null)
-   
+   const [chartType, setChartType] = React.useState('area')
+
    const toggleRule = (id) => {
     setTagFilter(null)
     setActiveRules(prev => ({
@@ -118,17 +120,15 @@ const rulesActives = rules.reduce((acc, rule) => {
      }
    }
 
-   const renderTooltip = ({label, payload}) => {
-    if (!payload.length) { return null}
-   
+   const renderTooltip = ({payload}) => {
+    if (!payload || !payload.length) { return null }
      return <div style={{ backgroundColor: 'white', padding: 15, borderRadius: 10, boxShadow: '0 0 10px rgba(0,0,0,0.2)' }}>
-        <h2 style={{ margin: 0, marginBottom: 5}}>{label}</h2>
-        <h3 style={{ margin: 0, marginBottom: 15}}>Total {valueType} : { 
-        payload.reduce((acc, cur) => {
-          acc += Number(cur.value)
-          return acc
-        }, 0)
-        } </h3>
+      <h4 style={{ margin: 0, marginBottom: 5}}>{payload[0].payload.commit.date}</h4>
+      <h4 style={{ margin: 0, marginBottom: 15}}>
+        Total : {payload.reduce((totalScore, {value}) => totalScore + value, 0)}
+      </h4>
+      <p style={{ margin: 0, marginBottom: 5}}>{payload[0].payload.commit.name}</p>
+      <br/>
         {payload.reverse().map(item => (
           <div key={item.dataKey} style={{ display: 'flex', justifyContent:'center', fontSize: 12, marginBottom: 4}}>
             <span style={{ backgroundColor: item.color, display: 'inline-block', width: 15, height: 15, borderRadius: 3, marginRight: 7}}></span>
@@ -153,10 +153,33 @@ const rulesActives = rules.reduce((acc, rule) => {
       }, {}))
     }
   }, [tagFilter])
-   
+
    return (
      <div style={{display: 'flex', overflow: 'hidden', width: '100vw', height:'100vh', position:'fixed'}}>
       <div style={{width: '80vw', height:'100vh'}}>
+        <div style={{height:40, paddingLeft: 40}}>
+          <button
+              onClick={() => setChartType('area')}
+              style={{
+                ...baseButtonStyles,
+                backgroundColor: chartType === 'area' ? 'green' : '#F5F5F5',
+                color: chartType === 'area' ? 'white' : 'grey'
+              }}
+            >
+              AREA CHART
+            </button>
+            <button
+              onClick={() => setChartType('line')}
+              style={{
+                ...baseButtonStyles,
+                backgroundColor: chartType === 'line' ? 'green' : '#F5F5F5',
+                color: chartType === 'line' ? 'white' : 'grey'
+              }}
+            >
+              LINE CHART
+            </button>
+        </div>
+        {chartType === 'area' &&
         <ResponsiveContainer width="100%" height="90%">
           <AreaChart
             width={500}
@@ -173,11 +196,11 @@ const rulesActives = rules.reduce((acc, rule) => {
             <XAxis dataKey="commit" />
             <YAxis />
             <Tooltip
-              content={renderTooltip} 
+              content={renderTooltip}
               itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}
               labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}
             />
-            {Object.keys(activeRules).map((rule, index) => activeRules[rule] && 
+            {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&
               <Area
                 type="monotone"
                 dataKey={rule}
@@ -187,11 +210,46 @@ const rulesActives = rules.reduce((acc, rule) => {
             )}
           </AreaChart>
         </ResponsiveContainer>
+        }
+        {chartType === 'line' &&
+        <ResponsiveContainer width="100%" height="90%">
+          <LineChart
+            width={500}
+            height={400}
+            data={data}
+            margin={{
+              top: 10,
+              right: 30,
+              left: 0,
+              bottom: 0,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="commit" />
+            <YAxis />
+            <Tooltip
+              content={renderTooltip}
+              itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}
+              labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}
+            />
+            {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&
+              <Line
+                type="monotone"
+                dataKey={rule}
+                stackId="1"
+                stroke={colors[Object.keys(activeRules).indexOf(rule)]}
+                fill={colors[Object.keys(activeRules).indexOf(rule)]} />
+            )}
+          </LineChart>
+        </ResponsiveContainer>
+        }
         </div>
+
+
         <div style={{width: '20vw', minWidth: 400, height:'100vh', overflowY: 'auto', padding: 20}}>
           <h3>Rules</h3>
-          {Object.keys(activeRules).map(rule => 
-            <button 
+          {Object.keys(activeRules).map(rule =>
+            <button
               key={rule}
               onClick={() => toggleRule(rule)}
               style={{
@@ -208,8 +266,8 @@ const rulesActives = rules.reduce((acc, rule) => {
           </div>
           <hr />
           <h3>Tags</h3>
-          {Object.keys(result.tags).map(tag => 
-            <button 
+          {Object.keys(result.tags).map(tag =>
+            <button
               key={tag}
               onClick={() => toggleTag(tag)}
               style={{
@@ -224,17 +282,17 @@ const rulesActives = rules.reduce((acc, rule) => {
           )}
           <hr />
           <h3>Display values</h3>
-          <button 
-            onClick={() => switchDataBy('score')}
+          <button
+            onClick={() => switchDataBy('ruleTotalSore')}
             style={{
               ...baseButtonStyles,
               display: 'inline-block',
-              backgroundColor: valueType === 'score' ? 'green' : '#F5F5F5',
-              color: valueType === 'score' ? 'white' : 'grey'
+              backgroundColor: valueType === 'ruleTotalSore' ? 'green' : '#F5F5F5',
+              color: valueType === 'ruleTotalSore' ? 'white' : 'grey'
             }}>
               BY SCORE
           </button>
-          <button 
+          <button
             onClick={() => switchDataBy('occurences')}
             style={{
               ...baseButtonStyles,
@@ -254,4 +312,4 @@ ReactDOM.render(<App/>, document.getElementById('app'));
 </script>
 </body>
 </html>
-`;
+`
