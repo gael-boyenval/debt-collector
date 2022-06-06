@@ -17,12 +17,12 @@ Note that debt-collector is an alpha version and is not yet available trough the
 
 Debt collector has three commands : `check`, `compare` and `walk`. 
 
-DC works by checking every files matching a `collectFrom` glob pattern, provided by a configuration file.
+DC works by checking every files matching a `include` glob pattern, provided by a configuration file.
 Each file is then checked for each rule defined in `fileRules`, for example : 
 
 ```js
 {
-  collectFrom: '**/*.js',
+  include: '**/*.js',
   fileRules: [
     {
       title: 'Should remove all "foo" occurences',
@@ -170,7 +170,7 @@ By default DC will look for a configuration file in the current working director
 
 ```js
 {
-  collectFrom: './src/**/*', // glob pattern for the files to track,
+  include: './src/**/*', // glob pattern for the files to track,
   fileRules: [...], // an array of rules checking file content,
   eslintConfigPath: './path/to/myEslintConfig.js', // a path to an eslint config to check for eslint rules
   eslintRules: [...] // an array of rules checking for eslint output results
@@ -186,24 +186,24 @@ An array of objects containing the following keys :
 - `debtScore` [required]: a integer that will increment for each match
 - `description` [optional]: a string to give more detailed information about the rule
 - `tags` [optional]: an array of strings, usefull to filter or create rules groups
-- `matchGlob` [optional]: glob pattern : for applying the rule only if the file match the a glob pattern
+- `include` [optional]: glob pattern : for applying the rule only if the file match the a glob pattern
 - `matchRule` [optional]: a function returing the number of occurences found in the file
 
-To be valid, a fileRule should have at least a `matchGlob` or a `matchRule` or **both**.
+To be valid, a fileRule should have at least a `include` or a `matchRule` or **both**.
 
-### the matchGlob key
+### the include key
 
 Given the following config : 
 
 ```js
 {
-  collectFrom: './src/**/*',
+  include: './src/**/*',
   fileRules: [
     {
       title: 'should migrate javascript files to typescript',
       id: 'JS_TO_TS',
       debtScore: 5,
-      matchGlob: '**/*.{js,jsx}',
+      include: '**/*.{js,jsx}',
     }
   ],
 }
@@ -223,7 +223,7 @@ And the following config :
 
 ```js
 {
-  collectFrom: './src/**/*',
+  include: './src/**/*',
   fileRules: [
     {
       title: 'should migrate javascript files to typescript',
@@ -249,9 +249,9 @@ DC provide the `matchRule` function with an object of usefull things :
 
 The `matchRule` function should return an integer
 
-### using both matchRule and matchGlob
+### using both matchRule and include
 
-By using both matchRule and matchGlob, your score will only increment if the file match the glob **and** the rule. 
+By using both matchRule and include, your score will only increment if the file match the glob **and** the rule. 
 
 
 ## Configuring Eslint rules
@@ -274,7 +274,7 @@ You should provide the same keys for eslint rules than for fileRules, exept for 
 - `debtScore` [required]: a integer that will increment for each match
 - `description` [optional]: a string to give more detailed information about the rule
 - `tags` [optional]: an array of strings, usefull to filter or create rules groups
-- `matchGlob` [optional]: glob pattern or an array of glob patterns: for applying the rule only if the file match
+- `include` [optional]: glob pattern or an array of glob patterns: for applying the rule only if the file match
 - `matchESLintRule` [optional]: a function returing the number of occurences found in eslint output
 
 #### The matchESLintRule function : 

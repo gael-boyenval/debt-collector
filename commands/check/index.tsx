@@ -1,53 +1,56 @@
+/* eslint-disable react/require-default-props */
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Text, Box } from 'ink';
 import { TaskList, Task } from 'ink-task-list';
-import getFilesList from '../../lib/getFilesList';
-import checkFileList from '../../lib/checkFileList';
-import { Results, ResultsFileOnly, ResultsNoMatchRule } from '../../components/Reporter';
-import useValidatedConfig from '../../lib/useValidatedConfig';
+import getFilesList from '../../lib/filters/getFilesList';
+import checkFileList from '../../lib/results/checkFileList';
+import { Results, ResultsFileOnly, ResultsNoMatchRule } from '../../components/ResultReporter';
+import { useValidatedConfig } from '../../lib/config';
+import { cleanTagFilterParam } from '../../lib/utils';
+import { CheckResults } from '../../lib/types';
 
-function All({
+function Check({
   rule = null,
   tags = null,
   config = null,
- 	collectFrom = null,
+ 	include = null,
   reportFormat = 'standard',
   changedSince = null,
   limitTop = null,
 }) {
-  const [results, setResults] = useState(null);
-  const [fileList, setFileList] = useState(null);
-  const [checkedFileCount, setCheckedFileCount] = useState(0);
+  const [results, setResults] = useState<CheckResults|null>(null);
+  const [fileList, setFileList] = useState<string[]|null>(null);
+  const [checkedFileCount, setCheckedFileCount] = useState<number>(0);
 
   const {
-    isConfigValidated,
-    updatedConfig,
+    isConfigValid,
+    sanitizedConfig,
     configErrors,
   } = useValidatedConfig(config);
 
-  const cleanTags = tags?.filter((tag) => tag !== undefined);
+  const cleanTags = cleanTagFilterParam(tags);
 
   useEffect(() => {
     (async () => {
-      if (isConfigValidated) {
-        const result = await getFilesList(updatedConfig, changedSince, collectFrom);
+      if (isConfigValid) {
+        const result = await getFilesList(sanitizedConfig, changedSince, include);
         setFileList(result);
       }
     })();
-  }, [isConfigValidated]);
+  }, [isConfigValid]);
 
   useEffect(() => {
     (async () => {
-      if (fileList !== null) {
-        const increment = () => setCheckedFileCount((prevCount) => prevCount += 1);
-        const results = await checkFileList(fileList, updatedConfig, rule, tags, increment);
-        setResults(results);
+      if (fileList !== null) {        
+        const incrementFn = () => setCheckedFileCount((prevCount: number):number => prevCount + 1);
+        const results = await checkFileList(fileList, sanitizedConfig, rule, tags, incrementFn);
+        setResults({ results, config: sanitizedConfig });
       }
     })();
   }, [fileList]);
 
-  const collectingFrom = `Collecting debt from ${changedSince ? `files changed since ${changedSince}` : collectFrom || 'all files'}`;
+  const collectingFrom = `Collecting debt from ${changedSince ? `files changed since ${changedSince}` : include || 'all files'}`;
   const hasFilters = cleanTags.length || rule;
   const tagFilters = cleanTags.length > 0 && ` [tags : ${cleanTags}]`;
   const and = (cleanTags.length > 0 && rule) ? ' &' : '';
@@ -58,13 +61,13 @@ function All({
     <>
       <TaskList>
         <Task
-          state={isConfigValidated === null ? 'loading' : isConfigValidated ? 'success' : 'error'}
+          state={isConfigValid === null ? 'loading' : isConfigValid ? 'success' : 'error'}
           label="validating configuration"
-          status={isConfigValidated === null ? 'checking configuration' : isConfigValidated ? 'success' : 'error'}
+          status={isConfigValid === null ? 'checking configuration' : isConfigValid ? 'success' : 'error'}
         />
         <Task
           state={fileList === null ? 'loading' : 'success'}
-          label="defining file to check"
+          label="defining files to check"
           status={fileList === null ? null : `${fileList.length} files`}
         />
         <Task
@@ -74,13 +77,13 @@ function All({
         />
       </TaskList>
 
-      {isConfigValidated === false && configErrors?.length > 0 && (
-			  configErrors.map((error, i) => <Text key={i} color="red">{error}</Text>)
+      {isConfigValid === false && configErrors?.length > 0 && (
+			  configErrors.map((error: any, i: any) => <Text key={i} color="red">{error}</Text>)
       )}
 
       {results !== null && reportFormat === 'standard' && <Results results={results} limitTop={limitTop} />}
       {results !== null && reportFormat === 'filesOnly' && <ResultsFileOnly results={results} limitTop={limitTop} />}
-      {results !== null && reportFormat === 'noMatchRules' && <ResultsNoMatchRule results={results} initialConfig={updatedConfig} />}
+      {results !== null && reportFormat === 'noMatchRules' && <ResultsNoMatchRule results={results} initialConfig={sanitizedConfig} />}
 
       <Box marginTop={1} flexDirection="column" border>
         <Text color="grey">{collectingFrom}</Text>
@@ -98,23 +101,24 @@ function All({
   );
 }
 
-All.propTypes = {
+Check.propTypes = {
   limitTop: PropTypes.number,
- 	collectFrom: PropTypes.string,
+ 	include: PropTypes.string,
   rule: PropTypes.string,
+  // eslint-disable-next-line react/forbid-prop-types
   tags: PropTypes.array,
   config: PropTypes.string,
   changedSince: PropTypes.string,
   reportFormat: PropTypes.oneOf(['filesOnly', 'noMatchRules', 'standard']),
 };
 
-All.shortFlags = {
+Check.shortFlags = {
   rule: 'r',
   tags: 't',
- 	collectFrom: 'g',
+ 	include: 'g',
   config: 'c',
   reportFormat: 'f',
   changedSince: 's',
 };
 
-export default All;
+export default Check;

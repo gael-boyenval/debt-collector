@@ -1,15 +1,16 @@
 {
   "name": "debt-collector",
-  "version": "v1.1.6-alpha",
+  "version": "v2.0.0-alpha",
   "description": "a nodejs tool to identify, track and mesure technical debt",
   "bin": "./build/cli.js",
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "scripts": {
     "dev": "pastel dev",
     "build": "pastel build",
-    "prepare": "pastel build"
+    "prepare": "pastel build",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx ./commands ./components ./lib"
   },
   "files": [
     "build"
@@ -37,16 +38,21 @@
     "ink-task-list": "^1.1.0",
     "inquirer": "^8.2.0",
     "minimatch": "^3.0.4",
+    "p-map": "^5.4.0",
     "pastel": "^1.1.1",
     "prop-types": "^15.8.1",
     "react": "^17.0.2",
     "simple-git": "^3.0.3"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.12.0",
-    "@typescript-eslint/parser": "^5.0.0",
+    "@types/eslint": "^8.4.1",
+    "@types/node": "^17.0.21",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
     "eslint": "^7.32.0",
     "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-typescript": "^6.0.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": ">=2.25.3 <3.0.0",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.28.0",
