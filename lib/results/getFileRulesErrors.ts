@@ -4,8 +4,12 @@ import type { Config, BrokenRule } from '../types'
 const findJsImportFrom =
   (data) =>
   (importee?: string, from?: string): 0 | 1 => {
-    let regexp = new RegExp(
-      `import [A-z0-9,\\s{]*${importee}[A-z0-9,\\s}]* from '[A-z0-9.\/]*${from}[A-z0-9.\/]*'`,
+    const regexp = new RegExp(
+      `import [A-z0-9,\\s{]*${escapeStringRegexp(
+        importee
+      )}[A-z0-9,\\s}]* from '[A-z0-9.\/]*${escapeStringRegexp(
+        from
+      )}[A-z0-9.\/]*'`,
       'gm'
     )
     const res = data.matchAll(regexp)
@@ -54,7 +58,7 @@ const countAllOf =
   (data) =>
   (matches: (string | RegExp)[]): number => {
     let count = 0
-    let index = 0
+    const index = 0
 
     while (index <= matches.length - 1) {
       count += countAll(data)(matches[index])

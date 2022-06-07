@@ -1655,7 +1655,7 @@ var escape_string_regexp_node_1 = __importDefault(require("escape-string-regexp-
 
 var findJsImportFrom = function (data) {
   return function (importee, from) {
-    var regexp = new RegExp("import [A-z0-9,\\s{]*".concat(importee, "[A-z0-9,\\s}]* from '[A-z0-9./]*").concat(from, "[A-z0-9./]*'"), 'gm');
+    var regexp = new RegExp("import [A-z0-9,\\s{]*".concat((0, escape_string_regexp_node_1.default)(importee), "[A-z0-9,\\s}]* from '[A-z0-9./]*").concat((0, escape_string_regexp_node_1.default)(from), "[A-z0-9./]*'"), 'gm');
     var res = data.matchAll(regexp);
     var resArr = Array.from(res, function (m) {
       return m[0];
@@ -2827,7 +2827,7 @@ function ResultsCompare(_a) {
       trend: result.tendency
     };
   }).filter(function (file) {
-    return file.rev !== 0 && file.current !== 0;
+    return !(file.rev === 0 && file.current === 0);
   });
   var totalScores = tableResults.reduce(function (acc, res) {
     var revScore = res.rev + acc.rev;

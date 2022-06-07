@@ -156,7 +156,7 @@ export function ResultsCompare({ results, outputHtml }) {
       current: result.current,
       trend: result.tendency,
     };
-  }).filter((file) => file.rev !== 0 && file.current !== 0);
+  }).filter((file) => !(file.rev === 0 && file.current === 0));
 
   const totalScores = tableResults.reduce((acc, res) => {
     const revScore = res.rev + acc.rev;
