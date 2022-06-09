@@ -1,3 +1,5 @@
+/!\ Documentation is not up to date with v2-alpha... update comming soon
+
 # debt-collector
 A nodejs util to identify, track and mesure technical debt in a project
 
