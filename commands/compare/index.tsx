@@ -124,7 +124,7 @@ function Compare({
       <Text color="red">Error during config</Text>
       )}
 
-      { finalResult !== null && <ResultsCompare results={finalResult} outputHtml={htmlReport} />}
+      { finalResult !== null && <ResultsCompare results={finalResult} currentResults={results} outputHtml={htmlReport} />}
     </>
   );
 }

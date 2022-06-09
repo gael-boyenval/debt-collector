@@ -2486,10 +2486,7 @@ var countAllOf = function (data) {
 };
 
 var getFileRulesErrors = function (config, file, data) {
-  var directoryDepth = file.replace('./').split('/');
-  directoryDepth.splice(-1);
   var utils = {
-    directoryDepth: directoryDepth.length,
     content: data,
     file: file,
     countAll: countAll(data),

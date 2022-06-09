@@ -72,11 +72,7 @@ const getFileRulesErrors = (
   file: string,
   data: string
 ): BrokenRule[] => {
-  const directoryDepth = file.replace('./').split('/')
-  directoryDepth.splice(-1)
-
   const utils = {
-    directoryDepth: directoryDepth.length,
     content: data,
     file,
     countAll: countAll(data),

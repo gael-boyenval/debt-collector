@@ -1717,10 +1717,7 @@ var countAllOf = function (data) {
 };
 
 var getFileRulesErrors = function (config, file, data) {
-  var directoryDepth = file.replace('./').split('/');
-  directoryDepth.splice(-1);
   var utils = {
-    directoryDepth: directoryDepth.length,
     content: data,
     file: file,
     countAll: countAll(data),
@@ -2522,13 +2519,63 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var createTable = function (data) {
-  return "\n|File|Prev|Current|trend|\n|--|--|--|--|\n".concat(data.map(function (file) {
+  return "\n|File|Prev|Current|Trend|\n|--|--|--|--|\n".concat(data.map(function (file) {
     return "|".concat(file.file, "|").concat(file.rev, "|").concat(file.current, "|").concat(file.trend, "|");
   }).join('\n'), "\n");
 };
 
+var createFileTable = function (fileResult) {
+  return "\n<br/>\n<br/>\n<b>".concat(fileResult.fileShortPath, "</b><br/>\ntotal score : ").concat(fileResult.totalScore, "\n<br/>\n\n|Broken rule|score|\n|--|--|\n").concat(fileResult.brokenRules.map(function (rule) {
+    return "|\uD83D\uDEAB ".concat(rule.ruleTitle, "|").concat(rule.ruleTotalSore, "|");
+  }).join('\n'), "\n");
+};
+
+var getFileScoreComparaison = function (data) {
+  var result = '';
+
+  if (data.noChangesFiles.length > 0) {
+    result += "\n### \uD83D\uDCA4 Files with same debt :\n\n".concat(createTable(data.noChangesFiles), "\n\n");
+  }
+
+  if (data.lessDeptFiles.length > 0) {
+    result += "\n### \u2705 Files with less debt :\n\n".concat(createTable(data.lessDeptFiles), "\n\n");
+  }
+
+  if (data.moreDeptFiles.length > 0) {
+    result += "\n### \u274C Files with more debt :\n\n".concat(createTable(data.moreDeptFiles), "\n\n");
+  }
+
+  return result;
+};
+
+var getConclusions = function (data) {
+  if (data.totalScores.solde > 0) {
+    return "### \u274C Debt score increased by ".concat(data.totalScores.solde, "[^1]");
+  }
+
+  if (data.totalScores.solde < 0) {
+    return "### \u2705 Debt score decreased by ".concat(data.totalScores.solde, "[^1]");
+  }
+
+  return '### 💤 Debt score did not change[^1]';
+};
+
+var getMotivationSpeatch = function (data) {
+  if (data.totalScores.solde > 0) {
+    return "Maybe try something else \uD83D\uDE2D";
+  }
+
+  if (data.totalScores.solde < 0) {
+    return "You did great ! \uD83C\uDF89";
+  }
+
+  return '💤 Neither good or bad, I guess';
+};
+
 var compareMarkDownReport = function (data) {
-  return "\n## Debt collector report:\n\n".concat(data.noChangesFiles.length > 0 ? "\n<h3 color=\"#999\">Files with same debt :</h3>\n\n".concat(createTable(data.noChangesFiles), "\n") : null, "\n\n").concat(data.lessDeptFiles.length > 0 ? "\n<h3 color=\"green\">Files with less debt </h3>\n\n".concat(createTable(data.lessDeptFiles), "\n") : null, "\n\n").concat(data.moreDeptFiles.length > 0 ? "\n<h3 color=\"red\">Files with more debt </h3>\n\n".concat(createTable(data.moreDeptFiles), "\n") : null, "\n</br>\n\n##### Previous debt : ").concat(data.totalScores.rev.toString(), "\n##### Current debt : ").concat(data.totalScores.cur.toString(), "\n\n<h2 color=\"").concat(data.resultColor(data.totalScores.solde), "\">\n  Debt ").concat(data.totalScores.solde > 0 ? 'increased' : 'decreased', " by ").concat(data.totalScores.solde.toString(), " Points\n</h2>\n\n<p>To get a file by file report, please run debt-collector check --changed-since=\"[REVISION]\"</p>\n");
+  return "\n## Debt collector report:\n\n".concat(getConclusions(data), "\n").concat(getMotivationSpeatch(data), "\n\n|Previous debt|Current debt|trend|\n|--|--|--|\n|").concat(data.totalScores.rev.toString(), "|").concat(data.totalScores.cur.toString(), "|").concat(data.totalScores.solde.toString(), "|\n\n<details>\n<summary>\n  <h3>Modified files \u2022 see scores before and after</h3>\n</summary>\n<div>\n\n").concat(getFileScoreComparaison(data), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n\n<details>\n<summary>\n  <h3>Help us improve code quality! Here are some ideas for you:</h3>\n</summary>\n<div>\n\n").concat(data.currentResults.filter(function (res) {
+    return res.totalScore !== 0;
+  }).map(createFileTable).join('\n'), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n[^1]: Scores based on modified files only <br/>The report may not be accurate if your branch is not up to date with the base branch.\n");
 };
 
 exports.default = compareMarkDownReport;
@@ -2817,6 +2864,7 @@ exports.ResultsNoMatchRule = ResultsNoMatchRule;
 
 function ResultsCompare(_a) {
   var results = _a.results,
+      currentResults = _a.currentResults,
       outputHtml = _a.outputHtml;
   var tableResults = Object.keys(results).map(function (fileName) {
     var result = results[fileName];
@@ -2829,6 +2877,7 @@ function ResultsCompare(_a) {
   }).filter(function (file) {
     return !(file.rev === 0 && file.current === 0);
   });
+  console.log(currentResults);
   var totalScores = tableResults.reduce(function (acc, res) {
     var revScore = res.rev + acc.rev;
     var currentScore = res.current + acc.cur;
@@ -2874,6 +2923,7 @@ function ResultsCompare(_a) {
     if (outputHtml) {
       setTimeout(function () {
         var html = (0, compareMarkdownReport_1.default)({
+          currentResults: currentResults,
           noChangesFiles: noChangesFiles,
           moreDeptFiles: moreDeptFiles,
           lessDeptFiles: lessDeptFiles,

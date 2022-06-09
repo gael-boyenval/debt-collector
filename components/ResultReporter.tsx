@@ -147,7 +147,7 @@ export function ResultsNoMatchRule({ results, initialConfig }) {
   );
 }
 
-export function ResultsCompare({ results, outputHtml }) {
+export function ResultsCompare({ results, currentResults, outputHtml }) {
   const tableResults = Object.keys(results).map((fileName) => {
     const result = results[fileName];
     return {
@@ -157,6 +157,9 @@ export function ResultsCompare({ results, outputHtml }) {
       trend: result.tendency,
     };
   }).filter((file) => !(file.rev === 0 && file.current === 0));
+
+  console.log(currentResults);
+  
 
   const totalScores = tableResults.reduce((acc, res) => {
     const revScore = res.rev + acc.rev;
@@ -204,6 +207,7 @@ export function ResultsCompare({ results, outputHtml }) {
     if (outputHtml) {
       setTimeout(() => {
         const html = compareHtmlReport({
+          currentResults,
           noChangesFiles,
           moreDeptFiles,
           lessDeptFiles,
