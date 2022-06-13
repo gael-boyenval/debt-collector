@@ -53,13 +53,13 @@ ${createTable(data.moreDeptFiles)}
 
 const getConclusions = (data) => {
   if (data.totalScores.solde > 0) {
-    return `### ❌ Debt score increased by ${data.totalScores.solde}[^1]`
+    return `### ❌ Debt score for modified files increased by ${data.totalScores.solde} [^1]`
   }
   if (data.totalScores.solde < 0) {
-    return `### ✅ Debt score decreased by ${data.totalScores.solde}[^1]`
+    return `### ✅ Debt score for modified files decreased by ${data.totalScores.solde} [^1]`
   }
 
-  return '### 💤 Debt score did not change[^1]'
+  return '### 💤 Debt score for modified files did not change [^1]'
 }
 
 const getMotivationSpeatch = (data) => {

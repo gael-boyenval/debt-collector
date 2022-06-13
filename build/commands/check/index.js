@@ -2550,14 +2550,14 @@ var getFileScoreComparaison = function (data) {
 
 var getConclusions = function (data) {
   if (data.totalScores.solde > 0) {
-    return "### \u274C Debt score increased by ".concat(data.totalScores.solde, "[^1]");
+    return "### \u274C Debt score for modified files increased by ".concat(data.totalScores.solde, " [^1]");
   }
 
   if (data.totalScores.solde < 0) {
-    return "### \u2705 Debt score decreased by ".concat(data.totalScores.solde, "[^1]");
+    return "### \u2705 Debt score for modified files decreased by ".concat(data.totalScores.solde, " [^1]");
   }
 
-  return '### 💤 Debt score did not change[^1]';
+  return '### 💤 Debt score for modified files did not change [^1]';
 };
 
 var getMotivationSpeatch = function (data) {
