@@ -73,7 +73,19 @@ const getMotivationSpeatch = (data) => {
   return 'Neither good or bad, I guess 🤷🏽'
 }
 
-const compareMarkDownReport = (data) => `
+const hasNoDebtToCompare = ({ currentResults }) =>
+  currentResults.filter((res) => res.totalScore !== 0).length === 0
+
+const compareMarkDownReport = (data) =>
+  hasNoDebtToCompare
+    ? `
+## Debt collector report
+
+All changed files have a debt score of 0.
+
+Nothing to do here, we’re all good ! 🎉
+`
+    : `
 ## Debt collector report
 
 ${getConclusions(data)}

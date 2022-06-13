@@ -2572,8 +2572,15 @@ var getMotivationSpeatch = function (data) {
   return 'Neither good or bad, I guess 🤷🏽';
 };
 
+var hasNoDebtToCompare = function (_a) {
+  var currentResults = _a.currentResults;
+  return currentResults.filter(function (res) {
+    return res.totalScore !== 0;
+  }).length === 0;
+};
+
 var compareMarkDownReport = function (data) {
-  return "\n## Debt collector report\n\n".concat(getConclusions(data), "\n").concat(getMotivationSpeatch(data), "\n\n|Previous debt|Current debt|trend|\n|--|--|--|\n|").concat(data.totalScores.rev.toString(), "|").concat(data.totalScores.cur.toString(), "|").concat(data.totalScores.solde.toString(), "|\n\n<details>\n<summary>\n  <h3>Modified files \u2022 see scores before and after</h3>\n</summary>\n<div>\n\n").concat(getFileScoreComparaison(data), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n\n<details>\n<summary>\n  <h3>Help us improve code quality! Here are some ideas for you</h3>\n</summary>\n<div>\n\n").concat(data.currentResults.filter(function (res) {
+  return hasNoDebtToCompare ? "\n## Debt collector report\n\nAll changed files have a debt score of 0.\n\nNothing to do here, we\u2019re all good ! \uD83C\uDF89\n" : "\n## Debt collector report\n\n".concat(getConclusions(data), "\n").concat(getMotivationSpeatch(data), "\n\n|Previous debt|Current debt|trend|\n|--|--|--|\n|").concat(data.totalScores.rev.toString(), "|").concat(data.totalScores.cur.toString(), "|").concat(data.totalScores.solde.toString(), "|\n\n<details>\n<summary>\n  <h3>Modified files \u2022 see scores before and after</h3>\n</summary>\n<div>\n\n").concat(getFileScoreComparaison(data), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n\n<details>\n<summary>\n  <h3>Help us improve code quality! Here are some ideas for you</h3>\n</summary>\n<div>\n\n").concat(data.currentResults.filter(function (res) {
     return res.totalScore !== 0;
   }).map(createFileTable).join('\n'), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n[^1]: Scores based on modified files only <br/>The report may not be accurate if your branch is not up to date with the base branch.\n");
 };
