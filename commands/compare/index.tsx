@@ -35,8 +35,8 @@ function Compare({
   useEffect(() => {
     (async () => {
       if (isConfigValid && isGitReady) {
-        const fileList = await getFilesList(sanitizedConfig, revision, include);
-        setFileList(fileList);
+        const fileListResult = await getFilesList(sanitizedConfig, revision, include);
+        setFileList(fileListResult);
       }
     })();
   }, [isConfigValid, isGitReady]);
@@ -44,7 +44,7 @@ function Compare({
   useEffect(() => {
     (async () => {
       if (fileList !== null) {
-        const incrementFn = () => setCheckedFileCount((prevCount) => prevCount += 1);
+        const incrementFn = () => setCheckedFileCount((prevCount) => prevCount + 1);
         const checkResult = await checkFileList(fileList, sanitizedConfig, rule, tags, incrementFn);
         setResults(checkResult);
       }
@@ -59,7 +59,7 @@ function Compare({
         } catch (e) {
           console.log(e);
         }
-        const incrementFn = () => setRevisionCheckedFileCount((prevCount) => prevCount += 1);
+        const incrementFn = () => setRevisionCheckedFileCount((prevCount) => prevCount + 1);
         const result = await checkFileList(fileList, sanitizedConfig, rule, tags, incrementFn);
         setRevisionResults(result);
       }
@@ -94,6 +94,14 @@ function Compare({
       }
     })();
   }, [revisionResults]);
+
+  useEffect(() => {
+    (async () => {
+      if (finalResult !== null) {
+        await checkoutTo(currentBranch);
+      }
+    })();
+  }, [finalResult]);
 
   return (
     <>

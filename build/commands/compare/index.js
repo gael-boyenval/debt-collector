@@ -2550,14 +2550,14 @@ var getFileScoreComparaison = function (data) {
 
 var getConclusions = function (data) {
   if (data.totalScores.solde > 0) {
-    return "### \u274C Debt score increased by ".concat(data.totalScores.solde, "[^1]");
+    return "### \u274C Debt score for modified files increased by ".concat(data.totalScores.solde, " [^1]");
   }
 
   if (data.totalScores.solde < 0) {
-    return "### \u2705 Debt score decreased by ".concat(data.totalScores.solde, "[^1]");
+    return "### \u2705 Debt score for modified files decreased by ".concat(data.totalScores.solde, " [^1]");
   }
 
-  return '### 💤 Debt score did not change[^1]';
+  return '### 💤 Debt score for modified files did not change [^1]';
 };
 
 var getMotivationSpeatch = function (data) {
@@ -3925,7 +3925,7 @@ function Compare(_a) {
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(_this, void 0, void 0, function () {
-        var fileList_1;
+        var fileListResult;
         return __generator(this, function (_a) {
           switch (_a.label) {
             case 0:
@@ -3937,8 +3937,8 @@ function Compare(_a) {
               , (0, getFilesList_1.default)(sanitizedConfig, revision, include)];
 
             case 1:
-              fileList_1 = _a.sent();
-              setFileList(fileList_1);
+              fileListResult = _a.sent();
+              setFileList(fileListResult);
               _a.label = 2;
 
             case 2:
@@ -3963,7 +3963,7 @@ function Compare(_a) {
 
               incrementFn = function () {
                 return setCheckedFileCount(function (prevCount) {
-                  return prevCount += 1;
+                  return prevCount + 1;
                 });
               };
 
@@ -4021,7 +4021,7 @@ function Compare(_a) {
             case 4:
               incrementFn = function () {
                 return setRevisionCheckedFileCount(function (prevCount) {
-                  return prevCount += 1;
+                  return prevCount + 1;
                 });
               };
 
@@ -4113,6 +4113,33 @@ function Compare(_a) {
       });
     })();
   }, [revisionResults]);
+  (0, react_1.useEffect)(function () {
+    (function () {
+      return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+          switch (_a.label) {
+            case 0:
+              if (!(finalResult !== null)) return [3
+              /*break*/
+              , 2];
+              return [4
+              /*yield*/
+              , checkoutTo(currentBranch)];
+
+            case 1:
+              _a.sent();
+
+              _a.label = 2;
+
+            case 2:
+              return [2
+              /*return*/
+              ];
+          }
+        });
+      });
+    })();
+  }, [finalResult]);
   return react_1.default.createElement(react_1.default.Fragment, null, react_1.default.createElement(ink_task_list_1.TaskList, null, react_1.default.createElement(ink_task_list_1.Task, {
     state: isConfigValid === null ? 'loading' : isConfigValid ? 'success' : 'error',
     label: "validating configuration",
