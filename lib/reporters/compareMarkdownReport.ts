@@ -10,7 +10,6 @@ const createFileTable = (fileResult) => `
 <br/>
 <br/>
 <b>${fileResult.fileShortPath}</b><br/>
-total score : ${fileResult.totalScore}
 <br/>
 
 |Broken rule|score|
@@ -71,11 +70,11 @@ const getMotivationSpeatch = (data) => {
     return `You did great ! 🎉`
   }
 
-  return '💤 Neither good or bad, I guess'
+  return 'Neither good or bad, I guess 🤷🏽'
 }
 
 const compareMarkDownReport = (data) => `
-## Debt collector report:
+## Debt collector report
 
 ${getConclusions(data)}
 ${getMotivationSpeatch(data)}
@@ -100,7 +99,7 @@ ${getFileScoreComparaison(data)}
 
 <details>
 <summary>
-  <h3>Help us improve code quality! Here are some ideas for you:</h3>
+  <h3>Help us improve code quality! Here are some ideas for you</h3>
 </summary>
 <div>
 

@@ -2525,7 +2525,7 @@ var createTable = function (data) {
 };
 
 var createFileTable = function (fileResult) {
-  return "\n<br/>\n<br/>\n<b>".concat(fileResult.fileShortPath, "</b><br/>\ntotal score : ").concat(fileResult.totalScore, "\n<br/>\n\n|Broken rule|score|\n|--|--|\n").concat(fileResult.brokenRules.map(function (rule) {
+  return "\n<br/>\n<br/>\n<b>".concat(fileResult.fileShortPath, "</b><br/>\n<br/>\n\n|Broken rule|score|\n|--|--|\n").concat(fileResult.brokenRules.map(function (rule) {
     return "|\uD83D\uDEAB ".concat(rule.ruleTitle, "|").concat(rule.ruleTotalSore, "|");
   }).join('\n'), "\n");
 };
@@ -2569,11 +2569,11 @@ var getMotivationSpeatch = function (data) {
     return "You did great ! \uD83C\uDF89";
   }
 
-  return '💤 Neither good or bad, I guess';
+  return 'Neither good or bad, I guess 🤷🏽';
 };
 
 var compareMarkDownReport = function (data) {
-  return "\n## Debt collector report:\n\n".concat(getConclusions(data), "\n").concat(getMotivationSpeatch(data), "\n\n|Previous debt|Current debt|trend|\n|--|--|--|\n|").concat(data.totalScores.rev.toString(), "|").concat(data.totalScores.cur.toString(), "|").concat(data.totalScores.solde.toString(), "|\n\n<details>\n<summary>\n  <h3>Modified files \u2022 see scores before and after</h3>\n</summary>\n<div>\n\n").concat(getFileScoreComparaison(data), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n\n<details>\n<summary>\n  <h3>Help us improve code quality! Here are some ideas for you:</h3>\n</summary>\n<div>\n\n").concat(data.currentResults.filter(function (res) {
+  return "\n## Debt collector report\n\n".concat(getConclusions(data), "\n").concat(getMotivationSpeatch(data), "\n\n|Previous debt|Current debt|trend|\n|--|--|--|\n|").concat(data.totalScores.rev.toString(), "|").concat(data.totalScores.cur.toString(), "|").concat(data.totalScores.solde.toString(), "|\n\n<details>\n<summary>\n  <h3>Modified files \u2022 see scores before and after</h3>\n</summary>\n<div>\n\n").concat(getFileScoreComparaison(data), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n\n<details>\n<summary>\n  <h3>Help us improve code quality! Here are some ideas for you</h3>\n</summary>\n<div>\n\n").concat(data.currentResults.filter(function (res) {
     return res.totalScore !== 0;
   }).map(createFileTable).join('\n'), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n[^1]: Scores based on modified files only <br/>The report may not be accurate if your branch is not up to date with the base branch.\n");
 };
