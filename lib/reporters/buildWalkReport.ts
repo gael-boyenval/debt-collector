@@ -5,7 +5,7 @@ import template from './chartTemplate'
 const cachePath = `${process.cwd()}/node_modules/.cache/debt-collector`
 const resultPath = `${cachePath}/report.html`
 
-const buildWalkReport = (userConfig, tags, results) => {
+const buildWalkReport = (userConfig, tags, results, enDateEstimlations) => {
   setTimeout(() => {
     // waiting for file system to correctly switch all files after checkout
     const jsonResults = JSON.stringify(
@@ -13,6 +13,7 @@ const buildWalkReport = (userConfig, tags, results) => {
         initialConfig: userConfig,
         tags,
         results,
+        enDateEstimlations,
       },
       null,
       2

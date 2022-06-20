@@ -10,6 +10,7 @@ import { useGitUtils, WalkIteratorResult } from '../../lib/git';
 import { getCommitResult, formatWalkResults, WalkLoopResult } from './getCommitResult';
 
 import type { RevisionResults } from '../../lib/types'
+import getEndDatesEstimations from './getEndDatesEstimations';
 
 function Walk({
   config,
@@ -68,7 +69,8 @@ function Walk({
   useEffect(() => {
     (async () => {
       if (isReady) {
-        buildWalkReport(userConfig, tags, results);
+        const enDateEstimlations = getEndDatesEstimations({ initialConfig: userConfig, results })
+        buildWalkReport(userConfig, tags, results, enDateEstimlations);
         setIsFinished(true);
       }
     })();

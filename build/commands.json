@@ -83,36 +83,6 @@
 			"positionalArgs": [],
 			"args": [
 				{
-					"key": "config",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"c"
-					],
-					"positional": false
-				},
-				{
-					"key": "include",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"f"
-					],
-					"positional": false
-				}
-			],
-			"isIndex": false,
-			"name": "walk",
-			"path": "walk/index.tsx",
-			"subCommands": []
-		},
-		{
-			"description": "",
-			"positionalArgs": [],
-			"args": [
-				{
 					"key": "revision",
 					"type": "string",
 					"description": "",
@@ -172,6 +142,36 @@
 			"isIndex": false,
 			"name": "compare",
 			"path": "compare/index.tsx",
+			"subCommands": []
+		},
+		{
+			"description": "",
+			"positionalArgs": [],
+			"args": [
+				{
+					"key": "config",
+					"type": "string",
+					"description": "",
+					"isRequired": false,
+					"aliases": [
+						"c"
+					],
+					"positional": false
+				},
+				{
+					"key": "include",
+					"type": "string",
+					"description": "",
+					"isRequired": false,
+					"aliases": [
+						"f"
+					],
+					"positional": false
+				}
+			],
+			"isIndex": false,
+			"name": "walk",
+			"path": "walk/index.tsx",
 			"subCommands": []
 		},
 		{

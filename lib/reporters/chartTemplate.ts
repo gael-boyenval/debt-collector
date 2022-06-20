@@ -22,6 +22,16 @@ export default (data: Result) => `
 const result = ${data}
 const { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts
 
+const ReportDebtPaymentProjection = ({period, title}) => (
+  <div  style={{ padding: 20, flex: 1 }}>
+    <div>At an avarage rythme of <b>{Math.round(period.tendencyMonth*100)/100} points/month</b>,<br/> it would require <b>{period.daysToReachZero} days</b> to reach zero debt.<br/> Debt would be payed in full on <b>{
+      new Date(
+        period.estimatedendDate
+      ).toString("MMMM dS, yyyy")}</b>
+    </div>
+  </div>
+)
+
 const parseDataBy = (key) => result.results.map((commit) => {
 
   const rulesScores = commit.brokenRules.map(rule => ({
@@ -86,6 +96,7 @@ const rulesActives = rules.reduce((acc, rule) => {
    const [activeRules, setActiveRules] = React.useState(rulesActives)
    const [tagFilter, setTagFilter] = React.useState(null)
    const [chartType, setChartType] = React.useState('area')
+   const [estimationsBasedOn, setEstimationsBasedOn] = React.useState('avairage')
 
    const toggleRule = (id) => {
     setTagFilter(null)
@@ -155,156 +166,219 @@ const rulesActives = rules.reduce((acc, rule) => {
   }, [tagFilter])
 
    return (
-     <div style={{display: 'flex', overflow: 'hidden', width: '100vw', height:'100vh', position:'fixed'}}>
-      <div style={{width: '80vw', height:'100vh'}}>
-        <div style={{height:40, paddingLeft: 40}}>
-          <button
-              onClick={() => setChartType('area')}
-              style={{
-                ...baseButtonStyles,
-                backgroundColor: chartType === 'area' ? 'green' : '#F5F5F5',
-                color: chartType === 'area' ? 'white' : 'grey'
-              }}
-            >
-              AREA CHART
-            </button>
+     <React.Fragment>
+      <div style={{display: 'flex', overflow: 'hidden', width: '100vw', height:'80vh'}}>
+        <div style={{width: '80vw', height:'80vh'}}>
+          <div style={{height:40, paddingLeft: 40}}>
             <button
-              onClick={() => setChartType('line')}
-              style={{
-                ...baseButtonStyles,
-                backgroundColor: chartType === 'line' ? 'green' : '#F5F5F5',
-                color: chartType === 'line' ? 'white' : 'grey'
-              }}
-            >
-              LINE CHART
-            </button>
-        </div>
-        {chartType === 'area' &&
-        <ResponsiveContainer width="100%" height="90%">
-          <AreaChart
-            width={500}
-            height={400}
-            data={data}
-            margin={{
-              top: 10,
-              right: 30,
-              left: 0,
-              bottom: 0,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="commit" />
-            <YAxis />
-            <Tooltip
-              content={renderTooltip}
-              itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}
-              labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}
-            />
-            {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&
-              <Area
-                type="monotone"
-                dataKey={rule}
-                stackId="1"
-                stroke={colors[Object.keys(activeRules).indexOf(rule)]}
-                fill={colors[Object.keys(activeRules).indexOf(rule)]} />
-            )}
-          </AreaChart>
-        </ResponsiveContainer>
-        }
-        {chartType === 'line' &&
-        <ResponsiveContainer width="100%" height="90%">
-          <LineChart
-            width={500}
-            height={400}
-            data={data}
-            margin={{
-              top: 10,
-              right: 30,
-              left: 0,
-              bottom: 0,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="commit" />
-            <YAxis />
-            <Tooltip
-              content={renderTooltip}
-              itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}
-              labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}
-            />
-            {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&
-              <Line
-                type="monotone"
-                dataKey={rule}
-                stackId="1"
-                stroke={colors[Object.keys(activeRules).indexOf(rule)]}
-                fill={colors[Object.keys(activeRules).indexOf(rule)]} />
-            )}
-          </LineChart>
-        </ResponsiveContainer>
-        }
-        </div>
-
-
-        <div style={{width: '20vw', minWidth: 400, height:'100vh', overflowY: 'auto', padding: 20}}>
-          <h3>Rules</h3>
-          {Object.keys(activeRules).map(rule =>
-            <button
-              key={rule}
-              onClick={() => toggleRule(rule)}
-              style={{
-                ...baseButtonStyles,
-                backgroundColor: activeRules[rule] ? 'green' : '#F5F5F5',
-                color: activeRules[rule] ? 'white' : 'grey'
-              }}
-            >
-              {rule}
-            </button>
-          )}
-          <div style={{ marginTop: 15 }}>
-            <button onClick={() => toggleAll()}>TOGGLE ALL RULES</button>
+                onClick={() => setChartType('area')}
+                style={{
+                  ...baseButtonStyles,
+                  backgroundColor: chartType === 'area' ? 'green' : '#F5F5F5',
+                  color: chartType === 'area' ? 'white' : 'grey'
+                }}
+              >
+                AREA CHART
+              </button>
+              <button
+                onClick={() => setChartType('line')}
+                style={{
+                  ...baseButtonStyles,
+                  backgroundColor: chartType === 'line' ? 'green' : '#F5F5F5',
+                  color: chartType === 'line' ? 'white' : 'grey'
+                }}
+              >
+                LINE CHART
+              </button>
           </div>
-          <hr />
-          <h3>Tags</h3>
-          {Object.keys(result.tags).map(tag =>
+          {chartType === 'area' &&
+          <ResponsiveContainer width="100%" height="90%">
+            <AreaChart
+              width={500}
+              height={400}
+              data={data}
+              margin={{
+                top: 10,
+                right: 30,
+                left: 0,
+                bottom: 0,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="commit" />
+              <YAxis />
+              <Tooltip
+                content={renderTooltip}
+                itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}
+                labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}
+              />
+              {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&
+                <Area
+                  type="monotone"
+                  dataKey={rule}
+                  stackId="1"
+                  stroke={colors[Object.keys(activeRules).indexOf(rule)]}
+                  fill={colors[Object.keys(activeRules).indexOf(rule)]} />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+          }
+          {chartType === 'line' &&
+          <ResponsiveContainer width="100%" height="90%">
+            <LineChart
+              width={500}
+              height={400}
+              data={data}
+              margin={{
+                top: 10,
+                right: 30,
+                left: 0,
+                bottom: 0,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="commit" />
+              <YAxis />
+              <Tooltip
+                content={renderTooltip}
+                itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}
+                labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}
+              />
+              {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&
+                <Line
+                  type="monotone"
+                  dataKey={rule}
+                  stackId="1"
+                  stroke={colors[Object.keys(activeRules).indexOf(rule)]}
+                  fill={colors[Object.keys(activeRules).indexOf(rule)]} />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+          }
+          </div>
+
+
+          <div style={{width: '20vw', minWidth: 400, height:'80vh', overflowY: 'auto', padding: 20}}>
+            <h3>Rules</h3>
+            {Object.keys(activeRules).map(rule =>
+              <button
+                key={rule}
+                onClick={() => toggleRule(rule)}
+                style={{
+                  ...baseButtonStyles,
+                  backgroundColor: activeRules[rule] ? 'green' : '#F5F5F5',
+                  color: activeRules[rule] ? 'white' : 'grey'
+                }}
+              >
+                {rule}
+              </button>
+            )}
+            <div style={{ marginTop: 15 }}>
+              <button onClick={() => toggleAll()}>TOGGLE ALL RULES</button>
+            </div>
+            <hr />
+            <h3>Tags</h3>
+            {Object.keys(result.tags).map(tag =>
+              <button
+                key={tag}
+                onClick={() => toggleTag(tag)}
+                style={{
+                  ...baseButtonStyles,
+                  display: 'inline-block',
+                  backgroundColor: tagFilter === tag ? 'green' : '#F5F5F5',
+                  color: tagFilter === tag ? 'white' : 'grey'
+                }}
+              >
+                {tag}
+              </button>
+            )}
+            <hr />
+            <h3>Display values</h3>
             <button
-              key={tag}
-              onClick={() => toggleTag(tag)}
+              onClick={() => switchDataBy('ruleTotalSore')}
               style={{
                 ...baseButtonStyles,
                 display: 'inline-block',
-                backgroundColor: tagFilter === tag ? 'green' : '#F5F5F5',
-                color: tagFilter === tag ? 'white' : 'grey'
-              }}
-            >
-              {tag}
+                backgroundColor: valueType === 'ruleTotalSore' ? 'green' : '#F5F5F5',
+                color: valueType === 'ruleTotalSore' ? 'white' : 'grey'
+              }}>
+                BY SCORE
             </button>
-          )}
-          <hr />
-          <h3>Display values</h3>
-          <button
-            onClick={() => switchDataBy('ruleTotalSore')}
-            style={{
-              ...baseButtonStyles,
-              display: 'inline-block',
-              backgroundColor: valueType === 'ruleTotalSore' ? 'green' : '#F5F5F5',
-              color: valueType === 'ruleTotalSore' ? 'white' : 'grey'
-            }}>
-              BY SCORE
-          </button>
-          <button
-            onClick={() => switchDataBy('occurences')}
-            style={{
-              ...baseButtonStyles,
-              display: 'inline-block',
-              backgroundColor: valueType === 'occurences' ? 'green' : '#F5F5F5',
-              color: valueType === 'occurences' ? 'white' : 'grey'
-            }}>
-              BY OCCURENCES
-          </button>
-          <hr />
+            <button
+              onClick={() => switchDataBy('occurences')}
+              style={{
+                ...baseButtonStyles,
+                display: 'inline-block',
+                backgroundColor: valueType === 'occurences' ? 'green' : '#F5F5F5',
+                color: valueType === 'occurences' ? 'white' : 'grey'
+              }}>
+                BY OCCURENCES
+            </button>
+            <hr />
+          </div>
         </div>
-      </div>
+        <div style={{textAlign: 'center', maxWidth: 1600, margin: '0 auto'}}>
+          <hr />
+            <button
+              onClick={() => setEstimationsBasedOn('avairage')}
+              style={{
+                ...baseButtonStyles,
+                display: 'inline-block',
+                backgroundColor: estimationsBasedOn === 'avairage' ? 'green' : '#F5F5F5',
+                color: estimationsBasedOn === 'avairage' ? 'white' : 'grey'
+              }}>
+                AVERAGE ALL PERIODS
+            </button>
+            <button
+              onClick={() => setEstimationsBasedOn('lastPeriod')}
+              style={{
+                ...baseButtonStyles,
+                display: 'inline-block',
+                backgroundColor: estimationsBasedOn === 'lastPeriod' ? 'green' : '#F5F5F5',
+                color: estimationsBasedOn === 'lastPeriod' ? 'white' : 'grey'
+              }}>
+                LAST PERDIOD
+            </button>
+
+          <h2 style={{margin: 0, marginTop: 30}}>Current score : {result.enDateEstimlations.global.currentScore}</h2>
+          <h3 style={{margin: 0}}>Estimated date for full reimbursment:</h3>
+          <div style={{display: 'flex'}}>
+            <ReportDebtPaymentProjection period={result.enDateEstimlations.global[estimationsBasedOn]}/>
+          </div>
+          <div style={{textAlign: 'right', marginBottom: 200}}>
+            <table width="100%" style={{textAlign: 'right', marginBottom: 200}}>
+              <thead>
+                <tr>
+                  <th style={{textAlign: 'left'}}>Rule ID</th>
+                  <th>Current score</th>
+                  <th>Debt points/month</th>
+                  <th>Days remaining to zero</th>
+                  <th>Estimated date to zero</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.keys(result.enDateEstimlations.rules).map(ruleId => {
+                  const {
+                    tendencyMonth,
+                    daysToReachZero,
+                    estimatedendDate
+                  } = result.enDateEstimlations.rules[ruleId][estimationsBasedOn]
+                  const {currentScore} = result.enDateEstimlations.rules[ruleId]
+                  return (
+                    <tr key={ruleId} style={{color: tendencyMonth >= 0 ? 'red' : '#222'}}>
+                      <td style={{textAlign: 'left'}}>{ruleId}</td>
+                      <td>{currentScore} points</td>
+                      <td>{Math.round(tendencyMonth*100)/100} points/month</td>
+                      <td>{daysToReachZero ? `${daysToReachZero} days` : 'never'} </td>
+                      <td>{estimatedendDate === 'never' ? estimatedendDate : new Date(estimatedendDate).toString("MMMM dS, yyyy")}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </React.Fragment>
     );
 }
 

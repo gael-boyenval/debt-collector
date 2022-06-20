@@ -117,7 +117,7 @@ export const walkCommits = async <FinalResult, IteratorResult>(
 export const getChangedFilesSinceRev = async (
   rev: string
 ): Promise<{ status: string; filePath: string }[]> => {
-  const results = await git.diff([rev, '--name-status'])
+  const results = await git.diff([rev, '--name-status', '--no-renames'])
   const rootGitDir = await git.revparse(['--show-toplevel'])
   const currentGitDir = path.relative(rootGitDir, process.cwd())
 

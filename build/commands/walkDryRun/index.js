@@ -1568,7 +1568,7 @@ var getChangedFilesSinceRev = function (rev) {
         case 0:
           return [4
           /*yield*/
-          , git.diff([rev, '--name-status'])];
+          , git.diff([rev, '--name-status', '--no-renames'])];
 
         case 1:
           results = _a.sent();

@@ -57,8 +57,12 @@ export const filtersRulesFromOptions = (
   const cleanTag = tags && tags.filter((tag) => !!tag)
 
   if (ruleId || cleanTag?.length) {
-    fileRules = filterRulesByTagAndId(options.fileRules, ruleId, cleanTag)
-    eslintRules = filterRulesByTagAndId(options.eslintRules, ruleId, cleanTag)
+    fileRules = filterRulesByTagAndId(options.fileRules ?? [], ruleId, cleanTag)
+    eslintRules = filterRulesByTagAndId(
+      options.eslintRules ?? [],
+      ruleId,
+      cleanTag
+    )
   }
 
   return {

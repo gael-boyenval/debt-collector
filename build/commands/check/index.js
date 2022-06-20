@@ -911,7 +911,7 @@ var getChangedFilesSinceRev = function (rev) {
         case 0:
           return [4
           /*yield*/
-          , git.diff([rev, '--name-status'])];
+          , git.diff([rev, '--name-status', '--no-renames'])];
 
         case 1:
           results = _a.sent();
@@ -1598,6 +1598,8 @@ var filterRulesByTagAndId = function (rules, ruleId, tags) {
 };
 
 var filtersRulesFromOptions = function (options, ruleId, tags) {
+  var _a, _b;
+
   if (ruleId === void 0) {
     ruleId = null;
   }
@@ -1613,8 +1615,8 @@ var filtersRulesFromOptions = function (options, ruleId, tags) {
   });
 
   if (ruleId || (cleanTag === null || cleanTag === void 0 ? void 0 : cleanTag.length)) {
-    fileRules = filterRulesByTagAndId(options.fileRules, ruleId, cleanTag);
-    eslintRules = filterRulesByTagAndId(options.eslintRules, ruleId, cleanTag);
+    fileRules = filterRulesByTagAndId((_a = options.fileRules) !== null && _a !== void 0 ? _a : [], ruleId, cleanTag);
+    eslintRules = filterRulesByTagAndId((_b = options.eslintRules) !== null && _b !== void 0 ? _b : [], ruleId, cleanTag);
   }
 
   return {
@@ -2572,15 +2574,8 @@ var getMotivationSpeatch = function (data) {
   return 'Neither good or bad, I guess 🤷🏽';
 };
 
-var hasNoDebtToCompare = function (_a) {
-  var currentResults = _a.currentResults;
-  return currentResults.filter(function (res) {
-    return res.totalScore !== 0;
-  }).length === 0;
-};
-
 var compareMarkDownReport = function (data) {
-  return hasNoDebtToCompare ? "\n## Debt collector report\n\nAll changed files have a debt score of 0.\n\nNothing to do here, we\u2019re all good ! \uD83C\uDF89\n" : "\n## Debt collector report\n\n".concat(getConclusions(data), "\n").concat(getMotivationSpeatch(data), "\n\n|Previous debt|Current debt|trend|\n|--|--|--|\n|").concat(data.totalScores.rev.toString(), "|").concat(data.totalScores.cur.toString(), "|").concat(data.totalScores.solde.toString(), "|\n\n<details>\n<summary>\n  <h3>Modified files \u2022 see scores before and after</h3>\n</summary>\n<div>\n\n").concat(getFileScoreComparaison(data), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n\n<details>\n<summary>\n  <h3>Help us improve code quality! Here are some ideas for you</h3>\n</summary>\n<div>\n\n").concat(data.currentResults.filter(function (res) {
+  return data.totalScores.rev === 0 && data.totalScores.cur === 0 ? "\n## Debt collector report\n\nAll changed files have a debt score of 0.\n\nNothing to do here, we\u2019re all good ! \uD83C\uDF89\n" : "\n## Debt collector report\n\n".concat(getConclusions(data), "\n").concat(getMotivationSpeatch(data), "\n\n|Previous debt|Current debt|trend|\n|--|--|--|\n|").concat(data.totalScores.rev.toString(), "|").concat(data.totalScores.cur.toString(), "|").concat(data.totalScores.solde.toString(), "|\n\n<details>\n<summary>\n  <h3>Modified files \u2022 see scores before and after</h3>\n</summary>\n<div>\n\n").concat(getFileScoreComparaison(data), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n\n<details>\n<summary>\n  <h3>Help us improve code quality! Here are some ideas for you</h3>\n</summary>\n<div>\n\n").concat(data.currentResults.filter(function (res) {
     return res.totalScore !== 0;
   }).map(createFileTable).join('\n'), "\n\n<br/>\n<br/>\n</div>\n</details>\n\n[^1]: Scores based on modified files only <br/>The report may not be accurate if your branch is not up to date with the base branch.\n");
 };
