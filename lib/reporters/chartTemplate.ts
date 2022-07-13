@@ -1,4 +1,6 @@
-export default (data: Result) => `
+import type { WalkResults } from '../types'
+
+export default (data: WalkResults) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,6 +21,9 @@ export default (data: Result) => `
 <script type="text/babel">
 
 const result = ${data}
+
+const { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts
+
 const ReportDebtPaymentProjection = ({period, title}) => (
   <div  style={{ padding: 20, flex: 1 }}>
     <div>At an avarage rythme of <b>{Math.round(period.tendencyMonth*100)/100} points/month</b>,<br/> it would require <b>{period.daysToReachZero} days</b> to reach zero debt.<br/> Debt would be payed in full on <b>{
