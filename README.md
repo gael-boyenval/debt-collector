@@ -247,13 +247,30 @@ The file would have a score of 6 ( 3 occurences of 'foo' * debtScore )
 
 #### The matchRule function
 
-DC provide the `matchRule` function with an object of usefull things :
+DC provide the `matchRule` function with a parameter object of usefull things :
 
-- `content` : the strigified content of the file
-- `file` : the relative file path (ex: './src/components/Button/Button.tsx')
-- `find` : an utility than return the number of occurences of a string in the file
+```ts
+type MatchRule = ({
+  content: string,
+  file: string,
+  findOne(string | Regex): 0 | 1,
+  countAll(string | Regex): number,
+  findOneOf((string | Regex)[]):  0 | 1,
+  countAllOf((string | Regex)[]): number,
+  findJsImportFrom(string, string): 0 | 1,
+}) => number
+```
 
-The `matchRule` function should return an integer
+examples :
+
+`findJsImportFrom('foo', 'bar')` will matches `import foo from 'bar'` or  `import { foo, baz } from '@tata/bar'` etc...
+
+`countAll(/[^.]map\(/g)` will match all occurences of `map(() => {})` that are not preceded by a `.`
+
+`findOneOf(['toto', 'tutu', /tata/g])` will return 1 if the file contain any occurence of `toto`, `tutu` or `tata`
+
+`countAllOf(['toto', 'tutu', /tata/g])` will return the number of occurences of `toto`, `tutu` and `tata` in a file
+
 
 ### using both matchRule and include
 
