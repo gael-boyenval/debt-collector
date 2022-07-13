@@ -54,14 +54,16 @@ const findOneOf =
     return count === 0 ? 0 : 1
   }
 
+// does not work => fix
 const countAllOf =
   (data) =>
   (matches: (string | RegExp)[]): number => {
     let count = 0
-    const index = 0
+    let index = 0
 
     while (index <= matches.length - 1) {
       count += countAll(data)(matches[index])
+      index += 1
     }
 
     return count

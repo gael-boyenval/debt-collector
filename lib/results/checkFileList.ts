@@ -1,3 +1,4 @@
+import Queue from 'queue-promise'
 import { ESLint } from 'eslint'
 import getFileResult from './getFileResult'
 import { filtersRulesFromOptions } from '../filters/filterRules'
@@ -9,30 +10,42 @@ const checkFileList = async (
   rule: string,
   tags: string[],
   increment: () => void
-): Promise<FileResults[]> => {
-  const filteredRules = filtersRulesFromOptions(config, rule, tags)
-
-  const fileListConfig = {
-    ...config,
-    ...filteredRules,
-  }
-
-  let eslint: ESLint | null = null
-
-  if (config.eslintRules?.length > 0) {
-    eslint = new ESLint({
-      useEslintrc: false,
-      baseConfig: config.eslintConfig,
+): Promise<FileResults[]> =>
+  new Promise((resolve) => {
+    const queue = new Queue({
+      concurrent: 20,
+      interval: 0,
     })
-  }
 
-  const getFilesResults = fileList.map((file) =>
-    getFileResult(fileListConfig, file, increment, eslint)
-  )
+    const filteredRules = filtersRulesFromOptions(config, rule, tags)
 
-  const results = await Promise.all([...getFilesResults])
+    const fileListConfig = {
+      ...config,
+      ...filteredRules,
+    }
 
-  return results
-}
+    let eslint: ESLint | null = null
+
+    if (config.eslintRules?.length > 0) {
+      eslint = new ESLint({
+        useEslintrc: false,
+        baseConfig: config.eslintConfig,
+      })
+    }
+
+    const results = []
+
+    queue.enqueue(
+      fileList.map(
+        (file) => () => getFileResult(fileListConfig, file, increment, eslint)
+      )
+    )
+
+    queue.on('resolve', (data) => {
+      results.push(data)
+    })
+
+    queue.on('end', () => resolve(results))
+  })
 
 export default checkFileList

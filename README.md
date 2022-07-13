@@ -1,23 +1,25 @@
 /!\ Documentation is not up to date with v2-alpha... update comming soon
 
 # debt-collector
-A nodejs util to identify, track and mesure technical debt in a project
+A nodejs util to identify, track and mesure technical debt in a project.
+
+Note that debt-collector is an alpha version and you should consider that bugs may occur and API may change without warnings. 
+As debt-collector is a tool that does not interfere with your code base, even buggy, it is relatively safe to use. 
+Considering the previous informations, we recomend to install a fixed version of debt-collector as of now. 
 
 ## Install
 
-Note that debt-collector is an alpha version and is not yet available trough the NPM registry. 
-
 ### global :
 
-`npm i -g https://github.com/gael-boyenval/debt-collector`
+`npm i -g debt-collector`
 
 ### local :
 
-`npm i --save-dev https://github.com/gael-boyenval/debt-collector`
+`npm i --save-dev debt-collector`
 
 ## How does it works ?
 
-Debt collector has three commands : `check`, `compare` and `walk`. 
+Debt collector has three main commands : `check`, `compare` and `walk`. 
 
 DC works by checking every files matching a `include` glob pattern, provided by a configuration file.
 Each file is then checked for each rule defined in `fileRules`, for example : 
@@ -30,7 +32,7 @@ Each file is then checked for each rule defined in `fileRules`, for example :
       title: 'Should remove all "foo" occurences',
       id: 'NO_FOO',
       debtScore: 2,
-      matchRule: ({ find }) => find('foo'),
+      matchRule: ({ findOne }) => findOne('foo'),
     },
   ]
 }
@@ -99,6 +101,8 @@ filters only files that have changed since a git revision : local commit, branch
 ex: `debt-collector check --changed-since=master`
 or `debt-collector check -s master`
 
+this flag is usefull to give you a report for the current changes and can be used as a pre-push, or pre-commit hook, to inform you about actions you could take to reduce debt.
+
 #### `--report-format`, `-f`: **string**
 
 **filesOnly** list only files with debt scores
@@ -124,7 +128,7 @@ or `debt-collector check -f standard`
 
 This command will check every file that have changed since the revision (created, renamed, modified or deleted files) once for the revision, and one for the current HEAD and compare results to provide a compared results. 
 
-It will output files with no changes in bebt scores, files with less debt and files with more debt, as well as a totalm score comparaison.
+It will output files with no changes in bebt scores, files with less debt and files with more debt, as well as a total score comparaison.
 
 Particularly usefull when creating a pull request, and we want to compare the main branch with the current pull request debt scores.
 
@@ -231,7 +235,7 @@ And the following config :
       title: 'should migrate javascript files to typescript',
       id: 'JS_TO_TS',
       debtScore: 2,
-      matchRule:({ find }) => find('foo'),
+      matchRule:({ findOne }) => findOne('foo'),
     }
   ],
 }
@@ -239,7 +243,7 @@ And the following config :
 
 The file would have a score of 6 ( 3 occurences of 'foo' * debtScore )
 
-`({find}) => find('foo') + find('bar')` would give you a score of 8
+`({findOne}) => findOne('foo') + findOne('bar')` would give you a score of 8
 
 #### The matchRule function
 

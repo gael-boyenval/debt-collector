@@ -1703,7 +1703,8 @@ var findOneOf = function (data) {
 
     return count === 0 ? 0 : 1;
   };
-};
+}; // does not work => fix
+
 
 var countAllOf = function (data) {
   return function (matches) {
@@ -1712,6 +1713,7 @@ var countAllOf = function (data) {
 
     while (index <= matches.length - 1) {
       count += countAll(data)(matches[index]);
+      index += 1;
     }
 
     return count;
@@ -2424,41 +2426,6 @@ var __generator = this && this.__generator || function (thisArg, body) {
   }
 };
 
-var __read = this && this.__read || function (o, n) {
-  var m = typeof Symbol === "function" && o[Symbol.iterator];
-  if (!m) return o;
-  var i = m.call(o),
-      r,
-      ar = [],
-      e;
-
-  try {
-    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-  } catch (error) {
-    e = {
-      error: error
-    };
-  } finally {
-    try {
-      if (r && !r.done && (m = i["return"])) m.call(i);
-    } finally {
-      if (e) throw e.error;
-    }
-  }
-
-  return ar;
-};
-
-var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
-  if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-    if (ar || !(i in from)) {
-      if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-      ar[i] = from[i];
-    }
-  }
-  return to.concat(ar || Array.prototype.slice.call(from));
-};
-
 var __importDefault = this && this.__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
@@ -2469,6 +2436,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var queue_promise_1 = __importDefault(require("queue-promise"));
+
 var eslint_1 = require("eslint");
 
 var getFileResult_1 = __importDefault(require("./getFileResult"));
@@ -2477,37 +2446,42 @@ var filterRules_1 = require("../filters/filterRules");
 
 var checkFileList = function (fileList, config, rule, tags, increment) {
   return __awaiter(void 0, void 0, Promise, function () {
-    var filteredRules, fileListConfig, eslint, getFilesResults, results;
+    return __generator(this, function (_a) {
+      return [2
+      /*return*/
+      , new Promise(function (resolve) {
+        var _a;
 
-    var _a;
+        var queue = new queue_promise_1.default({
+          concurrent: 20,
+          interval: 0
+        });
+        var filteredRules = (0, filterRules_1.filtersRulesFromOptions)(config, rule, tags);
 
-    return __generator(this, function (_b) {
-      switch (_b.label) {
-        case 0:
-          filteredRules = (0, filterRules_1.filtersRulesFromOptions)(config, rule, tags);
-          fileListConfig = __assign(__assign({}, config), filteredRules);
-          eslint = null;
+        var fileListConfig = __assign(__assign({}, config), filteredRules);
 
-          if (((_a = config.eslintRules) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-            eslint = new eslint_1.ESLint({
-              useEslintrc: false,
-              baseConfig: config.eslintConfig
-            });
-          }
+        var eslint = null;
 
-          getFilesResults = fileList.map(function (file) {
-            return (0, getFileResult_1.default)(fileListConfig, file, increment, eslint);
+        if (((_a = config.eslintRules) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+          eslint = new eslint_1.ESLint({
+            useEslintrc: false,
+            baseConfig: config.eslintConfig
           });
-          return [4
-          /*yield*/
-          , Promise.all(__spreadArray([], __read(getFilesResults), false))];
+        }
 
-        case 1:
-          results = _b.sent();
-          return [2
-          /*return*/
-          , results];
-      }
+        var results = [];
+        queue.enqueue(fileList.map(function (file) {
+          return function () {
+            return (0, getFileResult_1.default)(fileListConfig, file, increment, eslint);
+          };
+        }));
+        queue.on('resolve', function (data) {
+          results.push(data);
+        });
+        queue.on('end', function () {
+          return resolve(results);
+        });
+      })];
     });
   });
 };
