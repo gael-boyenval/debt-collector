@@ -158,9 +158,6 @@ export function ResultsCompare({ results, currentResults, outputHtml }) {
     };
   }).filter((file) => !(file.rev === 0 && file.current === 0));
 
-  console.log(currentResults);
-  
-
   const totalScores = tableResults.reduce((acc, res) => {
     const revScore = res.rev + acc.rev;
     const currentScore = res.current + acc.cur;

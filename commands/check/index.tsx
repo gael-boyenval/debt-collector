@@ -19,6 +19,7 @@ function Check({
   changedSince = null,
   limitTop = null,
 }) {
+  // TODO fix include param => fail
   const [results, setResults] = useState<CheckResults|null>(null);
   const [fileList, setFileList] = useState<string[]|null>(null);
   const [checkedFileCount, setCheckedFileCount] = useState<number>(0);

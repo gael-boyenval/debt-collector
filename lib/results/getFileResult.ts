@@ -55,34 +55,42 @@ const runFileChecks = async (
   try {
     data = fs.readFileSync(filePath).toString()
   } catch (error) {
-    console.error(`error while reading file ${filePath} \n ${error.message}`)
+    // console.error(`error while reading file ${filePath} \n ${error.message}`)
     data = ''
   }
 
   if (config.fileRules?.length > 0) {
-    const fileRulesResults = getfileRulesErrors(config, filePath, data)
-    fileResults = updateResults(
-      config,
-      fileRulesResults,
-      fileResults,
-      'fileRules'
-    )
+    if (data) {
+      const fileRulesResults = getfileRulesErrors(config, filePath, data)
+      fileResults = updateResults(
+        config,
+        fileRulesResults,
+        fileResults,
+        'fileRules'
+      )
+    } else {
+      fileResults = updateResults(config, [], fileResults, 'fileRules')
+    }
   }
 
   if (config.eslintRules?.length > 0 && eslint) {
-    const eslintResults = await getEslintRulesErrors(
-      config,
-      filePath,
-      data,
-      eslint
-    )
+    if (data) {
+      const eslintResults = await getEslintRulesErrors(
+        config,
+        filePath,
+        data,
+        eslint
+      )
 
-    fileResults = updateResults(
-      config,
-      eslintResults,
-      fileResults,
-      'eslintRules'
-    )
+      fileResults = updateResults(
+        config,
+        eslintResults,
+        fileResults,
+        'eslintRules'
+      )
+    } else {
+      fileResults = updateResults(config, [], fileResults, 'eslintRules')
+    }
   }
 
   return fileResults

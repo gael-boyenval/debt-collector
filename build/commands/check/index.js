@@ -1479,7 +1479,7 @@ var getFileList = function (config, compare, globOption) {
         /*return*/
         , new Promise(function (resolve, reject) {
           return __awaiter(void 0, void 0, void 0, function () {
-            var changedFiles, ignoreDeletedfiles, allChanges, files, error_1;
+            var changedFiles, allChanges, files, error_1;
             return __generator(this, function (_a) {
               switch (_a.label) {
                 case 0:
@@ -1487,15 +1487,12 @@ var getFileList = function (config, compare, globOption) {
 
                   return [4
                   /*yield*/
-                  , (0, git_1.getChangedFilesSinceRev)(compare)];
+                  , (0, git_1.getChangedFilesSinceRev)(compare) // const ignoreDeletedfiles = changedFiles.filter(({ status }) => status === 'A' || status === 'M')
+                  ];
 
                 case 1:
                   changedFiles = _a.sent();
-                  ignoreDeletedfiles = changedFiles.filter(function (_a) {
-                    var status = _a.status;
-                    return status === 'A' || status === 'M';
-                  });
-                  allChanges = ignoreDeletedfiles.map(function (item) {
+                  allChanges = changedFiles.map(function (item) {
                     return item.filePath;
                   });
                   files = (0, utils_1.filterIgnoredFiles)(allChanges, config.exclude, includedGlob);
@@ -2215,16 +2212,23 @@ var runFileChecks = function (config, filePath, eslint) {
           try {
             data = fs_1.default.readFileSync(filePath).toString();
           } catch (error) {
-            console.error("error while reading file ".concat(filePath, " \n ").concat(error.message));
+            // console.error(`error while reading file ${filePath} \n ${error.message}`)
             data = '';
           }
 
           if (((_c = config.fileRules) === null || _c === void 0 ? void 0 : _c.length) > 0) {
-            fileRulesResults = (0, getFileRulesErrors_1.default)(config, filePath, data);
-            fileResults = updateResults(config, fileRulesResults, fileResults, 'fileRules');
+            if (data) {
+              fileRulesResults = (0, getFileRulesErrors_1.default)(config, filePath, data);
+              fileResults = updateResults(config, fileRulesResults, fileResults, 'fileRules');
+            } else {
+              fileResults = updateResults(config, [], fileResults, 'fileRules');
+            }
           }
 
           if (!(((_d = config.eslintRules) === null || _d === void 0 ? void 0 : _d.length) > 0 && eslint)) return [3
+          /*break*/
+          , 3];
+          if (!data) return [3
           /*break*/
           , 2];
           return [4
@@ -2234,9 +2238,15 @@ var runFileChecks = function (config, filePath, eslint) {
         case 1:
           eslintResults = _e.sent();
           fileResults = updateResults(config, eslintResults, fileResults, 'eslintRules');
-          _e.label = 2;
+          return [3
+          /*break*/
+          , 3];
 
         case 2:
+          fileResults = updateResults(config, [], fileResults, 'eslintRules');
+          _e.label = 3;
+
+        case 3:
           return [2
           /*return*/
           , fileResults];
@@ -2853,7 +2863,6 @@ function ResultsCompare(_a) {
   }).filter(function (file) {
     return !(file.rev === 0 && file.current === 0);
   });
-  console.log(currentResults);
   var totalScores = tableResults.reduce(function (acc, res) {
     var revScore = res.rev + acc.rev;
     var currentScore = res.current + acc.cur;
@@ -3878,7 +3887,7 @@ function Check(_a) {
       _g = _a.changedSince,
       changedSince = _g === void 0 ? null : _g,
       _h = _a.limitTop,
-      limitTop = _h === void 0 ? null : _h;
+      limitTop = _h === void 0 ? null : _h; // TODO fix include param => fail
 
   var _j = __read((0, react_1.useState)(null), 2),
       results = _j[0],

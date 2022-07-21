@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { TaskList, Task } from 'ink-task-list';
+import { Text } from 'ink';
 
 import { useValidatedConfig } from '../../lib/config';
 import buildWalkReport from '../../lib/reporters/buildWalkReport';
@@ -11,6 +12,72 @@ import { getCommitResult, formatWalkResults, WalkLoopResult } from './getCommitR
 
 import type { RevisionResults } from '../../lib/types'
 import getEndDatesEstimations from './getEndDatesEstimations';
+
+
+const useTaskList = ({isConfigValid, isReady, isHistoryDirty, isFinished, revlength, currentCommit, isGitReady}) => {
+  const checkGitHistoryState = (() => {
+    if (!isGitReady) return 'loading'
+    if (isGitReady && !isHistoryDirty) return 'success'
+    if (isGitReady && isHistoryDirty) return 'error'
+    return 'pending'
+  })()
+  
+  const checkGitHistory = {
+    state: checkGitHistoryState,
+    label: 'check git history',
+    status: checkGitHistoryState === 'loading' ? 'checking git history': checkGitHistoryState,
+  }
+
+  const configTaskState = (() => {
+    if (isConfigValid === null) return 'loading'
+    if (isConfigValid && !isHistoryDirty) return 'success'
+    if (!isConfigValid || isHistoryDirty) return 'error'
+    return 'pending'
+  })()
+  
+  const configTask = {
+    state: configTaskState,
+    label: 'load and validate configuration',
+    status: configTaskState === 'loading' ? 'validating configuration' : configTaskState
+  }
+
+  const walkTaskState = (() => {
+    if (!isReady && configTaskState === 'success') return 'loading'
+    if (isReady && !isHistoryDirty) return 'success'
+    if (isHistoryDirty) return 'error'
+    return 'pending'
+  })()
+  
+  const walkTask = {
+    state: walkTaskState,
+    label: `checking the last ${revlength} commits`,
+    status: walkTaskState === 'loading' 
+      ? `checking commit ${currentCommit.index}/${revlength} : ${currentCommit.commit}`
+      : walkTaskState
+  }
+
+  const reportTaskState = (() => {
+    if (walkTaskState !== 'success' && walkTaskState !== 'error') return 'pending'
+    if (walkTaskState === 'success' && !isFinished) return 'loading'
+    if (walkTaskState === 'success' && isFinished) return 'success'
+    return 'error'
+  })()
+  
+  const reportTask = {
+    state: reportTaskState,
+    label: `build a report`,
+    status: reportTaskState === 'loading' 
+      ? `building html report`
+      : walkTaskState
+  }
+
+  return [
+    checkGitHistory,
+    configTask,
+    walkTask,
+    reportTask,
+  ]
+}
 
 function Walk({
   config,
@@ -26,29 +93,29 @@ function Walk({
     isConfigValid,
     sanitizedConfig,
     userConfig,
-  } = useValidatedConfig(config);  
+  } = useValidatedConfig(config);
   
-  const { isGitReady, walkCommits, checkoutTo, currentBranch, revList } = useGitUtils(sanitizedConfig);
-
+  const { isGitReady, walkCommits, checkoutTo, currentBranch, revList, isHistoryDirty } = useGitUtils(sanitizedConfig);
   const revlength = isConfigValid && sanitizedConfig?.walkConfig?.limit ? sanitizedConfig.walkConfig.limit : '?'
+  const tasks = useTaskList({isConfigValid, isReady, isHistoryDirty, isFinished, revlength, currentCommit, isGitReady})
 
   useEffect(() => {
     (async () => {
-      if (isConfigValid && isGitReady) {
+      if (isConfigValid && isGitReady && !isHistoryDirty) {
         setTags(getTagListFromConfig(sanitizedConfig));
         
         
         const walkResults = await walkCommits<RevisionResults, WalkLoopResult>(revList.reverse(), {
           onCommitChange: async ({ rev, index, previousResult }) => {
             setCurrentCommit({ commit: rev.name, index: index + 1 })
-            
+
             const result = await getCommitResult(
               previousResult?.results,
               previousResult?.rev?.hash,
               sanitizedConfig,
               include
             );
-            
+
             return result
           },
           onError: (error) => {
@@ -64,35 +131,32 @@ function Walk({
         setIsReady(true);
       }
     })();
-  }, [isConfigValid, isGitReady]);
+  }, [isConfigValid, isGitReady, isHistoryDirty]);
 
   useEffect(() => {
     (async () => {
       if (isReady) {
-        const enDateEstimlations = getEndDatesEstimations({ initialConfig: userConfig, results })
-        buildWalkReport(userConfig, tags, results, enDateEstimlations);
+        const endDateEstimations = getEndDatesEstimations({ initialConfig: userConfig, results })
+        buildWalkReport(userConfig, tags, results, endDateEstimations);
         setIsFinished(true);
       }
     })();
   }, [isReady]);
 
   return (
+    <>
     <TaskList>
-      <Task
-          state={isConfigValid === null ? 'loading' : isConfigValid ? 'success' : 'error'}
-          label="validating configuration"
-          status={isConfigValid === null ? 'checking configuration' : isConfigValid ? 'success' : 'error'}
+      {tasks.map(task => (
+        <Task
+          key={task.label}
+          state={task.state}
+          label={task.label}
+          status={task.status}
         />
-      <Task
-        state={!isReady ? 'loading' : 'success'}
-        label={`checking the last ${revlength} commits`}
-        status={`checking commit ${currentCommit.index}/${revlength} : ${currentCommit.commit}`}
-      />
-      <Task
-        state={!isReady && !isFinished ? 'pending' : isReady && !isFinished ? 'loading': 'success'}
-        label="Building a report"
-      />
+      ))}
     </TaskList>
+    {isHistoryDirty && <Text color="red">Your have uncommited changes, please commit or stash them</Text>}
+    </>
   );
 }
 

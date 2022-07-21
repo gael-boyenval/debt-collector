@@ -2249,7 +2249,7 @@ var getFileList = function (config, compare, globOption) {
         /*return*/
         , new Promise(function (resolve, reject) {
           return __awaiter(void 0, void 0, void 0, function () {
-            var changedFiles, ignoreDeletedfiles, allChanges, files, error_1;
+            var changedFiles, allChanges, files, error_1;
             return __generator(this, function (_a) {
               switch (_a.label) {
                 case 0:
@@ -2257,15 +2257,12 @@ var getFileList = function (config, compare, globOption) {
 
                   return [4
                   /*yield*/
-                  , (0, git_1.getChangedFilesSinceRev)(compare)];
+                  , (0, git_1.getChangedFilesSinceRev)(compare) // const ignoreDeletedfiles = changedFiles.filter(({ status }) => status === 'A' || status === 'M')
+                  ];
 
                 case 1:
                   changedFiles = _a.sent();
-                  ignoreDeletedfiles = changedFiles.filter(function (_a) {
-                    var status = _a.status;
-                    return status === 'A' || status === 'M';
-                  });
-                  allChanges = ignoreDeletedfiles.map(function (item) {
+                  allChanges = changedFiles.map(function (item) {
                     return item.filePath;
                   });
                   files = (0, utils_1.filterIgnoredFiles)(allChanges, config.exclude, includedGlob);
@@ -2985,16 +2982,23 @@ var runFileChecks = function (config, filePath, eslint) {
           try {
             data = fs_1.default.readFileSync(filePath).toString();
           } catch (error) {
-            console.error("error while reading file ".concat(filePath, " \n ").concat(error.message));
+            // console.error(`error while reading file ${filePath} \n ${error.message}`)
             data = '';
           }
 
           if (((_c = config.fileRules) === null || _c === void 0 ? void 0 : _c.length) > 0) {
-            fileRulesResults = (0, getFileRulesErrors_1.default)(config, filePath, data);
-            fileResults = updateResults(config, fileRulesResults, fileResults, 'fileRules');
+            if (data) {
+              fileRulesResults = (0, getFileRulesErrors_1.default)(config, filePath, data);
+              fileResults = updateResults(config, fileRulesResults, fileResults, 'fileRules');
+            } else {
+              fileResults = updateResults(config, [], fileResults, 'fileRules');
+            }
           }
 
           if (!(((_d = config.eslintRules) === null || _d === void 0 ? void 0 : _d.length) > 0 && eslint)) return [3
+          /*break*/
+          , 3];
+          if (!data) return [3
           /*break*/
           , 2];
           return [4
@@ -3004,9 +3008,15 @@ var runFileChecks = function (config, filePath, eslint) {
         case 1:
           eslintResults = _e.sent();
           fileResults = updateResults(config, eslintResults, fileResults, 'eslintRules');
-          _e.label = 2;
+          return [3
+          /*break*/
+          , 3];
 
         case 2:
+          fileResults = updateResults(config, [], fileResults, 'eslintRules');
+          _e.label = 3;
+
+        case 3:
           return [2
           /*return*/
           , fileResults];
@@ -3937,6 +3947,8 @@ var prop_types_1 = __importDefault(require("prop-types"));
 
 var ink_task_list_1 = require("ink-task-list");
 
+var ink_1 = require("ink");
+
 var config_1 = require("../../lib/config");
 
 var buildWalkReport_1 = __importDefault(require("../../lib/reporters/buildWalkReport"));
@@ -3948,6 +3960,69 @@ var git_1 = require("../../lib/git");
 var getCommitResult_1 = require("./getCommitResult");
 
 var getEndDatesEstimations_1 = __importDefault(require("./getEndDatesEstimations"));
+
+var useTaskList = function (_a) {
+  var isConfigValid = _a.isConfigValid,
+      isReady = _a.isReady,
+      isHistoryDirty = _a.isHistoryDirty,
+      isFinished = _a.isFinished,
+      revlength = _a.revlength,
+      currentCommit = _a.currentCommit,
+      isGitReady = _a.isGitReady;
+
+  var checkGitHistoryState = function () {
+    if (!isGitReady) return 'loading';
+    if (isGitReady && !isHistoryDirty) return 'success';
+    if (isGitReady && isHistoryDirty) return 'error';
+    return 'pending';
+  }();
+
+  var checkGitHistory = {
+    state: checkGitHistoryState,
+    label: 'check git history',
+    status: checkGitHistoryState === 'loading' ? 'checking git history' : checkGitHistoryState
+  };
+
+  var configTaskState = function () {
+    if (isConfigValid === null) return 'loading';
+    if (isConfigValid && !isHistoryDirty) return 'success';
+    if (!isConfigValid || isHistoryDirty) return 'error';
+    return 'pending';
+  }();
+
+  var configTask = {
+    state: configTaskState,
+    label: 'load and validate configuration',
+    status: configTaskState === 'loading' ? 'validating configuration' : configTaskState
+  };
+
+  var walkTaskState = function () {
+    if (!isReady && configTaskState === 'success') return 'loading';
+    if (isReady && !isHistoryDirty) return 'success';
+    if (isHistoryDirty) return 'error';
+    return 'pending';
+  }();
+
+  var walkTask = {
+    state: walkTaskState,
+    label: "checking the last ".concat(revlength, " commits"),
+    status: walkTaskState === 'loading' ? "checking commit ".concat(currentCommit.index, "/").concat(revlength, " : ").concat(currentCommit.commit) : walkTaskState
+  };
+
+  var reportTaskState = function () {
+    if (walkTaskState !== 'success' && walkTaskState !== 'error') return 'pending';
+    if (walkTaskState === 'success' && !isFinished) return 'loading';
+    if (walkTaskState === 'success' && isFinished) return 'success';
+    return 'error';
+  }();
+
+  var reportTask = {
+    state: reportTaskState,
+    label: "build a report",
+    status: reportTaskState === 'loading' ? "building html report" : walkTaskState
+  };
+  return [checkGitHistory, configTask, walkTask, reportTask];
+};
 
 function Walk(_a) {
   var _this = this;
@@ -3991,9 +4066,19 @@ function Walk(_a) {
       walkCommits = _k.walkCommits,
       checkoutTo = _k.checkoutTo,
       currentBranch = _k.currentBranch,
-      revList = _k.revList;
+      revList = _k.revList,
+      isHistoryDirty = _k.isHistoryDirty;
 
   var revlength = isConfigValid && ((_b = sanitizedConfig === null || sanitizedConfig === void 0 ? void 0 : sanitizedConfig.walkConfig) === null || _b === void 0 ? void 0 : _b.limit) ? sanitizedConfig.walkConfig.limit : '?';
+  var tasks = useTaskList({
+    isConfigValid: isConfigValid,
+    isReady: isReady,
+    isHistoryDirty: isHistoryDirty,
+    isFinished: isFinished,
+    revlength: revlength,
+    currentCommit: currentCommit,
+    isGitReady: isGitReady
+  });
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(_this, void 0, void 0, function () {
@@ -4004,7 +4089,7 @@ function Walk(_a) {
         return __generator(this, function (_a) {
           switch (_a.label) {
             case 0:
-              if (!(isConfigValid && isGitReady)) return [3
+              if (!(isConfigValid && isGitReady && !isHistoryDirty)) return [3
               /*break*/
               , 2];
               setTags((0, getTagListFromConfig_1.default)(sanitizedConfig));
@@ -4080,18 +4165,18 @@ function Walk(_a) {
         });
       });
     })();
-  }, [isConfigValid, isGitReady]);
+  }, [isConfigValid, isGitReady, isHistoryDirty]);
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(_this, void 0, void 0, function () {
-        var enDateEstimlations;
+        var endDateEstimations;
         return __generator(this, function (_a) {
           if (isReady) {
-            enDateEstimlations = (0, getEndDatesEstimations_1.default)({
+            endDateEstimations = (0, getEndDatesEstimations_1.default)({
               initialConfig: userConfig,
               results: results
             });
-            (0, buildWalkReport_1.default)(userConfig, tags, results, enDateEstimlations);
+            (0, buildWalkReport_1.default)(userConfig, tags, results, endDateEstimations);
             setIsFinished(true);
           }
 
@@ -4102,18 +4187,16 @@ function Walk(_a) {
       });
     })();
   }, [isReady]);
-  return react_1.default.createElement(ink_task_list_1.TaskList, null, react_1.default.createElement(ink_task_list_1.Task, {
-    state: isConfigValid === null ? 'loading' : isConfigValid ? 'success' : 'error',
-    label: "validating configuration",
-    status: isConfigValid === null ? 'checking configuration' : isConfigValid ? 'success' : 'error'
-  }), react_1.default.createElement(ink_task_list_1.Task, {
-    state: !isReady ? 'loading' : 'success',
-    label: "checking the last ".concat(revlength, " commits"),
-    status: "checking commit ".concat(currentCommit.index, "/").concat(revlength, " : ").concat(currentCommit.commit)
-  }), react_1.default.createElement(ink_task_list_1.Task, {
-    state: !isReady && !isFinished ? 'pending' : isReady && !isFinished ? 'loading' : 'success',
-    label: "Building a report"
-  }));
+  return react_1.default.createElement(react_1.default.Fragment, null, react_1.default.createElement(ink_task_list_1.TaskList, null, tasks.map(function (task) {
+    return react_1.default.createElement(ink_task_list_1.Task, {
+      key: task.label,
+      state: task.state,
+      label: task.label,
+      status: task.status
+    });
+  })), isHistoryDirty && react_1.default.createElement(ink_1.Text, {
+    color: "red"
+  }, "Your have uncommited changes, please commit or stash them"));
 }
 
 Walk.propTypes = {

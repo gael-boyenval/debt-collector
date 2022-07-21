@@ -17,8 +17,8 @@ const getFileList = async (
     return new Promise(async (resolve, reject) => {
       try {
         const changedFiles = await getChangedFilesSinceRev(compare)
-        const ignoreDeletedfiles = changedFiles.filter(({ status }) => status === 'A' || status === 'M')
-        const allChanges = ignoreDeletedfiles.map((item) => item.filePath)
+        // const ignoreDeletedfiles = changedFiles.filter(({ status }) => status === 'A' || status === 'M')
+        const allChanges = changedFiles.map((item) => item.filePath)
         const files = filterIgnoredFiles(allChanges, config.exclude, includedGlob)
         
         resolve(files)
