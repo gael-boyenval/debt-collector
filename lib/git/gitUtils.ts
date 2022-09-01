@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop, no-restricted-syntax */
 import path from 'path'
 import simpleGit, { SimpleGit } from 'simple-git'
-import type { GitRevision, RevisionResults } from '../types'
+import type { GitRevision } from '../types'
 
 const gitOptions = {
   baseDir: process.cwd(),
@@ -115,9 +115,23 @@ export const walkCommits = async <FinalResult, IteratorResult>(
 }
 
 export const getChangedFilesSinceRev = async (
-  rev: string
+  rev: string,
+  commonAncestor = true
 ): Promise<{ status: string; filePath: string }[]> => {
-  const results = await git.diff([rev, '--name-status', '--no-renames'])
+  let results
+  if (commonAncestor) {
+    // get last common commit between rev and Head
+    // avoid comparing Head with out of sync base branch
+    const commit = await git.raw(['merge-base', rev, 'HEAD'])
+    results = await git.diff([
+      commit.replace('\n', ''),
+      '--name-status',
+      '--no-renames',
+    ])
+  } else {
+    results = await git.diff([rev, '--name-status', '--no-renames'])
+  }
+
   const rootGitDir = await git.revparse(['--show-toplevel'])
   const currentGitDir = path.relative(rootGitDir, process.cwd())
 

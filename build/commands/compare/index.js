@@ -903,23 +903,50 @@ var walkCommits = function (revList, _a) {
 
 exports.walkCommits = walkCommits;
 
-var getChangedFilesSinceRev = function (rev) {
+var getChangedFilesSinceRev = function (rev, commonAncestor) {
+  if (commonAncestor === void 0) {
+    commonAncestor = true;
+  }
+
   return __awaiter(void 0, void 0, Promise, function () {
-    var results, rootGitDir, currentGitDir, changedFilesSinceRev;
+    var results, commit, rootGitDir, currentGitDir, changedFilesSinceRev;
     return __generator(this, function (_a) {
       switch (_a.label) {
         case 0:
+          if (!commonAncestor) return [3
+          /*break*/
+          , 3];
+          return [4
+          /*yield*/
+          , git.raw(['merge-base', rev, 'HEAD'])];
+
+        case 1:
+          commit = _a.sent();
+          return [4
+          /*yield*/
+          , git.diff([commit.replace('\n', ''), '--name-status', '--no-renames'])];
+
+        case 2:
+          results = _a.sent();
+          return [3
+          /*break*/
+          , 5];
+
+        case 3:
           return [4
           /*yield*/
           , git.diff([rev, '--name-status', '--no-renames'])];
 
-        case 1:
+        case 4:
           results = _a.sent();
+          _a.label = 5;
+
+        case 5:
           return [4
           /*yield*/
           , git.revparse(['--show-toplevel'])];
 
-        case 2:
+        case 6:
           rootGitDir = _a.sent();
           currentGitDir = path_1.default.relative(rootGitDir, process.cwd());
           changedFilesSinceRev = results.replace(/\t/g, '|').split('\n').filter(function (item) {
@@ -1468,7 +1495,7 @@ var removeDotSlash = function (str) {
   return str.replace(/^\.\//, '');
 };
 
-var getFileList = function (config, compare, globOption) {
+var getFileList = function (config, compare, globOption, commonAncestor) {
   return __awaiter(void 0, void 0, Promise, function () {
     var includedGlob;
     return __generator(this, function (_a) {
@@ -1487,7 +1514,7 @@ var getFileList = function (config, compare, globOption) {
 
                   return [4
                   /*yield*/
-                  , (0, git_1.getChangedFilesSinceRev)(compare) // const ignoreDeletedfiles = changedFiles.filter(({ status }) => status === 'A' || status === 'M')
+                  , (0, git_1.getChangedFilesSinceRev)(compare, commonAncestor) // const ignoreDeletedfiles = changedFiles.filter(({ status }) => status === 'A' || status === 'M')
                   ];
 
                 case 1:
@@ -3862,7 +3889,7 @@ function Compare(_a) {
   var _this = this;
 
   var _b = _a.revision,
-      revision = _b === void 0 ? null : _b,
+      revision = _b === void 0 ? 'BRANCHING_REF' : _b,
       _c = _a.rule,
       rule = _c === void 0 ? null : _c,
       _d = _a.tags,
@@ -3872,40 +3899,42 @@ function Compare(_a) {
       _f = _a.include,
       include = _f === void 0 ? null : _f,
       _g = _a.htmlReport,
-      htmlReport = _g === void 0 ? false : _g;
-
-  var _h = __read((0, react_1.useState)(null), 2),
-      results = _h[0],
-      setResults = _h[1];
+      htmlReport = _g === void 0 ? false : _g,
+      _h = _a.commonAncestor,
+      commonAncestor = _h === void 0 ? true : _h;
 
   var _j = __read((0, react_1.useState)(null), 2),
-      fileList = _j[0],
-      setFileList = _j[1];
+      results = _j[0],
+      setResults = _j[1];
 
-  var _k = __read((0, react_1.useState)(0), 2),
-      checkedFileCount = _k[0],
-      setCheckedFileCount = _k[1];
+  var _k = __read((0, react_1.useState)(null), 2),
+      fileList = _k[0],
+      setFileList = _k[1];
 
-  var _l = __read((0, react_1.useState)(null), 2),
-      revisionResults = _l[0],
-      setRevisionResults = _l[1];
+  var _l = __read((0, react_1.useState)(0), 2),
+      checkedFileCount = _l[0],
+      setCheckedFileCount = _l[1];
 
-  var _m = __read((0, react_1.useState)(0), 2),
-      checkedRevisionFileCount = _m[0],
-      setRevisionCheckedFileCount = _m[1];
+  var _m = __read((0, react_1.useState)(null), 2),
+      revisionResults = _m[0],
+      setRevisionResults = _m[1];
 
-  var _o = __read((0, react_1.useState)(null), 2),
-      finalResult = _o[0],
-      setFinalResult = _o[1];
+  var _o = __read((0, react_1.useState)(0), 2),
+      checkedRevisionFileCount = _o[0],
+      setRevisionCheckedFileCount = _o[1];
 
-  var _p = (0, useValidatedConfig_1.default)(config),
-      isConfigValid = _p.isConfigValid,
-      sanitizedConfig = _p.sanitizedConfig;
+  var _p = __read((0, react_1.useState)(null), 2),
+      finalResult = _p[0],
+      setFinalResult = _p[1];
 
-  var _q = (0, git_1.useGitUtils)(sanitizedConfig),
-      isGitReady = _q.isGitReady,
-      checkoutTo = _q.checkoutTo,
-      currentBranch = _q.currentBranch;
+  var _q = (0, useValidatedConfig_1.default)(config),
+      isConfigValid = _q.isConfigValid,
+      sanitizedConfig = _q.sanitizedConfig;
+
+  var _r = (0, git_1.useGitUtils)(sanitizedConfig),
+      isGitReady = _r.isGitReady,
+      checkoutTo = _r.checkoutTo,
+      currentBranch = _r.currentBranch;
 
   (0, react_1.useEffect)(function () {
     (function () {
@@ -3919,7 +3948,7 @@ function Compare(_a) {
               , 2];
               return [4
               /*yield*/
-              , (0, getFilesList_1.default)(sanitizedConfig, revision, include)];
+              , (0, getFilesList_1.default)(sanitizedConfig, revision, include, commonAncestor)];
 
             case 1:
               fileListResult = _a.sent();
@@ -4156,7 +4185,8 @@ Compare.propTypes = {
   rule: prop_types_1.default.string,
   tags: prop_types_1.default.array,
   config: prop_types_1.default.string,
-  htmlReport: prop_types_1.default.bool
+  htmlReport: prop_types_1.default.bool,
+  commonAncestor: prop_types_1.default.bool
 };
 Compare.shortFlags = {
   rule: 'r',

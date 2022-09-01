@@ -1,6 +1,6 @@
 {
   "name": "debt-collector",
-  "version": "v2.5.3-alpha",
+  "version": "v2.6.0-alpha",
   "description": "a nodejs tool to identify, track and mesure technical debt",
   "bin": "./build/cli.js",
   "engines": {

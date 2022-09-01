@@ -1560,23 +1560,50 @@ var walkCommits = function (revList, _a) {
 
 exports.walkCommits = walkCommits;
 
-var getChangedFilesSinceRev = function (rev) {
+var getChangedFilesSinceRev = function (rev, commonAncestor) {
+  if (commonAncestor === void 0) {
+    commonAncestor = true;
+  }
+
   return __awaiter(void 0, void 0, Promise, function () {
-    var results, rootGitDir, currentGitDir, changedFilesSinceRev;
+    var results, commit, rootGitDir, currentGitDir, changedFilesSinceRev;
     return __generator(this, function (_a) {
       switch (_a.label) {
         case 0:
+          if (!commonAncestor) return [3
+          /*break*/
+          , 3];
+          return [4
+          /*yield*/
+          , git.raw(['merge-base', rev, 'HEAD'])];
+
+        case 1:
+          commit = _a.sent();
+          return [4
+          /*yield*/
+          , git.diff([commit.replace('\n', ''), '--name-status', '--no-renames'])];
+
+        case 2:
+          results = _a.sent();
+          return [3
+          /*break*/
+          , 5];
+
+        case 3:
           return [4
           /*yield*/
           , git.diff([rev, '--name-status', '--no-renames'])];
 
-        case 1:
+        case 4:
           results = _a.sent();
+          _a.label = 5;
+
+        case 5:
           return [4
           /*yield*/
           , git.revparse(['--show-toplevel'])];
 
-        case 2:
+        case 6:
           rootGitDir = _a.sent();
           currentGitDir = path_1.default.relative(rootGitDir, process.cwd());
           changedFilesSinceRev = results.replace(/\t/g, '|').split('\n').filter(function (item) {

@@ -35,7 +35,7 @@ function Check({
   useEffect(() => {
     (async () => {
       if (isConfigValid) {
-        const result = await getFilesList(sanitizedConfig, changedSince, include);
+        const result = await getFilesList(sanitizedConfig, changedSince, include, false);
         setFileList(result);
       }
     })();
@@ -43,7 +43,7 @@ function Check({
 
   useEffect(() => {
     (async () => {
-      if (fileList !== null) {        
+      if (fileList !== null) {
         const incrementFn = () => setCheckedFileCount((prevCount: number):number => prevCount + 1);
         const results = await checkFileList(fileList, sanitizedConfig, rule, tags, incrementFn);
         setResults({ results, config: sanitizedConfig });

@@ -10,12 +10,13 @@ import { useGitUtils } from '../../lib/git';
 import { FileResults } from '../../lib/types';
 
 function Compare({
-  revision = null,
+  revision = 'BRANCHING_REF',
   rule = null,
   tags = null,
   config = null,
  	include = null,
   htmlReport = false,
+  commonAncestor = true,
 }) {
   const [results, setResults] = useState<FileResults[]|null>(null);
   const [fileList, setFileList] = useState(null);
@@ -35,7 +36,7 @@ function Compare({
   useEffect(() => {
     (async () => {
       if (isConfigValid && isGitReady) {
-        const fileListResult = await getFilesList(sanitizedConfig, revision, include);
+        const fileListResult = await getFilesList(sanitizedConfig, revision, include, commonAncestor);
         setFileList(fileListResult);
       }
     })();
@@ -144,6 +145,7 @@ Compare.propTypes = {
   tags: PropTypes.array,
   config: PropTypes.string,
   htmlReport: PropTypes.bool,
+  commonAncestor: PropTypes.bool,
 };
 
 Compare.shortFlags = {

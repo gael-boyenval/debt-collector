@@ -9,14 +9,15 @@ const removeDotSlash = (str: string): string => str.replace(/^\.\//, '')
 const getFileList = async (
   config: Config,
   compare?: string,
-  globOption?: string
+  globOption?: string,
+  commonAncestor: boolean
 ): Promise<string[]> => {
   const includedGlob = !!globOption ? [globOption] : config.include
   
   if (!!compare) {
     return new Promise(async (resolve, reject) => {
       try {
-        const changedFiles = await getChangedFilesSinceRev(compare)
+        const changedFiles = await getChangedFilesSinceRev(compare, commonAncestor)
         // const ignoreDeletedfiles = changedFiles.filter(({ status }) => status === 'A' || status === 'M')
         const allChanges = changedFiles.map((item) => item.filePath)
         const files = filterIgnoredFiles(allChanges, config.exclude, includedGlob)
