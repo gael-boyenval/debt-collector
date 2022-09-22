@@ -35,6 +35,10 @@ const checkFileList = async (
 
     const results = []
 
+    if (fileList.length === 0) {
+      resolve(results)
+    }
+
     queue.enqueue(
       fileList.map(
         (file) => () => getFileResult(fileListConfig, file, increment, eslint)
