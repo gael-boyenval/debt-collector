@@ -3277,6 +3277,11 @@ var checkFileList = function (fileList, config, rule, tags, increment) {
         }
 
         var results = [];
+
+        if (fileList.length === 0) {
+          resolve(results);
+        }
+
         queue.enqueue(fileList.map(function (file) {
           return function () {
             return (0, getFileResult_1.default)(fileListConfig, file, increment, eslint);
