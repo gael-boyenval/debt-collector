@@ -74,6 +74,7 @@ export const walkCommits = async <FinalResult, IteratorResult>(
 ): Promise<FinalResult | null> => {
   const isHistoryDirty = await getIsHistoryDirty()
   const currentBranch = await getCurrentBranch()
+
   let walkIteratorResults: WalkIteratorResult<IteratorResult>[] | null = null
 
   if (isHistoryDirty) {

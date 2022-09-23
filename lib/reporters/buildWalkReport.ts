@@ -25,8 +25,14 @@ const buildWalkReport = (userConfig, tags, results, enDateEstimlations) => {
       if (err) throw err
 
       fs.writeFileSync(resultPath, data)
-
-      spawn('open', [resultPath])
+      try {
+        spawn('open', [resultPath])
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(
+          'tried to open file but could not... it may be because we are in a virtual env'
+        )
+      }
     })
   }, 330)
 }

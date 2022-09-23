@@ -1120,7 +1120,13 @@ var buildWalkReport = function (userConfig, tags, results, enDateEstimlations) {
     }, function (err) {
       if (err) throw err;
       fs_1.default.writeFileSync(resultPath, data);
-      (0, child_process_1.spawn)('open', [resultPath]);
+
+      try {
+        (0, child_process_1.spawn)('open', [resultPath]);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('tried to open file but could not... it may be because we are in a virtual env');
+      }
     });
   }, 330);
 };
