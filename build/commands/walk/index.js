@@ -1105,7 +1105,7 @@ var chartTemplate_1 = __importDefault(require("./chartTemplate"));
 var cachePath = "".concat(process.cwd(), "/node_modules/.cache/debt-collector");
 var resultPath = "".concat(cachePath, "/report.html");
 
-var buildWalkReport = function (userConfig, tags, results, enDateEstimlations) {
+var buildWalkReport = function (userConfig, tags, results, enDateEstimlations, openReport) {
   setTimeout(function () {
     // waiting for file system to correctly switch all files after checkout
     var jsonResults = JSON.stringify({
@@ -1121,11 +1121,13 @@ var buildWalkReport = function (userConfig, tags, results, enDateEstimlations) {
       if (err) throw err;
       fs_1.default.writeFileSync(resultPath, data);
 
-      try {
-        (0, child_process_1.spawn)('open', [resultPath]);
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('tried to open file but could not... it may be because we are in a virtual env');
+      if (openReport) {
+        try {
+          (0, child_process_1.spawn)('open', [resultPath]);
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log('tried to open file but could not... it may be because we are in a virtual env');
+        }
       }
     });
   }, 330);
@@ -3978,6 +3980,7 @@ var __importDefault = this && this.__importDefault || function (mod) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+/* eslint-disable react/require-default-props */
 
 var react_1 = __importStar(require("react"));
 
@@ -4069,43 +4072,45 @@ function Walk(_a) {
 
   var config = _a.config,
       _c = _a.include,
-      include = _c === void 0 ? null : _c;
+      include = _c === void 0 ? null : _c,
+      _d = _a.openReport,
+      openReport = _d === void 0 ? false : _d;
 
-  var _d = __read((0, react_1.useState)({}), 2),
-      results = _d[0],
-      setResults = _d[1];
+  var _e = __read((0, react_1.useState)({}), 2),
+      results = _e[0],
+      setResults = _e[1];
 
-  var _e = __read((0, react_1.useState)({
+  var _f = __read((0, react_1.useState)({
     commit: '',
     index: 0
   }), 2),
-      currentCommit = _e[0],
-      setCurrentCommit = _e[1];
+      currentCommit = _f[0],
+      setCurrentCommit = _f[1];
 
-  var _f = __read((0, react_1.useState)(false), 2),
-      isReady = _f[0],
-      setIsReady = _f[1];
+  var _g = __read((0, react_1.useState)(false), 2),
+      isReady = _g[0],
+      setIsReady = _g[1];
 
-  var _g = __read((0, react_1.useState)({}), 2),
-      tags = _g[0],
-      setTags = _g[1];
+  var _h = __read((0, react_1.useState)({}), 2),
+      tags = _h[0],
+      setTags = _h[1];
 
-  var _h = __read((0, react_1.useState)(false), 2),
-      isFinished = _h[0],
-      setIsFinished = _h[1];
+  var _j = __read((0, react_1.useState)(false), 2),
+      isFinished = _j[0],
+      setIsFinished = _j[1];
 
-  var _j = (0, config_1.useValidatedConfig)(config),
-      isConfigValid = _j.isConfigValid,
-      sanitizedConfig = _j.sanitizedConfig,
-      userConfig = _j.userConfig;
+  var _k = (0, config_1.useValidatedConfig)(config),
+      isConfigValid = _k.isConfigValid,
+      sanitizedConfig = _k.sanitizedConfig,
+      userConfig = _k.userConfig;
 
-  var _k = (0, git_1.useGitUtils)(sanitizedConfig),
-      isGitReady = _k.isGitReady,
-      walkCommits = _k.walkCommits,
-      checkoutTo = _k.checkoutTo,
-      currentBranch = _k.currentBranch,
-      revList = _k.revList,
-      isHistoryDirty = _k.isHistoryDirty;
+  var _l = (0, git_1.useGitUtils)(sanitizedConfig),
+      isGitReady = _l.isGitReady,
+      walkCommits = _l.walkCommits,
+      checkoutTo = _l.checkoutTo,
+      currentBranch = _l.currentBranch,
+      revList = _l.revList,
+      isHistoryDirty = _l.isHistoryDirty;
 
   var revlength = isConfigValid && ((_b = sanitizedConfig === null || sanitizedConfig === void 0 ? void 0 : sanitizedConfig.walkConfig) === null || _b === void 0 ? void 0 : _b.limit) ? sanitizedConfig.walkConfig.limit : '?';
   var tasks = useTaskList({
@@ -4214,7 +4219,7 @@ function Walk(_a) {
               initialConfig: userConfig,
               results: results
             });
-            (0, buildWalkReport_1.default)(userConfig, tags, results, endDateEstimations);
+            (0, buildWalkReport_1.default)(userConfig, tags, results, endDateEstimations, openReport);
             setIsFinished(true);
           }
 
@@ -4239,7 +4244,8 @@ function Walk(_a) {
 
 Walk.propTypes = {
   config: prop_types_1.default.string,
-  include: prop_types_1.default.string
+  include: prop_types_1.default.string,
+  openReport: prop_types_1.default.bool
 };
 Walk.shortFlags = {
   config: 'c',

@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { TaskList, Task } from 'ink-task-list';
@@ -82,6 +83,7 @@ const useTaskList = ({isConfigValid, isReady, isHistoryDirty, isFinished, revlen
 function Walk({
   config,
   include = null,
+  openReport = false
 }) {
   const [results, setResults] = useState({});
   const [currentCommit, setCurrentCommit] = useState({ commit: '', index: 0 });
@@ -137,7 +139,7 @@ function Walk({
     (async () => {
       if (isReady) {
         const endDateEstimations = getEndDatesEstimations({ initialConfig: userConfig, results })
-        buildWalkReport(userConfig, tags, results, endDateEstimations);
+        buildWalkReport(userConfig, tags, results, endDateEstimations, openReport);
         setIsFinished(true);
       }
     })();
@@ -163,6 +165,7 @@ function Walk({
 Walk.propTypes = {
   config: PropTypes.string,
   include: PropTypes.string,
+  openReport: PropTypes.bool
 };
 
 Walk.shortFlags = {
