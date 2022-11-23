@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import minimatch from 'minimatch'
 import getFilesList from '../../lib/filters/getFilesList'
 import checkFileList from '../../lib/results/checkFileList'
 import type {
@@ -12,7 +13,9 @@ import type {
 
 export const formatWalkResults = (
   config: Config,
-  results: { rev: GitRevision; results: { [filePath: string]: FileResults } }[]
+  results: { rev: GitRevision; results: { [filePath: string]: FileResults } }[],
+  globFilter: string | string[],
+  hasPackagesConfig: boolean
 ): RevisionResults[] => {
   const { fileRules = [], eslintRules = [] } = config
 
@@ -22,8 +25,19 @@ export const formatWalkResults = (
   ]
 
   const revisionResultsArr = results.map(({ rev, results: filesResults }) => {
+    
+    let filteredResults = filesResults
+    
+    if ( hasPackagesConfig) {
+      filteredResults = Object.keys(filesResults).filter(
+        filePath => minimatch(filePath, globFilter.replace(/^\.\//, ''))
+      ).reduce((acc, filePath) => {
+        acc[filePath] = filesResults[filePath]
+        return acc
+      }, {})
+    }
+    
     let totalScore = 0
-
     const rulesScores: { [ruleId: string]: BrokenRule } =
       allRulesIdInConfig.reduce((acc, rule) => {
         acc[rule.id] = {
@@ -36,7 +50,7 @@ export const formatWalkResults = (
         return acc
       }, {})
 
-    Object.keys(filesResults).forEach((filePath) => {
+    Object.keys(filteredResults).forEach((filePath) => {
       const fileResults = filesResults[filePath]
 
       fileResults.brokenRules.forEach((brokenRule) => {
@@ -48,7 +62,7 @@ export const formatWalkResults = (
       })
     })
 
-    const brokenRules = Object.values(rulesScores)
+    const brokenRules = Object.values(rulesScores)    
 
     return {
       ...rev,

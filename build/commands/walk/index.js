@@ -1081,7 +1081,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 exports.default = function (data) {
-  return "\n<!DOCTYPE html>\n<html>\n<head>\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.14.0/babel.min.js\"></script>\n    <script type=\"text/babel\" data-presets=\"es2017, stage-3\" data-plugins=\"syntax-async-functions,transform-class-properties\"></script>\n    <script src=\"https://unpkg.com/react/umd/react.production.min.js\"></script>\n    <script src=\"https://unpkg.com/react-dom/umd/react-dom.production.min.js\"></script>\n    <script src=\"https://unpkg.com/prop-types/prop-types.min.js\"></script>\n    <script src=\"https://unpkg.com/recharts/umd/Recharts.js\"></script>\n     <style type=\"text/css\">\n      body {\n        font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n      }\n    </style>\n</head>\n<body>\n<div id=\"app\"></div>\n<script type=\"text/babel\">\n\nconst result = ".concat(data, "\n\nconst { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts\n\nconst ReportDebtPaymentProjection = ({period, title}) => (\n  <div  style={{ padding: 20, flex: 1 }}>\n    <div>At an avarage rythme of <b>{Math.round(period.tendencyMonth*100)/100} points/month</b>,<br/> it would require <b>{period.daysToReachZero} days</b> to reach zero debt.<br/> Debt would be payed in full on <b>{\n      new Date(\n        period.estimatedendDate\n      ).toDateString()}</b>\n    </div>\n  </div>\n)\n\nconst parseDataBy = (key) => result.results.map((commit) => {\n\n  const rulesScores = commit.brokenRules.map(rule => ({\n    [rule.ruleId]: rule[key]\n  })).reduce((acc, res) => ({...acc, ...res}), {})\n\n  return {\n    commit,\n    ...rulesScores\n  }\n})\n\nfunction getRandomColor() {\n  var letters = '0123456789ABCDEF';\n  var color = '#';\n  for (var i = 0; i < 6; i++) {\n    color += letters[Math.floor(Math.random() * 16)];\n  }\n  return color;\n}\n\nfunction shadeColor(color, percent) {\n  const channel = (chan) => {\n    let colChan = parseInt(chan, 16);\n    colChan = parseInt(colChan * (100 + percent) / 100);\n    colChan = colChan < 255 ? colChan : 255;\n    colChan = colChan.toString(16).length === 1\n      ? \"0\" + colChan.toString(16)\n      : colChan.toString(16);\n    return colChan\n  }\n\n  const RR = channel(color.substring(1,3));\n  const GG = channel(color.substring(3,5));\n  const BB = channel(color.substring(5,7));\n\n  return \"#\"+RR+GG+BB;\n}\n\nconst colors = Array(100).fill('').map(() =>  shadeColor(getRandomColor(), -20))\nconst newData = parseDataBy('ruleTotalSore')\n\nconst baseButtonStyles = {\n  padding: 4,\n  textAlign: 'left',\n  marginBottom: 6,\n  marginRight: 6,\n  border: 'none',\n  outline: 'none',\n  fontWeight: 'bold',\n}\n\nconst rules = Object.keys(newData[0]).filter(key => key !== 'commit')\nconst rulesActives = rules.reduce((acc, rule) => {\n  acc[rule] = true\n  return acc\n}, {})\n\n const App = () => {\n   const [data, setData] = React.useState(newData)\n   const [valueType, setValueType] = React.useState('ruleTotalSore')\n   const [activeRules, setActiveRules] = React.useState(rulesActives)\n   const [tagFilter, setTagFilter] = React.useState(null)\n   const [chartType, setChartType] = React.useState('area')\n   const [estimationsBasedOn, setEstimationsBasedOn] = React.useState('avairage')\n\n   const toggleRule = (id) => {\n    setTagFilter(null)\n    setActiveRules(prev => ({\n      ...prev,\n      [id]: !prev[id]\n    }))\n   }\n\n   const switchDataBy = (key) => {\n      setValueType(key)\n      setData(parseDataBy(key))\n   }\n\n   const toggleAll = () => {\n     setTagFilter(null)\n     setActiveRules(prev => {\n       const rulesKeys = Object.keys(prev)\n       const firstIsActive = !!prev[rulesKeys[0]]\n       return rulesKeys.reduce((rules, rule) => {\n         rules[rule] = !firstIsActive\n         return rules\n       }, {})\n     })\n   }\n\n   const toggleTag = (tag) => {\n     if (tagFilter === null || tagFilter !== tag) {\n       setTagFilter(tag)\n     } else {\n       setTagFilter(null)\n     }\n   }\n\n   const renderTooltip = ({payload}) => {\n    if (!payload || !payload.length) { return null }\n     return <div style={{ backgroundColor: 'white', padding: 15, borderRadius: 10, boxShadow: '0 0 10px rgba(0,0,0,0.2)' }}>\n      <h4 style={{ margin: 0, marginBottom: 5}}>{payload[0].payload.commit.date}</h4>\n      <h4 style={{ margin: 0, marginBottom: 15}}>\n        Total : {payload.reduce((totalScore, {value}) => totalScore + value, 0)}\n      </h4>\n      <p style={{ margin: 0, marginBottom: 5}}>{payload[0].payload.commit.name}</p>\n      <br/>\n        {payload.reverse().map(item => (\n          <div key={item.dataKey} style={{ display: 'flex', justifyContent:'center', fontSize: 12, marginBottom: 4}}>\n            <span style={{ backgroundColor: item.color, display: 'inline-block', width: 15, height: 15, borderRadius: 3, marginRight: 7}}></span>\n            <div style={{ flex: 1, marginRight: 25}}>\n              <span>{item.name.replace(/_/g, ' ')}</span>\n            </div>\n            <span style={{ fontWeight: 'bold'}}>{item.value}</span>\n          </div>\n        ))}\n      </div>\n   }\n\n  React.useEffect(() => {\n    if (tagFilter) {\n      setActiveRules(rules => Object.keys(rules).reduce((acc, rule) => {\n        if (result.tags[tagFilter].includes(rule)) {\n          acc[rule] = true\n        } else {\n          acc[rule] = false\n        }\n        return acc\n      }, {}))\n    }\n  }, [tagFilter])\n\n   return (\n     <React.Fragment>\n      <div style={{display: 'flex', overflow: 'hidden', width: '100vw', height:'80vh'}}>\n        <div style={{width: '80vw', height:'80vh'}}>\n          <div style={{height:40, paddingLeft: 40}}>\n            <button\n                onClick={() => setChartType('area')}\n                style={{\n                  ...baseButtonStyles,\n                  backgroundColor: chartType === 'area' ? 'green' : '#F5F5F5',\n                  color: chartType === 'area' ? 'white' : 'grey'\n                }}\n              >\n                AREA CHART\n              </button>\n              <button\n                onClick={() => setChartType('line')}\n                style={{\n                  ...baseButtonStyles,\n                  backgroundColor: chartType === 'line' ? 'green' : '#F5F5F5',\n                  color: chartType === 'line' ? 'white' : 'grey'\n                }}\n              >\n                LINE CHART\n              </button>\n          </div>\n          {chartType === 'area' &&\n          <ResponsiveContainer width=\"100%\" height=\"90%\">\n            <AreaChart\n              width={500}\n              height={400}\n              data={data}\n              margin={{\n                top: 10,\n                right: 30,\n                left: 0,\n                bottom: 0,\n              }}\n            >\n              <CartesianGrid strokeDasharray=\"3 3\" />\n              <XAxis dataKey=\"commit\" />\n              <YAxis />\n              <Tooltip\n                content={renderTooltip}\n                itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}\n                labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}\n              />\n              {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&\n                <Area\n                  type=\"monotone\"\n                  dataKey={rule}\n                  stackId=\"1\"\n                  stroke={colors[Object.keys(activeRules).indexOf(rule)]}\n                  fill={colors[Object.keys(activeRules).indexOf(rule)]} />\n              )}\n            </AreaChart>\n          </ResponsiveContainer>\n          }\n          {chartType === 'line' &&\n          <ResponsiveContainer width=\"100%\" height=\"90%\">\n            <LineChart\n              width={500}\n              height={400}\n              data={data}\n              margin={{\n                top: 10,\n                right: 30,\n                left: 0,\n                bottom: 0,\n              }}\n            >\n              <CartesianGrid strokeDasharray=\"3 3\" />\n              <XAxis dataKey=\"commit\" />\n              <YAxis />\n              <Tooltip\n                content={renderTooltip}\n                itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}\n                labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}\n              />\n              {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&\n                <Line\n                  type=\"monotone\"\n                  dataKey={rule}\n                  stackId=\"1\"\n                  stroke={colors[Object.keys(activeRules).indexOf(rule)]}\n                  fill={colors[Object.keys(activeRules).indexOf(rule)]} />\n              )}\n            </LineChart>\n          </ResponsiveContainer>\n          }\n          </div>\n\n\n          <div style={{width: '20vw', minWidth: 400, height:'80vh', overflowY: 'auto', padding: 20}}>\n            <h3>Rules</h3>\n            {Object.keys(activeRules).map(rule =>\n              <button\n                key={rule}\n                onClick={() => toggleRule(rule)}\n                style={{\n                  ...baseButtonStyles,\n                  backgroundColor: activeRules[rule] ? 'green' : '#F5F5F5',\n                  color: activeRules[rule] ? 'white' : 'grey'\n                }}\n              >\n                {rule}\n              </button>\n            )}\n            <div style={{ marginTop: 15 }}>\n              <button onClick={() => toggleAll()}>TOGGLE ALL RULES</button>\n            </div>\n            <hr />\n            <h3>Tags</h3>\n            {Object.keys(result.tags).map(tag =>\n              <button\n                key={tag}\n                onClick={() => toggleTag(tag)}\n                style={{\n                  ...baseButtonStyles,\n                  display: 'inline-block',\n                  backgroundColor: tagFilter === tag ? 'green' : '#F5F5F5',\n                  color: tagFilter === tag ? 'white' : 'grey'\n                }}\n              >\n                {tag}\n              </button>\n            )}\n            <hr />\n            <h3>Display values</h3>\n            <button\n              onClick={() => switchDataBy('ruleTotalSore')}\n              style={{\n                ...baseButtonStyles,\n                display: 'inline-block',\n                backgroundColor: valueType === 'ruleTotalSore' ? 'green' : '#F5F5F5',\n                color: valueType === 'ruleTotalSore' ? 'white' : 'grey'\n              }}>\n                BY SCORE\n            </button>\n            <button\n              onClick={() => switchDataBy('occurences')}\n              style={{\n                ...baseButtonStyles,\n                display: 'inline-block',\n                backgroundColor: valueType === 'occurences' ? 'green' : '#F5F5F5',\n                color: valueType === 'occurences' ? 'white' : 'grey'\n              }}>\n                BY OCCURENCES\n            </button>\n            <hr />\n          </div>\n        </div>\n        <div style={{textAlign: 'center', maxWidth: 1600, margin: '0 auto'}}>\n          <hr />\n            <button\n              onClick={() => setEstimationsBasedOn('avairage')}\n              style={{\n                ...baseButtonStyles,\n                display: 'inline-block',\n                backgroundColor: estimationsBasedOn === 'avairage' ? 'green' : '#F5F5F5',\n                color: estimationsBasedOn === 'avairage' ? 'white' : 'grey'\n              }}>\n                AVERAGE ALL PERIODS\n            </button>\n            <button\n              onClick={() => setEstimationsBasedOn('lastPeriod')}\n              style={{\n                ...baseButtonStyles,\n                display: 'inline-block',\n                backgroundColor: estimationsBasedOn === 'lastPeriod' ? 'green' : '#F5F5F5',\n                color: estimationsBasedOn === 'lastPeriod' ? 'white' : 'grey'\n              }}>\n                LAST PERDIOD\n            </button>\n\n          <h2 style={{margin: 0, marginTop: 30}}>Current score : {result.enDateEstimlations.global.currentScore}</h2>\n          <h3 style={{margin: 0}}>Estimated date for full reimbursment:</h3>\n          <div style={{display: 'flex'}}>\n            <ReportDebtPaymentProjection period={result.enDateEstimlations.global[estimationsBasedOn]}/>\n          </div>\n          <div style={{textAlign: 'right', marginBottom: 200}}>\n            <table width=\"100%\" style={{textAlign: 'right', marginBottom: 200}}>\n              <thead>\n                <tr>\n                  <th style={{textAlign: 'left'}}>Rule ID</th>\n                  <th>Current score</th>\n                  <th>Debt points/month</th>\n                  <th>Days remaining to zero</th>\n                  <th>Estimated date to zero</th>\n                </tr>\n              </thead>\n              <tbody>\n                {Object.keys(result.enDateEstimlations.rules).map(ruleId => {\n                  const {\n                    tendencyMonth,\n                    daysToReachZero,\n                    estimatedendDate\n                  } = result.enDateEstimlations.rules[ruleId][estimationsBasedOn]\n                  const {currentScore} = result.enDateEstimlations.rules[ruleId]\n                  return (\n                    <tr key={ruleId} style={{color: tendencyMonth >= 0 ? 'red' : '#222'}}>\n                      <td style={{textAlign: 'left'}}>{ruleId}</td>\n                      <td>{currentScore} points</td>\n                      <td>{Math.round(tendencyMonth*100)/100} points/month</td>\n                      <td>{daysToReachZero ? daysToReachZero + ' days' : 'never'} </td>\n                      <td>{estimatedendDate === 'never' ? estimatedendDate : new Date(estimatedendDate).toDateString()}</td>\n                    </tr>\n                  )\n                })}\n              </tbody>\n            </table>\n          </div>\n        </div>\n      </React.Fragment>\n    );\n}\n\nReactDOM.render(<App/>, document.getElementById('app'));\n</script>\n</body>\n</html>\n");
+  return "\n<!DOCTYPE html>\n<html>\n<head>\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.14.0/babel.min.js\"></script>\n    <script type=\"text/babel\" data-presets=\"es2017, stage-3\" data-plugins=\"syntax-async-functions,transform-class-properties\"></script>\n    <script src=\"https://unpkg.com/react/umd/react.production.min.js\"></script>\n    <script src=\"https://unpkg.com/react-dom/umd/react-dom.production.min.js\"></script>\n    <script src=\"https://unpkg.com/prop-types/prop-types.min.js\"></script>\n    <script src=\"https://unpkg.com/recharts/umd/Recharts.js\"></script>\n     <style type=\"text/css\">\n      body {\n        font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n      }\n    </style>\n</head>\n<body>\n<div id=\"app\"></div>\n<script type=\"text/babel\">\n\nconst result = ".concat(data, "\nconst reportsLinks = result.reportsLinks\n\nconst { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts\n\nconst ReportDebtPaymentProjection = ({period, title}) => (\n  <div  style={{ padding: 20, flex: 1 }}>\n    <div>At an avarage rythme of <b>{Math.round(period.tendencyMonth*100)/100} points/month</b>,<br/> it would require <b>{period.daysToReachZero} days</b> to reach zero debt.<br/> Debt would be payed in full on <b>{\n      new Date(\n        period.estimatedendDate\n      ).toDateString()}</b>\n    </div>\n  </div>\n)\n\nconst parseDataBy = (key) => result.results.map((commit) => {\n\n  const rulesScores = commit.brokenRules.map(rule => ({\n    [rule.ruleId]: rule[key]\n  })).reduce((acc, res) => ({...acc, ...res}), {})\n\n  return {\n    commit,\n    ...rulesScores\n  }\n})\n\nfunction getRandomColor() {\n  var letters = '0123456789ABCDEF';\n  var color = '#';\n  for (var i = 0; i < 6; i++) {\n    color += letters[Math.floor(Math.random() * 16)];\n  }\n  return color;\n}\n\nfunction shadeColor(color, percent) {\n  const channel = (chan) => {\n    let colChan = parseInt(chan, 16);\n    colChan = parseInt(colChan * (100 + percent) / 100);\n    colChan = colChan < 255 ? colChan : 255;\n    colChan = colChan.toString(16).length === 1\n      ? \"0\" + colChan.toString(16)\n      : colChan.toString(16);\n    return colChan\n  }\n\n  const RR = channel(color.substring(1,3));\n  const GG = channel(color.substring(3,5));\n  const BB = channel(color.substring(5,7));\n\n  return \"#\"+RR+GG+BB;\n}\n\nconst colors = Array(100).fill('').map(() =>  shadeColor(getRandomColor(), -20))\nconst newData = parseDataBy('ruleTotalSore')\n\nconst baseButtonStyles = {\n  padding: 4,\n  textAlign: 'left',\n  marginBottom: 6,\n  marginRight: 6,\n  border: 'none',\n  outline: 'none',\n  fontWeight: 'bold',\n}\n\nconst rules = Object.keys(newData[0]).filter(key => key !== 'commit')\nconst rulesActives = rules.reduce((acc, rule) => {\n  acc[rule] = true\n  return acc\n}, {})\n\n const App = () => {\n   const [data, setData] = React.useState(newData)\n   const [valueType, setValueType] = React.useState('ruleTotalSore')\n   const [activeRules, setActiveRules] = React.useState(rulesActives)\n   const [tagFilter, setTagFilter] = React.useState(null)\n   const [chartType, setChartType] = React.useState('area')\n   const [estimationsBasedOn, setEstimationsBasedOn] = React.useState('avairage')\n\n   const toggleRule = (id) => {\n    setTagFilter(null)\n    setActiveRules(prev => ({\n      ...prev,\n      [id]: !prev[id]\n    }))\n   }\n\n   const switchDataBy = (key) => {\n      setValueType(key)\n      setData(parseDataBy(key))\n   }\n\n   const toggleAll = () => {\n     setTagFilter(null)\n     setActiveRules(prev => {\n       const rulesKeys = Object.keys(prev)\n       const firstIsActive = !!prev[rulesKeys[0]]\n       return rulesKeys.reduce((rules, rule) => {\n         rules[rule] = !firstIsActive\n         return rules\n       }, {})\n     })\n   }\n\n   const toggleTag = (tag) => {\n     if (tagFilter === null || tagFilter !== tag) {\n       setTagFilter(tag)\n     } else {\n       setTagFilter(null)\n     }\n   }\n\n   const renderTooltip = ({payload}) => {\n    if (!payload || !payload.length) { return null }\n     return <div style={{ backgroundColor: 'white', padding: 15, borderRadius: 10, boxShadow: '0 0 10px rgba(0,0,0,0.2)' }}>\n      <h4 style={{ margin: 0, marginBottom: 5}}>{payload[0].payload.commit.date}</h4>\n      <h4 style={{ margin: 0, marginBottom: 15}}>\n        Total : {payload.reduce((totalScore, {value}) => totalScore + value, 0)}\n      </h4>\n      <p style={{ margin: 0, marginBottom: 5}}>{payload[0].payload.commit.name}</p>\n      <br/>\n        {payload.reverse().map(item => (\n          <div key={item.dataKey} style={{ display: 'flex', justifyContent:'center', fontSize: 12, marginBottom: 4}}>\n            <span style={{ backgroundColor: item.color, display: 'inline-block', width: 15, height: 15, borderRadius: 3, marginRight: 7}}></span>\n            <div style={{ flex: 1, marginRight: 25}}>\n              <span>{item.name.replace(/_/g, ' ')}</span>\n            </div>\n            <span style={{ fontWeight: 'bold'}}>{item.value}</span>\n          </div>\n        ))}\n      </div>\n   }\n\n  React.useEffect(() => {\n    if (tagFilter) {\n      setActiveRules(rules => Object.keys(rules).reduce((acc, rule) => {\n        if (result.tags[tagFilter].includes(rule)) {\n          acc[rule] = true\n        } else {\n          acc[rule] = false\n        }\n        return acc\n      }, {}))\n    }\n  }, [tagFilter])\n\n   return (\n     <React.Fragment>\n     {reportsLinks.length > 0 && (\n      <ul style={{ listStyle: 'none', display: 'flex' }}>\n        {reportsLinks.map(({ name, link }) => (\n          <li style={{ listStyle: 'none', marginRight: 10 }} key={link}>\n            <a\n              style={{\n                padding: '5px 10px',\n                textDecoration: 'none',\n                backgroundColor: '#F5F5F5',\n                fontWeight: 'bold',\n                color: '#000',\n                fontSize: 12,\n                textTransform: 'uppercase'\n              }}\n              href={link}\n            >\n              {name}\n            </a>\n          </li>\n        ))}\n      </ul>\n    )}\n      <div style={{display: 'flex', overflow: 'hidden', width: '100vw', height:'80vh'}}>\n        <div style={{width: '80vw', height:'80vh'}}>\n          <div style={{height:40, paddingLeft: 40}}>\n            <button\n                onClick={() => setChartType('area')}\n                style={{\n                  ...baseButtonStyles,\n                  backgroundColor: chartType === 'area' ? 'green' : '#F5F5F5',\n                  color: chartType === 'area' ? 'white' : 'grey'\n                }}\n              >\n                AREA CHART\n              </button>\n              <button\n                onClick={() => setChartType('line')}\n                style={{\n                  ...baseButtonStyles,\n                  backgroundColor: chartType === 'line' ? 'green' : '#F5F5F5',\n                  color: chartType === 'line' ? 'white' : 'grey'\n                }}\n              >\n                LINE CHART\n              </button>\n          </div>\n          {chartType === 'area' &&\n          <ResponsiveContainer width=\"100%\" height=\"90%\">\n            <AreaChart\n              width={500}\n              height={400}\n              data={data}\n              margin={{\n                top: 10,\n                right: 30,\n                left: 0,\n                bottom: 0,\n              }}\n            >\n              <CartesianGrid strokeDasharray=\"3 3\" />\n              <XAxis dataKey=\"commit\" />\n              <YAxis />\n              <Tooltip\n                content={renderTooltip}\n                itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}\n                labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}\n              />\n              {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&\n                <Area\n                  type=\"monotone\"\n                  dataKey={rule}\n                  stackId=\"1\"\n                  stroke={colors[Object.keys(activeRules).indexOf(rule)]}\n                  fill={colors[Object.keys(activeRules).indexOf(rule)]} />\n              )}\n            </AreaChart>\n          </ResponsiveContainer>\n          }\n          {chartType === 'line' &&\n          <ResponsiveContainer width=\"100%\" height=\"90%\">\n            <LineChart\n              width={500}\n              height={400}\n              data={data}\n              margin={{\n                top: 10,\n                right: 30,\n                left: 0,\n                bottom: 0,\n              }}\n            >\n              <CartesianGrid strokeDasharray=\"3 3\" />\n              <XAxis dataKey=\"commit\" />\n              <YAxis />\n              <Tooltip\n                content={renderTooltip}\n                itemStyle={{fontSize: 10, fontWeight: 'bold', fontFamily: 'sans-serif', height: 10, padding: 3}}\n                labelStyle={{fontSize: 16, fontWeight: 'bold', fontFamily: 'sans-serif'}}\n              />\n              {Object.keys(activeRules).map((rule, index) => activeRules[rule] &&\n                <Line\n                  type=\"monotone\"\n                  dataKey={rule}\n                  stackId=\"1\"\n                  stroke={colors[Object.keys(activeRules).indexOf(rule)]}\n                  fill={colors[Object.keys(activeRules).indexOf(rule)]} />\n              )}\n            </LineChart>\n          </ResponsiveContainer>\n          }\n          </div>\n\n\n          <div style={{width: '20vw', minWidth: 400, height:'80vh', overflowY: 'auto', padding: 20}}>\n            <h3>Rules</h3>\n            {Object.keys(activeRules).map(rule =>\n              <button\n                key={rule}\n                onClick={() => toggleRule(rule)}\n                style={{\n                  ...baseButtonStyles,\n                  backgroundColor: activeRules[rule] ? 'green' : '#F5F5F5',\n                  color: activeRules[rule] ? 'white' : 'grey'\n                }}\n              >\n                {rule}\n              </button>\n            )}\n            <div style={{ marginTop: 15 }}>\n              <button onClick={() => toggleAll()}>TOGGLE ALL RULES</button>\n            </div>\n            <hr />\n            <h3>Tags</h3>\n            {Object.keys(result.tags).map(tag =>\n              <button\n                key={tag}\n                onClick={() => toggleTag(tag)}\n                style={{\n                  ...baseButtonStyles,\n                  display: 'inline-block',\n                  backgroundColor: tagFilter === tag ? 'green' : '#F5F5F5',\n                  color: tagFilter === tag ? 'white' : 'grey'\n                }}\n              >\n                {tag}\n              </button>\n            )}\n            <hr />\n            <h3>Display values</h3>\n            <button\n              onClick={() => switchDataBy('ruleTotalSore')}\n              style={{\n                ...baseButtonStyles,\n                display: 'inline-block',\n                backgroundColor: valueType === 'ruleTotalSore' ? 'green' : '#F5F5F5',\n                color: valueType === 'ruleTotalSore' ? 'white' : 'grey'\n              }}>\n                BY SCORE\n            </button>\n            <button\n              onClick={() => switchDataBy('occurences')}\n              style={{\n                ...baseButtonStyles,\n                display: 'inline-block',\n                backgroundColor: valueType === 'occurences' ? 'green' : '#F5F5F5',\n                color: valueType === 'occurences' ? 'white' : 'grey'\n              }}>\n                BY OCCURENCES\n            </button>\n            <hr />\n          </div>\n        </div>\n        <div style={{textAlign: 'center', maxWidth: 1600, margin: '0 auto'}}>\n          <hr />\n            <button\n              onClick={() => setEstimationsBasedOn('avairage')}\n              style={{\n                ...baseButtonStyles,\n                display: 'inline-block',\n                backgroundColor: estimationsBasedOn === 'avairage' ? 'green' : '#F5F5F5',\n                color: estimationsBasedOn === 'avairage' ? 'white' : 'grey'\n              }}>\n                AVERAGE ALL PERIODS\n            </button>\n            <button\n              onClick={() => setEstimationsBasedOn('lastPeriod')}\n              style={{\n                ...baseButtonStyles,\n                display: 'inline-block',\n                backgroundColor: estimationsBasedOn === 'lastPeriod' ? 'green' : '#F5F5F5',\n                color: estimationsBasedOn === 'lastPeriod' ? 'white' : 'grey'\n              }}>\n                LAST PERDIOD\n            </button>\n\n          <h2 style={{margin: 0, marginTop: 30}}>Current score : {result.enDateEstimlations.global.currentScore}</h2>\n          <h3 style={{margin: 0}}>Estimated date for full reimbursment:</h3>\n          <div style={{display: 'flex'}}>\n            <ReportDebtPaymentProjection period={result.enDateEstimlations.global[estimationsBasedOn]}/>\n          </div>\n          <div style={{textAlign: 'right', marginBottom: 200}}>\n            <table width=\"100%\" style={{textAlign: 'right', marginBottom: 200}}>\n              <thead>\n                <tr>\n                  <th style={{textAlign: 'left'}}>Rule ID</th>\n                  <th>Current score</th>\n                  <th>Debt points/month</th>\n                  <th>Days remaining to zero</th>\n                  <th>Estimated date to zero</th>\n                </tr>\n              </thead>\n              <tbody>\n                {Object.keys(result.enDateEstimlations.rules).map(ruleId => {\n                  const {\n                    tendencyMonth,\n                    daysToReachZero,\n                    estimatedendDate\n                  } = result.enDateEstimlations.rules[ruleId][estimationsBasedOn]\n                  const {currentScore} = result.enDateEstimlations.rules[ruleId]\n                  return (\n                    <tr key={ruleId} style={{color: tendencyMonth >= 0 ? 'red' : '#222'}}>\n                      <td style={{textAlign: 'left'}}>{ruleId}</td>\n                      <td>{currentScore} points</td>\n                      <td>{Math.round(tendencyMonth*100)/100} points/month</td>\n                      <td>{daysToReachZero ? daysToReachZero + ' days' : 'never'} </td>\n                      <td>{estimatedendDate === 'never' ? estimatedendDate : new Date(estimatedendDate).toDateString()}</td>\n                    </tr>\n                  )\n                })}\n              </tbody>\n            </table>\n          </div>\n        </div>\n      </React.Fragment>\n    );\n}\n\nReactDOM.render(<App/>, document.getElementById('app'));\n</script>\n</body>\n</html>\n");
 };
 },{}],"../lib/reporters/buildWalkReport.ts":[function(require,module,exports) {
 "use strict";
@@ -1098,23 +1098,69 @@ Object.defineProperty(exports, "__esModule", {
 
 var fs_1 = __importDefault(require("fs"));
 
-var child_process_1 = require("child_process");
-
 var chartTemplate_1 = __importDefault(require("./chartTemplate"));
 
 var cachePath = "".concat(process.cwd(), "/node_modules/.cache/debt-collector");
-var resultPath = "".concat(cachePath, "/report.html");
 
-var buildWalkReport = function (userConfig, tags, results, enDateEstimlations, openReport) {
+var buildWalkReport = function (userConfig, tags, results, enDateEstimlations, reportName, reportsLinks) {
   setTimeout(function () {
     // waiting for file system to correctly switch all files after checkout
+    var resultPath = "".concat(cachePath, "/report-").concat(reportName, ".html");
     var jsonResults = JSON.stringify({
       initialConfig: userConfig,
+      reportsLinks: reportsLinks,
       tags: tags,
       results: results,
       enDateEstimlations: enDateEstimlations
     }, null, 2);
     var data = (0, chartTemplate_1.default)(jsonResults);
+    fs_1.default.mkdir(cachePath, {
+      recursive: true
+    }, function (err) {
+      if (err) throw err;
+      fs_1.default.writeFileSync(resultPath, data);
+    });
+  }, 330);
+};
+
+exports.default = buildWalkReport;
+},{"./chartTemplate":"../lib/reporters/chartTemplate.ts"}],"../lib/reporters/packagesEntriesTemplate.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports.default = function (data) {
+  return "\n<!DOCTYPE html>\n<html>\n<head>\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.14.0/babel.min.js\"></script>\n    <script type=\"text/babel\" data-presets=\"es2017, stage-3\" data-plugins=\"syntax-async-functions,transform-class-properties\"></script>\n    <script src=\"https://unpkg.com/react/umd/react.production.min.js\"></script>\n    <script src=\"https://unpkg.com/react-dom/umd/react-dom.production.min.js\"></script>\n    <script src=\"https://unpkg.com/prop-types/prop-types.min.js\"></script>\n     <style type=\"text/css\">\n      body {\n        font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n      }\n    </style>\n</head>\n<body>\n<div id=\"app\"></div>\n<script type=\"text/babel\">\n\nconst entries = ".concat(data, "\nconst App = () => (\n    <ul style={{ listStyle: 'none', display: 'flex' }}>\n      {entries.map(({ name, link }) => (\n        <li style={{ listStyle: 'none', marginRight: 10 }} key={link}>\n          <a\n            style={{\n              padding: '5px 10px',\n              textDecoration: 'none',\n              backgroundColor: '#F5F5F5',\n              fontWeight: 'bold',\n              color: '#000',\n              fontSize: 12,\n              textTransform: 'uppercase'\n            }}\n            href={link}\n          >\n            {name}\n          </a>\n        </li>\n      ))}\n    </ul>\n  )\n\nReactDOM.render(<App/>, document.getElementById('app'));\n</script>\n</body>\n</html>\n");
+};
+},{}],"../lib/reporters/buildWalkEntries.ts":[function(require,module,exports) {
+"use strict";
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var fs_1 = __importDefault(require("fs"));
+
+var child_process_1 = require("child_process");
+
+var packagesEntriesTemplate_1 = __importDefault(require("./packagesEntriesTemplate"));
+
+var cachePath = "".concat(process.cwd(), "/node_modules/.cache/debt-collector");
+
+var buildWalkEntriesReport = function (reportsLinks, openReport) {
+  setTimeout(function () {
+    // waiting for file system to correctly switch all files after checkout
+    var resultPath = "".concat(cachePath, "/index.html");
+    var jsonResults = JSON.stringify(reportsLinks, null, 2);
+    var data = (0, packagesEntriesTemplate_1.default)(jsonResults);
     fs_1.default.mkdir(cachePath, {
       recursive: true
     }, function (err) {
@@ -1133,8 +1179,8 @@ var buildWalkReport = function (userConfig, tags, results, enDateEstimlations, o
   }, 330);
 };
 
-exports.default = buildWalkReport;
-},{"./chartTemplate":"../lib/reporters/chartTemplate.ts"}],"../lib/config/getTagListFromConfig.ts":[function(require,module,exports) {
+exports.default = buildWalkEntriesReport;
+},{"./packagesEntriesTemplate":"../lib/reporters/packagesEntriesTemplate.ts"}],"../lib/config/getTagListFromConfig.ts":[function(require,module,exports) {
 "use strict";
 
 var __read = this && this.__read || function (o, n) {
@@ -3515,11 +3561,13 @@ var fs_1 = __importDefault(require("fs"));
 
 var path_1 = __importDefault(require("path"));
 
+var minimatch_1 = __importDefault(require("minimatch"));
+
 var getFilesList_1 = __importDefault(require("../../lib/filters/getFilesList"));
 
 var checkFileList_1 = __importDefault(require("../../lib/results/checkFileList"));
 
-var formatWalkResults = function (config, results) {
+var formatWalkResults = function (config, results, globFilter, hasPackagesConfig) {
   var _a = config.fileRules,
       fileRules = _a === void 0 ? [] : _a,
       _b = config.eslintRules,
@@ -3534,6 +3582,17 @@ var formatWalkResults = function (config, results) {
   var revisionResultsArr = results.map(function (_a) {
     var rev = _a.rev,
         filesResults = _a.results;
+    var filteredResults = filesResults;
+
+    if (hasPackagesConfig) {
+      filteredResults = Object.keys(filesResults).filter(function (filePath) {
+        return (0, minimatch_1.default)(filePath, globFilter.replace(/^\.\//, ''));
+      }).reduce(function (acc, filePath) {
+        acc[filePath] = filesResults[filePath];
+        return acc;
+      }, {});
+    }
+
     var totalScore = 0;
     var rulesScores = allRulesIdInConfig.reduce(function (acc, rule) {
       acc[rule.id] = {
@@ -3545,7 +3604,7 @@ var formatWalkResults = function (config, results) {
       };
       return acc;
     }, {});
-    Object.keys(filesResults).forEach(function (filePath) {
+    Object.keys(filteredResults).forEach(function (filePath) {
       var fileResults = filesResults[filePath];
       fileResults.brokenRules.forEach(function (brokenRule) {
         var ruleId = brokenRule.ruleId,
@@ -3994,6 +4053,8 @@ var config_1 = require("../../lib/config");
 
 var buildWalkReport_1 = __importDefault(require("../../lib/reporters/buildWalkReport"));
 
+var buildWalkEntries_1 = __importDefault(require("../../lib/reporters/buildWalkEntries"));
+
 var getTagListFromConfig_1 = __importDefault(require("../../lib/config/getTagListFromConfig"));
 
 var git_1 = require("../../lib/git");
@@ -4172,12 +4233,10 @@ function Walk(_a) {
                   console.log(error);
                 },
                 onEnd: function (results) {
-                  return __awaiter(_this, void 0, Promise, function () {
-                    var result;
+                  return __awaiter(_this, void 0, void 0, function () {
                     return __generator(this, function (_a) {
                       switch (_a.label) {
                         case 0:
-                          result = (0, getCommitResult_1.formatWalkResults)(sanitizedConfig, results);
                           return [4
                           /*yield*/
                           , checkoutTo(currentBranch)];
@@ -4187,7 +4246,7 @@ function Walk(_a) {
 
                           return [2
                           /*return*/
-                          , result];
+                          , results];
                       }
                     });
                   });
@@ -4212,14 +4271,31 @@ function Walk(_a) {
   (0, react_1.useEffect)(function () {
     (function () {
       return __awaiter(_this, void 0, void 0, function () {
-        var endDateEstimations;
-        return __generator(this, function (_a) {
+        var hasPackagesConfig_1, reports_1, reportsLinks_1;
+
+        var _a, _b;
+
+        return __generator(this, function (_c) {
           if (isReady) {
-            endDateEstimations = (0, getEndDatesEstimations_1.default)({
-              initialConfig: userConfig,
-              results: results
+            hasPackagesConfig_1 = isConfigValid && !!((_b = (_a = sanitizedConfig === null || sanitizedConfig === void 0 ? void 0 : sanitizedConfig.walkConfig) === null || _a === void 0 ? void 0 : _a.report) === null || _b === void 0 ? void 0 : _b.packages);
+            reports_1 = hasPackagesConfig_1 ? sanitizedConfig.walkConfig.report.packages : {
+              global: sanitizedConfig.include
+            };
+            reportsLinks_1 = Object.keys(reports_1).map(function (report) {
+              return {
+                name: report,
+                link: "./report-".concat(report, ".html")
+              };
             });
-            (0, buildWalkReport_1.default)(userConfig, tags, results, endDateEstimations, openReport);
+            Object.keys(reports_1).forEach(function (reportName) {
+              var formatedResult = (0, getCommitResult_1.formatWalkResults)(sanitizedConfig, results, reports_1[reportName], hasPackagesConfig_1);
+              var endDateEstimations = (0, getEndDatesEstimations_1.default)({
+                initialConfig: userConfig,
+                results: formatedResult
+              });
+              (0, buildWalkReport_1.default)(userConfig, tags, formatedResult, endDateEstimations, reportName, reportsLinks_1);
+            });
+            (0, buildWalkEntries_1.default)(reportsLinks_1, openReport);
             setIsFinished(true);
           }
 
@@ -4252,5 +4328,5 @@ Walk.shortFlags = {
   include: 'f'
 };
 exports.default = Walk;
-},{"../../lib/config":"../lib/config/index.ts","../../lib/reporters/buildWalkReport":"../lib/reporters/buildWalkReport.ts","../../lib/config/getTagListFromConfig":"../lib/config/getTagListFromConfig.ts","../../lib/git":"../lib/git/index.ts","./getCommitResult":"walk/getCommitResult.ts","./getEndDatesEstimations":"walk/getEndDatesEstimations.ts"}]},{},["walk/index.tsx"], null)
+},{"../../lib/config":"../lib/config/index.ts","../../lib/reporters/buildWalkReport":"../lib/reporters/buildWalkReport.ts","../../lib/reporters/buildWalkEntries":"../lib/reporters/buildWalkEntries.ts","../../lib/config/getTagListFromConfig":"../lib/config/getTagListFromConfig.ts","../../lib/git":"../lib/git/index.ts","./getCommitResult":"walk/getCommitResult.ts","./getEndDatesEstimations":"walk/getEndDatesEstimations.ts"}]},{},["walk/index.tsx"], null)
 //# sourceMappingURL=/walk/index.js.map
