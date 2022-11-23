@@ -44,6 +44,11 @@ export type WalkConfig = {
   gitCommand: string
   parser: (gitResult: string) => string[]
   limit?: number
+  report?: {
+    packages?: { 
+      [name: string]: string
+    }
+  }
 }
 
 export interface UserConfig {

@@ -1,6 +1,4 @@
-import type { WalkResults } from '../types'
-
-export default (data: WalkResults) => `
+export default (data: string) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,6 +19,7 @@ export default (data: WalkResults) => `
 <script type="text/babel">
 
 const result = ${data}
+const reportsLinks = result.reportsLinks
 
 const { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = window.Recharts
 
@@ -169,6 +168,28 @@ const rulesActives = rules.reduce((acc, rule) => {
 
    return (
      <React.Fragment>
+     {reportsLinks.length > 0 && (
+      <ul style={{ listStyle: 'none', display: 'flex' }}>
+        {reportsLinks.map(({ name, link }) => (
+          <li style={{ listStyle: 'none', marginRight: 10 }} key={link}>
+            <a
+              style={{
+                padding: '5px 10px',
+                textDecoration: 'none',
+                backgroundColor: '#F5F5F5',
+                fontWeight: 'bold',
+                color: '#000',
+                fontSize: 12,
+                textTransform: 'uppercase'
+              }}
+              href={link}
+            >
+              {name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
       <div style={{display: 'flex', overflow: 'hidden', width: '100vw', height:'80vh'}}>
         <div style={{width: '80vw', height:'80vh'}}>
           <div style={{height:40, paddingLeft: 40}}>

@@ -6,6 +6,7 @@ import { Text } from 'ink';
 
 import { useValidatedConfig } from '../../lib/config';
 import buildWalkReport from '../../lib/reporters/buildWalkReport';
+import buildWalkEntries from '../../lib/reporters/buildWalkEntries';
 import getTagListFromConfig from '../../lib/config/getTagListFromConfig';
 import { useGitUtils, WalkIteratorResult } from '../../lib/git';
 
@@ -104,9 +105,7 @@ function Walk({
   useEffect(() => {
     (async () => {
       if (isConfigValid && isGitReady && !isHistoryDirty) {
-        setTags(getTagListFromConfig(sanitizedConfig));
-        
-        
+        setTags(getTagListFromConfig(sanitizedConfig));        
         const walkResults = await walkCommits<RevisionResults, WalkLoopResult>(revList.reverse(), {
           onCommitChange: async ({ rev, index, previousResult }) => {
             setCurrentCommit({ commit: rev.name, index: index + 1 })
@@ -123,12 +122,12 @@ function Walk({
           onError: (error) => {
             console.log(error);
           },
-          onEnd: async (results: WalkIteratorResult<WalkLoopResult>[]): Promise<RevisionResults[]> => {
-            const result = formatWalkResults(sanitizedConfig, results);
+          onEnd: async (results: WalkIteratorResult<WalkLoopResult>[])=> {
             await checkoutTo(currentBranch);
-            return result;
+            return results;
           },
         });
+
         setResults(walkResults);
         setIsReady(true);
       }
@@ -138,8 +137,24 @@ function Walk({
   useEffect(() => {
     (async () => {
       if (isReady) {
-        const endDateEstimations = getEndDatesEstimations({ initialConfig: userConfig, results })
-        buildWalkReport(userConfig, tags, results, endDateEstimations, openReport);
+        const hasPackagesConfig = isConfigValid && !!sanitizedConfig?.walkConfig?.report?.packages
+        
+        const reports = hasPackagesConfig 
+          ? sanitizedConfig.walkConfig.report.packages
+          : { global: sanitizedConfig.include }
+        
+        const reportsLinks = Object.keys(reports).map(
+          report => ({name: report, link: `./report-${report}.html`})
+        )
+
+        Object.keys(reports).forEach(reportName => {
+          const formatedResult = formatWalkResults(sanitizedConfig, results, reports[reportName], hasPackagesConfig);
+          const endDateEstimations = getEndDatesEstimations({ initialConfig: userConfig, results: formatedResult })
+          buildWalkReport(userConfig, tags, formatedResult, endDateEstimations, reportName, reportsLinks);
+        })
+
+        buildWalkEntries(reportsLinks, openReport)
+
         setIsFinished(true);
       }
     })();
