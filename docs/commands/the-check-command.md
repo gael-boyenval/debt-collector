@@ -17,6 +17,7 @@ debt-collector check
 | **`--limit-top`**          | `number`                           | only show X files, ordered by score                                                     |
 | **`--changed-since`**      | `string` : a git revision          | show score only for files with diffs between the current branch and the target revision |
 | **`--report-format / -f`** | `string:` 'filesOnly' , 'standard' | change the output format                                                                |
+| **`--help`**               |                                    | display help for command                                                                |
 
 
 
