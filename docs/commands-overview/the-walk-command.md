@@ -26,6 +26,11 @@ This command is designed to be run on your base branch, either triggered by a cr
 In order for the walk command to work, and depending on your configuration, make sure you have all git history on the target branch.&#x20;
 {% endhint %}
 
+{% hint style="danger" %}
+**DO NOT ABORT EXECUTION :** \
+****As Debt Collector will checkout multiple times during the execution of this command, you may find yourself in a different git state if you do not let Debt collector run the commnd until completion.&#x20;
+{% endhint %}
+
 
 
 ### Configuration overview
@@ -48,6 +53,12 @@ interface Config {
 ```
 
 
+
+| flag                   | argument                                          | description                    |
+| ---------------------- | ------------------------------------------------- | ------------------------------ |
+| **`--revlength / -n`** | `number`: the maximum number of revision to check | ex: limit to 10 commits        |
+| **`--config / -c`**    | `string`: path to the config file                 | change the default config path |
+| **`--help`**           |                                                   | display help for the command   |
 
 
 

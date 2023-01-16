@@ -10,7 +10,7 @@ debt-collector check
 
 ### Optional flags :&#x20;
 
-| flag                       | argument                           | action                                                                                  |
+| flag                       | argument                           | description                                                                             |
 | -------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------- |
 | **`--rule / -r`**          | `string`: a rule Id                | display results for one specific rule                                                   |
 | **`--tags / -t`**          | `array`: a list of tags            | filter results by rule tags                                                             |
@@ -18,6 +18,7 @@ debt-collector check
 | **`--changed-since`**      | `string` : a git revision          | show score only for files with diffs between the current branch and the target revision |
 | **`--report-format / -f`** | `string:` 'filesOnly' , 'standard' | change the output format                                                                |
 | **`--help`**               |                                    | display help for command                                                                |
+| **`--config / -c`**        | `string`: path to the config file  | change the default config path                                                          |
 
 
 

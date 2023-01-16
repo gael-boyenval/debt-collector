@@ -41,9 +41,10 @@ The compare command will first check the Main branch, then analyse Diff between 
 
 ### Optional flags :&#x20;
 
-| flag              | argument                | action                                |
-| ----------------- | ----------------------- | ------------------------------------- |
-| **`--rule / -r`** | `string`: a rule Id     | display results for one specific rule |
-| **`--tags / -t`** | `array`: a list of tags | filter results by rule tags           |
-| **`--help`**      |                         | display help                          |
+| flag                | argument                          | description                           |
+| ------------------- | --------------------------------- | ------------------------------------- |
+| **`--rule / -r`**   | `string`: a rule Id               | display results for one specific rule |
+| **`--tags / -t`**   | `array`: a list of tags           | filter results by rule tags           |
+| **`--help`**        |                                   | display help                          |
+| **`--config / -c`** | `string`: path to the config file | change the default config path        |
 
