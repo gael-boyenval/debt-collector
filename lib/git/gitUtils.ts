@@ -1,6 +1,8 @@
 /* eslint-disable no-await-in-loop, no-restricted-syntax */
-import path from 'path'
+import path, { resolve } from 'path'
 import simpleGit, { SimpleGit } from 'simple-git'
+import minimatch from 'minimatch'
+import Queue from 'queue-promise'
 import type { GitRevision } from '../types'
 
 const gitOptions = {
@@ -151,3 +153,167 @@ export const getChangedFilesSinceRev = async (
 
   return changedFilesSinceRev
 }
+
+const daysFromNow = (date) => {
+  function datediff(first, second) {
+    return Math.round((second - first) / (1000 * 60 * 60 * 24))
+  }
+
+  return datediff(new Date(date), Date.now())
+}
+
+const getFileChanges = async (file, sinceDays = 365) => {
+  let fileResult
+  try {
+    fileResult = await git.raw([
+      'log',
+      '--pretty=format:%s|%ad',
+      // `--since="${sinceDays} days ago"`,
+      '--follow',
+      '-M',
+      file,
+    ])
+  } catch (err) {
+    console.log(err)
+
+    return null
+  }
+
+  const changes = fileResult.split('\n').filter((commit) => commit !== '')
+  const lastModified = changes[0].split('|')[1]
+  const firstCommitDate = changes.reverse()[0].split('|')[1]
+  const changesSince = changes.filter((commit) => {
+    const date = commit.split('|')[1]
+    return daysFromNow(date) <= sinceDays
+  })
+
+  const sinceBaseRatio =
+    daysFromNow(firstCommitDate) >= sinceDays
+      ? 1
+      : daysFromNow(firstCommitDate) / sinceDays
+
+  const changeFrequency = changesSince.length / sinceBaseRatio
+  const bugs = changesSince.filter((change) => change.includes(':bug:'))
+  const bugFrequency = bugs.length / sinceBaseRatio
+
+  return {
+    file,
+    changes: changesSince.length,
+    bugs: bugs.length,
+    changeFrequency,
+    bugFrequency,
+    creationDate: daysFromNow(firstCommitDate),
+    lastModified: daysFromNow(lastModified),
+  }
+}
+
+export const getMostModifiedFiles = async (): Promise<{
+  [file: string]: {
+    changes: number
+    bugs: number
+    changeFrequency: number
+    bugFrequency: number
+  }
+}> =>
+  new Promise((resolve, reject) => {
+    console.log('new algo')
+    git
+      .raw(['ls-tree', 'next', '-r', '--name-only'])
+      .then((allTrackedFiles) => {
+        const formated = allTrackedFiles
+          .split('\n')
+          .filter((file) => file !== '')
+          .filter((file) =>
+            minimatch(file, 'packages/app-one-catalog/src/redux/**/*')
+          )
+
+        const queue = new Queue({
+          concurrent: 100,
+          interval: 0,
+        })
+
+        const results = []
+        const count = 0
+
+        const formatedlength = formated.length
+
+        if (formated.length === 0) {
+          resolve([])
+        }
+
+        queue.enqueue(formated.map((file) => () => getFileChanges(file)))
+
+        queue.on('resolve', (data) => {
+          count += 1
+          console.log(`${count} / ${formatedlength}`)
+
+          if (data) results.push(data)
+          if (!data) console.log('a file failed')
+        })
+
+        queue.on('end', () => {
+          const formatResults = results
+            .sort((file1, file2) => {
+              if (file1.changes > file2.changes) return -1
+              if (file1.changes < file2.changes) return 1
+              return 0
+            })
+            .slice(0, 300)
+            .reduce((acc, item) => {
+              acc[item.file] = {
+                changes: item.changes,
+                bugs: item.bugs,
+                changeFrequency: item.changeFrequency,
+                bugFrequency: item.bugFrequency,
+                creationDate: item.creationDate,
+                lastModified: item.lastModified,
+              }
+
+              return acc
+            }, {})
+          console.log(formatResults)
+          resolve(formatResults)
+        })
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+
+    // const formated = files
+    //   .split('\n')
+    //   .filter((file) => file !== '')
+    //   .reduce((acc, file) => {
+    //     if (!acc[file]) {
+    //       acc[file] = 1
+    //     } else {
+    //       acc[file] += 1
+    //     }
+    //     return acc
+    //   }, {})
+
+    // const sorted = Object.keys(formated).sort((file1, file2) => {
+    //   if (formated[file1] > formated[file2]) return -1
+    //   if (formated[file1] < formated[file2]) return 1
+    //   return 0
+    // })
+
+    // const sortedWithScore = sorted
+    //   .filter((file) => minimatch(file, 'packages/*/src/**/*'))
+    //   .filter((file) => fs.existsSync(file))
+    //   .slice(0, 350)
+    //   .reduce((acc, file) => {
+    //     const lib = file.split('/')[1]
+    //     const relativefileName = file.replace(`packages/${lib}`, '')
+
+    //     if (!acc[lib]) {
+    //       acc[lib] = {}
+    //     }
+
+    //     acc[lib][relativefileName] = formated[file]
+    //     return acc
+    //   }, {})
+
+    // console.log(formated)
+
+    // return formated
+  })
