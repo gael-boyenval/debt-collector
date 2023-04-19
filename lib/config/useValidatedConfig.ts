@@ -19,6 +19,7 @@ const useValidatedConfig = (
   useEffect(() => {
     ;(async () => {
       const configPath = getConfigPath(config)
+      console.log('path', configPath)
       try {
         const {
           isConfigValid: isValid,

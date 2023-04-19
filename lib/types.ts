@@ -45,7 +45,7 @@ export type WalkConfig = {
   parser: (gitResult: string) => string[]
   limit?: number
   report?: {
-    packages?: { 
+    packages?: {
       [name: string]: string
     }
   }
@@ -109,6 +109,12 @@ export type FileResults = {
   brokenRules: BrokenRule[]
 }
 
+export type PackageResult = {
+  package: string
+  latest: string
+  isMinor: true
+}
+
 export type GitRevision = {
   hash: string
   date: string
@@ -127,9 +133,11 @@ export interface WalkResults {
 
 export interface CheckResults {
   config: Config
-  results: {
-    [file: FilePath]: FileResults
-  }
+  results:
+    | {
+        [file: FilePath]: FileResults
+      }
+    | PackageResult[]
 }
 
 export interface CompareResults {
