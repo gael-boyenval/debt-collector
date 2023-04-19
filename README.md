@@ -1,11 +1,12 @@
 /!\ Documentation is not up to date with v2-alpha... update comming soon
 
 # debt-collector
+
 A nodejs util to identify, track and mesure technical debt in a project.
 
-Note that debt-collector is an alpha version and you should consider that bugs may occur and API may change without warnings. 
-As debt-collector is a tool that does not interfere with your code base, even buggy, it is relatively safe to use. 
-Considering the previous informations, we recomend to install a fixed version of debt-collector as of now. 
+Note that debt-collector is an alpha version and you should consider that bugs may occur and API may change without warnings.
+As debt-collector is a tool that does not interfere with your code base, even buggy, it is relatively safe to use.
+Considering the previous informations, we recomend to install a fixed version of debt-collector as of now.
 
 ## Install
 
@@ -19,10 +20,10 @@ Considering the previous informations, we recomend to install a fixed version of
 
 ## How does it works ?
 
-Debt collector has three main commands : `check`, `compare` and `walk`. 
+Debt collector has three main commands : `check`, `compare` and `walk`.
 
 DC works by checking every files matching a `include` glob pattern, provided by a configuration file.
-Each file is then checked for each rule defined in `fileRules`, for example : 
+Each file is then checked for each rule defined in `fileRules`, for example :
 
 ```js
 {
@@ -51,10 +52,9 @@ display help
 
 ex: `debt-collector [command] --help`
 
-
 #### `--collect-from`, `-g`: **glob**
 
-filters files by path 
+filters files by path
 
 ex: `debt-collector [command] --collect-from="./src/**/*.scss"`
 or `debt-collector [command] -g "./src/components/**/*.tsx"`
@@ -76,16 +76,23 @@ this command will check all files and output a debt report, as well as a total s
 
 the availables options are
 
+#### `--packages`, `-p`: **string**
+
+detect legacy packages, not up-to-date packages
+
+ex: `debt-collector check --packages=all`
+or: `debt-collector check -p all`
+
 #### `--rule`, `-r`: **string**
 
-filter a specific rule (by ID) 
+filter a specific rule (by ID)
 
-ex: `debt-collector check --rule=FILE_TOO_LONG` 
+ex: `debt-collector check --rule=FILE_TOO_LONG`
 or `debt-collector check -r RULE_ID`
 
 #### `--tags`, `-t`: **array**
 
-filter rules by tags 
+filter rules by tags
 
 ex: `debt-collector check --tags="design system" "forms" "styles"`
 or `debt-collector check -t "design system" "forms" "styles"`
@@ -110,7 +117,7 @@ this flag is usefull to give you a report for the current changes and can be use
 ex: `debt-collector check --report-format=filesOnly`
 or `debt-collector check -f filesOnly`
 
-**noMatchRules** list only rules that did not match anything 
+**noMatchRules** list only rules that did not match anything
 
 (useful to filter old rules or to identify bugged ones)
 
@@ -126,7 +133,7 @@ or `debt-collector check -f standard`
 
 `debt-collector compare --revision [rev]` ou `npx debt-collector compare --revision [rev]`
 
-This command will check every file that have changed since the revision (created, renamed, modified or deleted files) once for the revision, and one for the current HEAD and compare results to provide a compared results. 
+This command will check every file that have changed since the revision (created, renamed, modified or deleted files) once for the revision, and one for the current HEAD and compare results to provide a compared results.
 
 It will output files with no changes in bebt scores, files with less debt and files with more debt, as well as a total score comparaison.
 
@@ -136,14 +143,14 @@ Particularly usefull when creating a pull request, and we want to compare the ma
 
 #### `--rule`, `-r`: **string**
 
-filter a specific rule (by ID) 
+filter a specific rule (by ID)
 
-ex: `debt-collector compare --rule=FILE_TOO_LONG` 
+ex: `debt-collector compare --rule=FILE_TOO_LONG`
 or `debt-collector compare -r RULE_ID`
 
 #### `--tags`, `-t`: **array**
 
-filter rules by tags 
+filter rules by tags
 
 ex: `debt-collector compare --tags="design system" "forms" "styles"`
 or `debt-collector compare -t "design system" "forms" "styles"`
@@ -152,12 +159,12 @@ or `debt-collector compare -t "design system" "forms" "styles"`
 
 `debt-collector walk` ou `npx debt-collector walk`
 
-This command will check every releases tags and run a diagnostic. 
+This command will check every releases tags and run a diagnostic.
 
-It will then output a HTML report with a detailled graph and will try to open it in the browser. 
+It will then output a HTML report with a detailled graph and will try to open it in the browser.
 If the openning fails, the report will be saved in `node_modules/.cache/debt-collector/report.html`
 
-/!\ please note that for now, the walk command should only work in the context of the the passculture project (for wich this library was initialy created), but a configuration should be added in the future to allow you to check any revisions you want (tags or commits) with fine controls. 
+/!\ please note that for now, the walk command should only work in the context of the the passculture project (for wich this library was initialy created), but a configuration should be added in the future to allow you to check any revisions you want (tags or commits) with fine controls.
 
 ### Available walk options
 
@@ -165,7 +172,7 @@ If the openning fails, the report will be saved in `node_modules/.cache/debt-col
 
 limit the number of revision to check
 
-ex: `debt-collector walk --revlength=10` 
+ex: `debt-collector walk --revlength=10`
 or `debt-collector walk -n 10`
 
 ## Configuration
@@ -183,7 +190,7 @@ By default DC will look for a configuration file in the current working director
 }
 ```
 
-## Configuring FileRules : 
+## Configuring FileRules :
 
 An array of objects containing the following keys :
 
@@ -199,7 +206,7 @@ To be valid, a fileRule should have at least a `include` or a `matchRule` or **b
 
 ### the include key
 
-Given the following config : 
+Given the following config :
 
 ```js
 {
@@ -215,17 +222,17 @@ Given the following config :
 }
 ```
 
-DC will increment the debt score by 5 every time it encounter a js or a jsx file within the `src` directory. 
+DC will increment the debt score by 5 every time it encounter a js or a jsx file within the `src` directory.
 
 ### The matchRule function
 
-The match rule function should return a number, corresponding to the number of occurences found in the file, for exemple, given a file with the folowing content : 
+The match rule function should return a number, corresponding to the number of occurences found in the file, for exemple, given a file with the folowing content :
 
 ```
 foo bar foo foo
 ```
 
-And the following config : 
+And the following config :
 
 ```js
 {
@@ -241,7 +248,7 @@ And the following config :
 }
 ```
 
-The file would have a score of 6 ( 3 occurences of 'foo' * debtScore )
+The file would have a score of 6 ( 3 occurences of 'foo' \* debtScore )
 
 `({findOne}) => findOne('foo') + findOne('bar')` would give you a score of 8
 
@@ -263,7 +270,7 @@ type MatchRule = ({
 
 examples :
 
-`findJsImportFrom('foo', 'bar')` will matches `import foo from 'bar'` or  `import { foo, baz } from '@tata/bar'` etc...
+`findJsImportFrom('foo', 'bar')` will matches `import foo from 'bar'` or `import { foo, baz } from '@tata/bar'` etc...
 
 `countAll(/[^.]map\(/g)` will match all occurences of `map(() => {})` that are not preceded by a `.`
 
@@ -271,15 +278,13 @@ examples :
 
 `countAllOf(['toto', 'tutu', /tata/g])` will return the number of occurences of `toto`, `tutu` and `tata` in a file
 
-
 ### using both matchRule and include
 
-By using both matchRule and include, your score will only increment if the file match the glob **and** the rule. 
-
+By using both matchRule and include, your score will only increment if the file match the glob **and** the rule.
 
 ## Configuring Eslint rules
 
-To configure eslint checks on files, provide the following keys in the configuration file : 
+To configure eslint checks on files, provide the following keys in the configuration file :
 
 ```js
 {
@@ -288,9 +293,9 @@ To configure eslint checks on files, provide the following keys in the configura
 }
 ```
 
-### eslintRules array 
+### eslintRules array
 
-You should provide the same keys for eslint rules than for fileRules, exept for the `eslintRules` key : 
+You should provide the same keys for eslint rules than for fileRules, exept for the `eslintRules` key :
 
 - `title` [required]: string
 - `id` [required]: string (SNAKE_CASE by convention)
@@ -300,7 +305,7 @@ You should provide the same keys for eslint rules than for fileRules, exept for 
 - `include` [optional]: glob pattern or an array of glob patterns: for applying the rule only if the file match
 - `matchESLintRule` [optional]: a function returing the number of occurences found in eslint output
 
-#### The matchESLintRule function : 
+#### The matchESLintRule function :
 
 DC provide the `matchESLintRule` function with an object of usefull things passed as param :
 
