@@ -4,18 +4,11 @@ import template from './packagesEntriesTemplate'
 
 const cachePath = `${process.cwd()}/node_modules/.cache/debt-collector`
 
-const buildWalkEntriesReport = (
-  reportsLinks,
-  openReport
-) => {
+const buildWalkEntriesReport = (reportsLinks, openReport) => {
   setTimeout(() => {
     // waiting for file system to correctly switch all files after checkout
     const resultPath = `${cachePath}/index.html`
-    const jsonResults = JSON.stringify(
-      reportsLinks,
-      null,
-      2
-    )
+    const jsonResults = JSON.stringify(reportsLinks, null, 2)
 
     const data = template(jsonResults)
 

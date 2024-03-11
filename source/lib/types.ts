@@ -45,7 +45,7 @@ export type WalkConfig = {
   parser: (gitResult: string) => string[]
   limit?: number
   report?: {
-    packages?: { 
+    packages?: {
       [name: string]: string
     }
   }

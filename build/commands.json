@@ -1,234 +1,204 @@
 {
-	"commands": [
-		{
-			"description": "",
-			"positionalArgs": [],
-			"args": [
-				{
-					"key": "revlength",
-					"type": "number",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"n"
-					],
-					"positional": false
-				},
-				{
-					"key": "config",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"c"
-					],
-					"positional": false
-				},
-				{
-					"key": "include",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"f"
-					],
-					"positional": false
-				}
-			],
-			"isIndex": false,
-			"name": "walkDryRun",
-			"path": "walkDryRun/index.tsx",
-			"subCommands": []
-		},
-		{
-			"description": "",
-			"positionalArgs": [],
-			"args": [
-				{
-					"key": "limitTop",
-					"type": "number",
-					"description": "",
-					"isRequired": false,
-					"aliases": [],
-					"positional": false
-				},
-				{
-					"key": "include",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"g"
-					],
-					"positional": false
-				},
-				{
-					"key": "rule",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"r"
-					],
-					"positional": false
-				},
-				{
-					"key": "tags",
-					"type": "array",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"t"
-					],
-					"positional": false
-				},
-				{
-					"key": "config",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"c"
-					],
-					"positional": false
-				},
-				{
-					"key": "changedSince",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"s"
-					],
-					"positional": false
-				},
-				{
-					"key": "reportFormat",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"f"
-					],
-					"positional": false
-				}
-			],
-			"isIndex": false,
-			"name": "check",
-			"path": "check/index.tsx",
-			"subCommands": []
-		},
-		{
-			"description": "",
-			"positionalArgs": [],
-			"args": [
-				{
-					"key": "revision",
-					"type": "string",
-					"description": "",
-					"isRequired": true,
-					"aliases": [],
-					"positional": false
-				},
-				{
-					"key": "include",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"g"
-					],
-					"positional": false
-				},
-				{
-					"key": "rule",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"r"
-					],
-					"positional": false
-				},
-				{
-					"key": "tags",
-					"type": "array",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"t"
-					],
-					"positional": false
-				},
-				{
-					"key": "config",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"c"
-					],
-					"positional": false
-				},
-				{
-					"key": "htmlReport",
-					"type": "boolean",
-					"description": "",
-					"isRequired": false,
-					"aliases": [],
-					"positional": false
-				},
-				{
-					"key": "commonAncestor",
-					"type": "boolean",
-					"description": "",
-					"isRequired": false,
-					"aliases": [],
-					"positional": false
-				}
-			],
-			"isIndex": false,
-			"name": "compare",
-			"path": "compare/index.tsx",
-			"subCommands": []
-		},
-		{
-			"description": "",
-			"positionalArgs": [],
-			"args": [
-				{
-					"key": "config",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"c"
-					],
-					"positional": false
-				},
-				{
-					"key": "include",
-					"type": "string",
-					"description": "",
-					"isRequired": false,
-					"aliases": [
-						"f"
-					],
-					"positional": false
-				},
-				{
-					"key": "openReport",
-					"type": "boolean",
-					"description": "",
-					"isRequired": false,
-					"aliases": [],
-					"positional": false
-				}
-			],
-			"isIndex": false,
-			"name": "walk",
-			"path": "walk/index.tsx",
-			"subCommands": []
-		}
-	]
+  "commands": [
+    {
+      "description": "",
+      "positionalArgs": [],
+      "args": [
+        {
+          "key": "revlength",
+          "type": "number",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["n"],
+          "positional": false
+        },
+        {
+          "key": "config",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["c"],
+          "positional": false
+        },
+        {
+          "key": "include",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["f"],
+          "positional": false
+        }
+      ],
+      "isIndex": false,
+      "name": "walkDryRun",
+      "path": "walkDryRun/index.tsx",
+      "subCommands": []
+    },
+    {
+      "description": "",
+      "positionalArgs": [],
+      "args": [
+        {
+          "key": "limitTop",
+          "type": "number",
+          "description": "",
+          "isRequired": false,
+          "aliases": [],
+          "positional": false
+        },
+        {
+          "key": "include",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["g"],
+          "positional": false
+        },
+        {
+          "key": "rule",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["r"],
+          "positional": false
+        },
+        {
+          "key": "tags",
+          "type": "array",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["t"],
+          "positional": false
+        },
+        {
+          "key": "config",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["c"],
+          "positional": false
+        },
+        {
+          "key": "changedSince",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["s"],
+          "positional": false
+        },
+        {
+          "key": "reportFormat",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["f"],
+          "positional": false
+        }
+      ],
+      "isIndex": false,
+      "name": "check",
+      "path": "check/index.tsx",
+      "subCommands": []
+    },
+    {
+      "description": "",
+      "positionalArgs": [],
+      "args": [
+        {
+          "key": "revision",
+          "type": "string",
+          "description": "",
+          "isRequired": true,
+          "aliases": [],
+          "positional": false
+        },
+        {
+          "key": "include",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["g"],
+          "positional": false
+        },
+        {
+          "key": "rule",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["r"],
+          "positional": false
+        },
+        {
+          "key": "tags",
+          "type": "array",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["t"],
+          "positional": false
+        },
+        {
+          "key": "config",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["c"],
+          "positional": false
+        },
+        {
+          "key": "htmlReport",
+          "type": "boolean",
+          "description": "",
+          "isRequired": false,
+          "aliases": [],
+          "positional": false
+        },
+        {
+          "key": "commonAncestor",
+          "type": "boolean",
+          "description": "",
+          "isRequired": false,
+          "aliases": [],
+          "positional": false
+        }
+      ],
+      "isIndex": false,
+      "name": "compare",
+      "path": "compare/index.tsx",
+      "subCommands": []
+    },
+    {
+      "description": "",
+      "positionalArgs": [],
+      "args": [
+        {
+          "key": "config",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["c"],
+          "positional": false
+        },
+        {
+          "key": "include",
+          "type": "string",
+          "description": "",
+          "isRequired": false,
+          "aliases": ["f"],
+          "positional": false
+        },
+        {
+          "key": "openReport",
+          "type": "boolean",
+          "description": "",
+          "isRequired": false,
+          "aliases": [],
+          "positional": false
+        }
+      ],
+      "isIndex": false,
+      "name": "walk",
+      "path": "walk/index.tsx",
+      "subCommands": []
+    }
+  ]
 }

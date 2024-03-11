@@ -1,6 +1,9 @@
 {
+  "extends": "@sindresorhus/tsconfig",
   "compilerOptions": {
-    "jsx": "react",
-    "downlevelIteration": true
-  }
+    "moduleResolution": "node16",
+    "module": "Node16",
+    "outDir": "dist"
+  },
+  "include": ["source"]
 }

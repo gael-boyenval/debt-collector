@@ -1,4 +1,4 @@
-import { Config } from './config'
+import { Config } from './types'
 
 const getTagListFromConfig = (config: Config): { [key: string]: string[] } => {
   const allRules = config?.eslintRules

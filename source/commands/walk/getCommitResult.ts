@@ -25,18 +25,19 @@ export const formatWalkResults = (
   ]
 
   const revisionResultsArr = results.map(({ rev, results: filesResults }) => {
-    
     let filteredResults = filesResults
-    
-    if ( hasPackagesConfig) {
-      filteredResults = Object.keys(filesResults).filter(
-        filePath => minimatch(filePath, globFilter.replace(/^\.\//, ''))
-      ).reduce((acc, filePath) => {
-        acc[filePath] = filesResults[filePath]
-        return acc
-      }, {})
+
+    if (hasPackagesConfig) {
+      filteredResults = Object.keys(filesResults)
+        .filter((filePath) =>
+          minimatch(filePath, globFilter.replace(/^\.\//, ''))
+        )
+        .reduce((acc, filePath) => {
+          acc[filePath] = filesResults[filePath]
+          return acc
+        }, {})
     }
-    
+
     let totalScore = 0
     const rulesScores: { [ruleId: string]: BrokenRule } =
       allRulesIdInConfig.reduce((acc, rule) => {
@@ -62,7 +63,7 @@ export const formatWalkResults = (
       })
     })
 
-    const brokenRules = Object.values(rulesScores)    
+    const brokenRules = Object.values(rulesScores)
 
     return {
       ...rev,
