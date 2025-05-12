@@ -1,8 +1,8 @@
 {
   "name": "debt-collector",
-  "version": "v1.0.0-alpha.7",
+  "version": "v1.0.0-alpha.9",
   "description": "a nodejs tool to identify, track and mesure technical debt",
-  "bin": "./dist/index.js",
+  "bin": "./dist/cli.js",
   "type": "module",
   "engines": {
     "node": ">=18"
@@ -90,14 +90,6 @@
     "prettier": true,
     "rules": {
       "react/prop-types": "off"
-    }
-  },
-  "peerDependencies": {
-    "eslint": ">= 7.0.0 < 8.0.0"
-  },
-  "peerDependenciesMeta": {
-    "eslint": {
-      "optional": true
     }
   }
 }
