@@ -1,0 +1,282 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`compareMarkdownReport > should handle case where all files have zero debt 1`] = `
+"
+## Debt collector report
+
+All changed files have a debt score of 0.
+
+Nothing to do here, we're all good ! 🎉
+"
+`;
+
+exports[`compareMarkdownReport > should handle decreased debt score with multiple files 1`] = `
+"
+## Debt collector report
+
+### ✅ Debt score for modified files decreased by -15 [^1]
+You did great ! 🎉
+
+|Previous debt|Current debt|trend|
+|--|--|--|
+|35|20|-15|
+
+<details>
+<summary>
+  <h3>Modified files • see scores before and after</h3>
+</summary>
+<div>
+
+
+### ✅ Files with less debt :
+
+
+|File|Prev|Current|Trend|
+|--|--|--|--|
+|src/components/Button.tsx|15|10|-5|
+|src/utils/helpers.ts|20|10|-10|
+
+
+
+
+<br/>
+<br/>
+</div>
+</details>
+
+
+<details>
+<summary>
+  <h3>Help us improve code quality! Here are some ideas for you</h3>
+</summary>
+<div>
+
+
+
+<br/>
+<br/>
+</div>
+</details>
+
+[^1]: Scores based on modified files only <br/>The report may not be accurate if your branch is not up to date with the base branch.
+"
+`;
+
+exports[`compareMarkdownReport > should handle different file types and paths 1`] = `
+"
+## Debt collector report
+
+### ❌ Debt score for modified files increased by 5 [^1]
+Maybe try something else 😭
+
+|Previous debt|Current debt|trend|
+|--|--|--|
+|25|30|5|
+
+<details>
+<summary>
+  <h3>Modified files • see scores before and after</h3>
+</summary>
+<div>
+
+
+### ✅ Files with less debt :
+
+
+|File|Prev|Current|Trend|
+|--|--|--|--|
+|src/styles/main.css|10|5|-5|
+
+
+
+### ❌ Files with more debt :
+
+
+|File|Prev|Current|Trend|
+|--|--|--|--|
+|src/components/Header/Header.tsx|10|15|5|
+|src/pages/Home/index.tsx|5|10|5|
+
+
+
+
+<br/>
+<br/>
+</div>
+</details>
+
+
+<details>
+<summary>
+  <h3>Help us improve code quality! Here are some ideas for you</h3>
+</summary>
+<div>
+
+
+<br/>
+<br/>
+<b>src/components/Button.tsx</b><br/>
+<br/>
+
+|Broken rule|score|
+|--|--|
+|🚫 Style Issues|10|
+
+
+<br/>
+<br/>
+</div>
+</details>
+
+[^1]: Scores based on modified files only <br/>The report may not be accurate if your branch is not up to date with the base branch.
+"
+`;
+
+exports[`compareMarkdownReport > should handle edge cases with empty arrays and zero scores 1`] = `
+"
+## Debt collector report
+
+All changed files have a debt score of 0.
+
+Nothing to do here, we're all good ! 🎉
+"
+`;
+
+exports[`compareMarkdownReport > should handle increased debt score with multiple files 1`] = `
+"
+## Debt collector report
+
+### ❌ Debt score for modified files increased by 15 [^1]
+Maybe try something else 😭
+
+|Previous debt|Current debt|trend|
+|--|--|--|
+|20|35|15|
+
+<details>
+<summary>
+  <h3>Modified files • see scores before and after</h3>
+</summary>
+<div>
+
+
+### ❌ Files with more debt :
+
+
+|File|Prev|Current|Trend|
+|--|--|--|--|
+|src/components/Button.tsx|10|15|5|
+|src/utils/helpers.ts|10|20|10|
+
+
+
+
+<br/>
+<br/>
+</div>
+</details>
+
+
+<details>
+<summary>
+  <h3>Help us improve code quality! Here are some ideas for you</h3>
+</summary>
+<div>
+
+
+<br/>
+<br/>
+<b>src/components/Button.tsx</b><br/>
+<br/>
+
+|Broken rule|score|
+|--|--|
+|🚫 Complex Function|15|
+
+
+<br/>
+<br/>
+</div>
+</details>
+
+[^1]: Scores based on modified files only <br/>The report may not be accurate if your branch is not up to date with the base branch.
+"
+`;
+
+exports[`compareMarkdownReport > should handle mixed changes with multiple broken rules 1`] = `
+"
+## Debt collector report
+
+### ❌ Debt score for modified files increased by 5 [^1]
+Maybe try something else 😭
+
+|Previous debt|Current debt|trend|
+|--|--|--|
+|30|35|5|
+
+<details>
+<summary>
+  <h3>Modified files • see scores before and after</h3>
+</summary>
+<div>
+
+
+### 💤 Files with same debt :
+
+
+|File|Prev|Current|Trend|
+|--|--|--|--|
+|src/types/index.ts|5|5|0|
+
+
+
+### ✅ Files with less debt :
+
+
+|File|Prev|Current|Trend|
+|--|--|--|--|
+|src/components/Button.tsx|15|10|-5|
+
+
+
+### ❌ Files with more debt :
+
+
+|File|Prev|Current|Trend|
+|--|--|--|--|
+|src/utils/helpers.ts|10|20|10|
+
+
+
+
+<br/>
+<br/>
+</div>
+</details>
+
+
+<details>
+<summary>
+  <h3>Help us improve code quality! Here are some ideas for you</h3>
+</summary>
+<div>
+
+
+<br/>
+<br/>
+<b>src/components/Button.tsx</b><br/>
+<br/>
+
+|Broken rule|score|
+|--|--|
+|🚫 Complex Function|15|
+
+
+<br/>
+<br/>
+</div>
+</details>
+
+[^1]: Scores based on modified files only <br/>The report may not be accurate if your branch is not up to date with the base branch.
+"
+`;

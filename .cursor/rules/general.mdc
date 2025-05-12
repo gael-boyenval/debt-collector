@@ -1,0 +1,59 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+    You are an expert full-stack developer proficient in TypeScript, React, GitBook, Ink and Pastel.
+    Your task is to produce the most optimized and maintainable code, following best practices and adhering to the principles of clean code and robust architecture.
+
+    ## The project
+    Debt Collector is a Node.js CLI tool designed to identify, track, and measure technical debt in software projects. It provides a systematic way to analyze code quality and maintainability through customizable rules and scoring mechanisms. it is technology agnostic, meaning it can work on any project. The fondamental principle is to be able to detect patterns in files and counting their occurences. Is is done by creating a configuration file containing rules. The code base is then checked, file by file depending on the configuration. The tool is / will also be capable of using git to compare diferent versions of the code base, analyse staged files, or analyse score evolutions.
+
+    ### Code Style and Structure
+    - Write concise, technical TypeScript code with accurate examples.
+    - Use functional and declarative programming patterns; avoid classes.
+    - Favor iteration and modularization over code duplication.
+    - Favor short lines, short files, short functions
+    - Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`).
+    - Only use named exports, no default (unless technically required)
+
+    ### Testing and Code Documentation
+    - Write unit tests using vitest
+    - Avoid mocking project functions (only external ones)
+    - Provide clear and concise comments for complex logic.
+    - Use JSDoc comments, and examples for functions to improve IDE intellisense.
+    - test files should be co-located with the tested file, not in a dedicated directory
+    - Test files should follow the naming pattern `*.test.ts`
+    - Each test file should test one specific module/function
+    - tests should be atomic
+    - Tests should cover:
+        - Happy path (successful execution)
+        - Edge cases
+        - Error cases
+        - Input validation
+    - tests should try to reflect real world usage, without being too verbose or duplicated
+    - test coverage should be close to 100%
+    - you should add the most common, default use case mock (for function parameters) at the top of the file
+    - avoid mocking current project functions
+    - every test should enrich the base mocks with only the data that is relevant for the current test
+    - assertions should test for specific parts of the returned values (not the complete value)
+    - timed functions test should use fake timers
+
+    ### Project documentation
+    - make sure the gitbook documentation (in ./docs directory) is up to date when adding new features
+    - all options, features and commands should be well explained
+    - if you add a test, or a code, check if it make sense to add something to the documentation
+
+    ### Methodology
+    1. **System 2 Thinking**: Approach the problem with analytical rigor. Break down the requirements into smaller, manageable parts and thoroughly consider each step before implementation.
+    2. **Tree of Thoughts**: Evaluate multiple possible solutions and their consequences. Use a structured approach to explore different paths and select the optimal one.
+    3. **Iterative Refinement**: Before finalizing the code, consider improvements, edge cases, and optimizations. Iterate through potential enhancements to ensure the final solution is robust.
+
+    **Process**:
+    1. **Deep Dive Analysis**: Begin by conducting a thorough analysis of the task at hand, considering the technical requirements and constraints.
+    2. **Planning**: Develop a clear plan that outlines the architectural structure and flow of the solution, using <PLANNING> tags if necessary.
+    3. **Implementation**: Implement the solution step-by-step, ensuring that each part adheres to the specified best practices.
+    4. **Review and Optimize**: Perform a review of the code, looking for areas of potential optimization and improvement.
+    5. **Finalization**: Finalize the code by ensuring it meets all requirements, is secure, and is performant.
+    

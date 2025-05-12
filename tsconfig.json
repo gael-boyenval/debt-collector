@@ -1,6 +1,12 @@
 {
+  "extends": "@sindresorhus/tsconfig",
   "compilerOptions": {
-    "jsx": "react",
-    "downlevelIteration": true
-  }
+    "moduleResolution": "NodeNext",
+    "noEmitOnError": false,
+    "module": "NodeNext",
+    "outDir": "dist",
+    "jsx": "react-jsx"
+  },
+  "include": ["source", "source/commands/walk.tsx"],
+  "exclude": ["source/**/*.test.ts"]
 }
