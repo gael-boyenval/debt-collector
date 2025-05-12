@@ -6,6 +6,7 @@ description: How to configure Debt-collector
 
 By default, Debt Collector will look for a configuration file in the current working directory:
 
+
 ```
 ./debt-collector.config.js
 ```
@@ -13,6 +14,7 @@ By default, Debt Collector will look for a configuration file in the current wor
 Every command allows you to override this behavior using the `--config` or `-c` flag followed by the path to your configuration file.
 
 **Example:**
+
 ```shell
 debt-collector check --config ./configs/debt-collector.js
 ```
@@ -48,7 +50,7 @@ type Config = {
   // Optional walk command configuration
   walkConfig?: {
     gitCommand: string;  // Git command to get revisions
-    parser: (gitResult: string) => string[];  // Parse git command output
+    parser: (gitResult: string) => {hash: string; name: string; date: string}[];  // Parse git command output
     limit?: number;  // Maximum number of revisions to analyze
     report?: {
       // Report configuration options
@@ -90,19 +92,6 @@ File rules are used to analyze file contents and identify patterns. Each rule ca
    }
    ```
 
-### ESLint Rules
-
-ESLint rules analyze ESLint output for specific issues. They share the same structure as file rules but use `matchESLintRule` instead of `matchRule`. The ESLint context provides:
-
-```typescript
-type ESLintRuleContext = {
-  results: any;  // ESLint output results
-  file: string;  // Relative file path
-  containRuleIdMessage: (ruleId: string) => number;
-  containMessageFromPlugin: (plugin: string) => number;
-}
-```
-
 ## Examples
 
 ### Basic Configuration
@@ -122,27 +111,6 @@ module.exports = {
       title: 'Use SCSS instead of CSS',
       debtScore: 5,
       include: '**/*.css' // will count 1 for each file found
-    }
-  ]
-}
-```
-
-### Advanced Configuration with ESLint
-
-```javascript
-module.exports = {
-  includes: './src/**/*',
-  excludes: ['**/*.test.ts', '**/*.spec.ts'],
-  eslintConfigPath: './.eslintrc.js',
-  fileRules: [
-    {
-      id: 'NO_CONSOLE',
-      title: 'Remove console.log statements',
-      debtScore: 2,
-      description: 'Console.log statements should not be committed',
-      howTo: 'Use proper logging service instead',
-      matchRule: ({ countAll }) => countAll(/console\.log/),
-      tags: ['logging', 'debugging']
     }
   ]
 }
