@@ -1,15 +1,12 @@
-import type { ValidateConfigReturn } from './validateConfig'
-import { useArrayForStringKeys } from '../utils'
+import { useArrayForStringKeys } from '../utils/index.js'
+import type { UserConfig, Config, SanitizedFileRule } from '../types.js'
 
-const initialiseRules = (
-  validatedConfig: ValidateConfigReturn
-): ValidateConfigReturn => {
-  const returnValues = validatedConfig
-  const config = returnValues.sanitizedConfig
+export const sanitizeConfig = (userConfig: UserConfig): Config => {
+  let sanitizedConfig = userConfig
 
-  returnValues.sanitizedConfig = useArrayForStringKeys(
+  sanitizedConfig = useArrayForStringKeys(
     ['include', 'exclude'],
-    config
+    sanitizedConfig
   )
 
   const defaultFileRuleConfig = {
@@ -17,14 +14,10 @@ const initialiseRules = (
     matchRule: () => 1,
   }
 
-  const defaultEslintRuleConfig = {
-    include: '**/*',
-  }
+  let fileRules: SanitizedFileRule[] | null = null
 
-  let fileRules = null
-
-  if (config.fileRules?.length > 0) {
-    fileRules = config.fileRules.map((rule) => {
+  if (sanitizedConfig.fileRules && sanitizedConfig.fileRules.length > 0) {
+    fileRules = sanitizedConfig.fileRules.map((rule) => {
       let sanitizedRule = {
         ...defaultFileRuleConfig,
         ...rule,
@@ -36,36 +29,12 @@ const initialiseRules = (
       )
 
       return sanitizedRule
-    })
-  }
-
-  let eslintRules = null
-
-  if (config.eslintRules?.length > 0) {
-    eslintRules = config.eslintRules.map((rule) => {
-      let sanitizedRule = {
-        ...defaultEslintRuleConfig,
-        ...rule,
-      }
-
-      sanitizedRule = useArrayForStringKeys(
-        ['include', 'exclude', 'tags'],
-        sanitizedRule
-      )
-
-      return sanitizedRule
-    })
+    }) as SanitizedFileRule[]
   }
 
   if (fileRules) {
-    returnValues.sanitizedConfig.fileRules = fileRules
+    sanitizedConfig.fileRules = fileRules as SanitizedFileRule[]
   }
 
-  if (eslintRules) {
-    returnValues.sanitizedConfig.eslintRules = eslintRules
-  }
-
-  return returnValues
+  return sanitizedConfig as Config
 }
-
-export default initialiseRules

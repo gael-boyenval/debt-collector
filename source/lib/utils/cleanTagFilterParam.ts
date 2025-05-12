@@ -1,8 +1,6 @@
 type Tag = string | undefined
 
-const cleanTagFilterParam = (tagsParam: Tag[]) =>
+export const cleanTagFilterParam = (tagsParam: Tag[] | undefined) =>
   tagsParam
-    ? tagsParam?.filter((tag: string | undefined) => tag !== undefined)
+    ? tagsParam?.filter((tag: string | undefined) => tag !== undefined).map(tag => tag?.trim())
     : []
-
-export default cleanTagFilterParam

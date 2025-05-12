@@ -1,1 +1,1 @@
-export { default as useValidatedConfig } from './useValidatedConfig'
+export { default as useValidatedConfig } from './useValidatedConfig.js'

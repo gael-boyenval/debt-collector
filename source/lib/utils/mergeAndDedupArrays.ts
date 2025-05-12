@@ -1,6 +1,4 @@
-const mergeAndDedupArrays = <T>(...args: T[][]): T[] => {
-  const fusioned: T[] = args.reduce((acc, array) => acc.concat(array), [])
+export const mergeAndDedupArrays = <T>(arrays: T[][]): T[] => {
+  const fusioned: T[] = arrays.flat()
   return [...new Set(fusioned)]
 }
-
-export default mergeAndDedupArrays

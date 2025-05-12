@@ -1,17 +1,16 @@
-import minimatch from 'minimatch'
+import { minimatch } from 'minimatch'
 
-const filterIgnoredFiles = (
+export const filterIgnoredFiles = (
   files: string[],
-  ignoredFiles: string[],
-  includedFiles: string[]
+  excludePatterns: string[] = [],
+  includePatterns: string[] = []
 ): string[] =>
   files.filter((file) => {
     const matchGlob = (glob: string): boolean =>
       minimatch(file, glob.replace(/^\.\//, ''))
 
-    const isFileIgnored = ignoredFiles.some(matchGlob)
-    const isFileIncluded = includedFiles.some(matchGlob)
-    return !isFileIgnored && isFileIncluded
-  })
+    const isFileIncluded = includePatterns.some(matchGlob)
+    const isFileExcluded = excludePatterns.some(matchGlob)
 
-export default filterIgnoredFiles
+    return isFileIncluded && !isFileExcluded
+  })

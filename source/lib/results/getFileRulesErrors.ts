@@ -1,80 +1,12 @@
-import escapeStringRegexp from 'escape-string-regexp-node'
-import type { Config, BrokenRule } from '../types'
-
-const findJsImportFrom =
-  (data) =>
-  (importee?: string, from?: string): 0 | 1 => {
-    const regexp = new RegExp(
-      `import [A-z0-9,\\s{]*${escapeStringRegexp(
-        importee
-      )}[A-z0-9,\\s}]* from '[A-z0-9.\/]*${escapeStringRegexp(
-        from
-      )}[A-z0-9.\/]*'`,
-      'gm'
-    )
-    const res = data.matchAll(regexp)
-    const resArr = Array.from(res, (m) => m[0])
-    return resArr.length > 0 ? 1 : 0
-  }
-
-const countAll =
-  (data) =>
-  (str: string | RegExp): number => {
-    let regexp: RegExp
-
-    if (str instanceof RegExp) {
-      regexp = str
-    } else {
-      regexp = new RegExp(escapeStringRegexp(str), 'g')
-    }
-    const res = data.matchAll(regexp)
-    const resArr = Array.from(res, (m) => m[0])
-
-    return resArr.length
-  }
-
-const findOne =
-  (data) =>
-  (str: string | RegExp): 0 | 1 => {
-    const count = countAll(data)(str)
-    return count > 0 ? 1 : 0
-  }
-
-const findOneOf =
-  (data) =>
-  (matches: (string | RegExp)[]): 0 | 1 => {
-    let count = 0
-    let index = 0
-
-    while (count === 0 && index <= matches.length - 1) {
-      count = countAll(data)(matches[index])
-      index += 1
-    }
-
-    return count === 0 ? 0 : 1
-  }
-
-// does not work => fix
-const countAllOf =
-  (data) =>
-  (matches: (string | RegExp)[]): number => {
-    let count = 0
-    let index = 0
-
-    while (index <= matches.length - 1) {
-      count += countAll(data)(matches[index])
-      index += 1
-    }
-
-    return count
-  }
+import type { Config, BrokenRule, MatchRuleUtils, SanitizedFileRule } from '../types.js'
+import { findJsImportFrom, countAll, findOne, findOneOf, countAllOf, findAttributesInTag } from '../rulesUtils/index.js'
 
 const getFileRulesErrors = (
   config: Config,
   file: string,
   data: string
-): BrokenRule[] => {
-  const utils = {
+): Partial<BrokenRule>[] => {
+  const utils: MatchRuleUtils = {
     content: data,
     file,
     countAll: countAll(data),
@@ -82,20 +14,23 @@ const getFileRulesErrors = (
     findOneOf: findOneOf(data),
     countAllOf: countAllOf(data),
     findJsImportFrom: findJsImportFrom(data),
+    findAttributesInTag: findAttributesInTag(data),
   }
 
-  return config.fileRules.reduce((acc, rule) => {
-    const nbErrors = rule.matchRule({ ...utils })
+  return (
+    config?.fileRules?.reduce((acc: Partial<BrokenRule>[], rule: SanitizedFileRule) => {
+      const nbErrors = rule.matchRule({ ...utils })
 
-    if (nbErrors > 0) {
-      acc.push({
-        ruleTitle: rule.title,
-        ruleId: rule.id,
-        occurences: nbErrors,
-      })
-    }
-    return acc
-  }, [])
+      if (nbErrors > 0) {
+        acc.push({
+          ruleTitle: rule.title,
+          ruleId: rule.id,
+          occurences: nbErrors,
+        })
+      }
+      return acc
+    }, [] as Partial<BrokenRule>[]) ?? []
+  )
 }
 
 export default getFileRulesErrors

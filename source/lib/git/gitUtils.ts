@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop, no-restricted-syntax */
 import path from 'path'
-import simpleGit, { SimpleGit } from 'simple-git'
-import type { GitRevision } from '../types'
+import { simpleGit, type SimpleGit } from 'simple-git'
+import type { GitRevision, Parser } from '../types.js'
 
 const gitOptions = {
   baseDir: process.cwd(),
@@ -35,9 +35,9 @@ export const execWalkCommand = async (command: string): Promise<string> =>
 
 export const getRevList = async (
   command: string,
-  parser: (result: string) => string[],
+  parser: Parser,
   limit = 10
-): Promise<string[]> => {
+): Promise<GitRevision[]> => {
   const commandResult = await git.raw(command.replace('git ', '').split(' '))
   const result = parser(commandResult)
   return result.slice(0, limit)
@@ -66,9 +66,7 @@ export const walkCommits = async <FinalResult, IteratorResult>(
     onEnd,
   }: {
     onCommitChange: OnCommitChange<IteratorResult>
-    onEnd: (
-      result: WalkIteratorResult<IteratorResult>[]
-    ) => Promise<FinalResult>
+    onEnd: (result: FinalResult) => Promise<FinalResult>
     onError: (error: string) => void
   }
 ): Promise<FinalResult | null> => {
@@ -103,21 +101,21 @@ export const walkCommits = async <FinalResult, IteratorResult>(
         results,
       })
     }
-  } catch (e) {
-    onError(e.message)
+  } catch (e: unknown) {
+    onError(e instanceof Error ? e.message : 'Unknown error')
     await checkoutTo(currentBranch)
     console.log(e)
     return null
   }
 
   await checkoutTo(currentBranch)
-  const results = await onEnd(walkIteratorResults)
+  const results = await onEnd(walkIteratorResults as FinalResult)
   return results
 }
 
 export const getChangedFilesSinceRev = async (
   rev: string,
-  commonAncestor = true
+  commonAncestor: boolean
 ): Promise<{ status: string; filePath: string }[]> => {
   let results
   if (commonAncestor) {
@@ -145,9 +143,9 @@ export const getChangedFilesSinceRev = async (
 
       return {
         status,
-        filePath: path.relative(currentGitDir, filePath),
+        filePath: path.relative(currentGitDir, filePath ?? ''),
       }
     })
 
-  return changedFilesSinceRev
+  return changedFilesSinceRev as { status: string; filePath: string }[]
 }

@@ -1,91 +1,121 @@
-import path from 'path'
-import { Config, UserConfig } from './config'
-import sanitizeConfig from './sanitizeConfig'
+import type { Config, UserConfig } from '../types.js'
+import { loadConfig } from './loadConfig.js'
+import { sanitizeConfig } from './sanitizeConfig.js'
 
 export type ValidateConfigReturn = {
   isConfigValid: boolean
-  sanitizedConfig: Config | null
+  sanitizedConfig: Config
   configErrors: string[]
-  userConfig: UserConfig | null
+  userConfig: UserConfig
 }
 
-const validateConfig = async (configPath): Promise<ValidateConfigReturn> => {
-  let config: undefined | Config
+const validateConfig = async (
+  configPath: string
+): Promise<ValidateConfigReturn> => {
+  let userConfig: UserConfig
 
-  const returnValues = {
+  const returnValues: ValidateConfigReturn = {
     isConfigValid: true,
-    sanitizedConfig: null,
-    userConfig: null,
+    sanitizedConfig: { include: [], exclude: [], fileRules: [] },
+    userConfig: { include: [], fileRules: [] },
     configErrors: [],
   }
 
-  try {
-    const importedConfig = await import(`${process.cwd()}/${configPath}`)
-    config = importedConfig.default
-    returnValues.sanitizedConfig = config
-    returnValues.userConfig = config
-  } catch (e) {
+  const { isSuccess, config, error } = await loadConfig(configPath)
+
+  if (!isSuccess) {
     returnValues.isConfigValid = false
-    returnValues.configErrors.push(
-      `Impossible to load a valid config file at ${configPath}, create a config file or provide a path to a valid config using the "--config" flag`
-    )
+    returnValues.configErrors.push(error)
     return returnValues
   }
 
-  const hasIncludeKey = !!config.include
-  const hasFileRules = !!config.fileRules
-  const hasEslintRules = !!config.eslintRules
-  const hasEslintConfigPath = !!config.eslintConfigPath
-  const hasSomeRules = hasFileRules || hasEslintRules
+  userConfig = config
+
+  const hasIncludeKey = !!userConfig?.include
+  const hasFileRules = !!userConfig?.fileRules
 
   if (!hasIncludeKey) {
     returnValues.isConfigValid = false
     returnValues.configErrors.push(
-      'Provide a "include" key with a glob pattern in your configuration ex: "./**/*"'
+      'Provide a "include" key with a glob pattern in your configuration ex: include: ["./**/*"]'
     )
-  }
-
-  if (!hasSomeRules) {
+  } else if (
+    !Array.isArray(userConfig.include) ||
+    userConfig.include.length === 0
+  ) {
     returnValues.isConfigValid = false
     returnValues.configErrors.push(
-      'Your config does not have any rules, please create "fileRules" or/and "eslintRules"'
+      'The "include" key must be an array containing at least one glob pattern'
     )
   }
 
-  if (hasEslintRules && !hasEslintConfigPath) {
+  if (!hasFileRules) {
     returnValues.isConfigValid = false
     returnValues.configErrors.push(
-      'You provided "eslintRules" but no path to an eslint config file'
+      'Your config does not have any rules, please create "fileRules" key'
     )
   }
 
-  if (!hasEslintRules && hasEslintConfigPath) {
-    returnValues.isConfigValid = false
-    returnValues.configErrors.push(
-      'You provided a a path to an eslint config but no "eslintRules"'
-    )
-  }
-
-  // TODO : validate individual rules
-  // - unique ID
-  // - include either an include key or a matchRule
-
-  if (hasEslintConfigPath && hasEslintRules) {
-    try {
-      // eslint-disable-next-line global-require, import/no-dynamic-require
-      returnValues.sanitizedConfig.eslintConfig = require(path.resolve(
-        process.cwd(),
-        config.eslintConfigPath
-      ))
-    } catch (e) {
+  if (userConfig.walkConfig) {
+    if (
+      !userConfig.walkConfig.gitCommand ||
+      typeof userConfig.walkConfig.gitCommand !== 'string'
+    ) {
       returnValues.isConfigValid = false
       returnValues.configErrors.push(
-        'Impossible to load the eslint config file'
+        'Your config does not have a "gitCommand" key, please create "walkConfig" key with "gitCommand" key'
+      )
+    }
+
+    if (
+      !userConfig.walkConfig.parser ||
+      typeof userConfig.walkConfig.parser !== 'function'
+    ) {
+      returnValues.isConfigValid = false
+      returnValues.configErrors.push(
+        'Your config does not have a "parser" key, please create "walkConfig" key with "parser" key'
       )
     }
   }
+  // Validate individual rules
+  const fileRules = userConfig.fileRules
+  if (fileRules && fileRules.length > 0) {
+    const ruleIds = new Set<string>()
 
-  return sanitizeConfig(returnValues)
+    fileRules.forEach((rule, index) => {
+      // Check for unique IDs
+      if (ruleIds.has(rule.id)) {
+        returnValues.isConfigValid = false
+        returnValues.configErrors.push(
+          `Duplicate rule ID "${rule.id}" found at index ${index}. Each rule must have a unique ID.`
+        )
+      }
+      ruleIds.add(rule.id)
+
+      // Check for required fields
+      if (!rule.include && !rule.matchRule) {
+        returnValues.isConfigValid = false
+        returnValues.configErrors.push(
+          `Rule "${rule.id}" at index ${index} must have either an "include" pattern or a "matchRule" function.`
+        )
+      }
+
+      // Check include array if present
+      if (
+        rule.include &&
+        (!Array.isArray(rule.include) || rule.include.length === 0)
+      ) {
+        returnValues.isConfigValid = false
+        returnValues.configErrors.push(
+          `Rule "${rule.id}" at index ${index} must have an "include" array containing at least one glob pattern`
+        )
+      }
+    })
+    const sanitizedConfig = sanitizeConfig(userConfig)
+    returnValues.sanitizedConfig = sanitizedConfig
+  }
+
+  return returnValues
 }
 
 export default validateConfig

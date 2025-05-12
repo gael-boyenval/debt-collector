@@ -1,18 +1,21 @@
-/* CONFIG */
-
-type MatchUtil<Res extends number> = (content: string) => Res
+type MatchUtil<Res extends number> = (content: MatchPattern) => Res
 type BinaryMatchResponse = 0 | 1
+export type MatchPattern = string | RegExp
 
+export type Command = 'walk' | 'check' | 'compare' | 'walkdryrun'
 export interface MatchRuleUtils {
-  findAll: MatchUtil<number>
+  countAll: MatchUtil<number>
   findOne: MatchUtil<BinaryMatchResponse>
-  oneOf: (
-    utilArray: MatchUtil<BinaryMatchResponse> | MatchUtil<number>[]
-  ) => BinaryMatchResponse
+  findOneOf: (utilArray: MatchPattern[]) => BinaryMatchResponse
+  countAllOf: (utilArray: MatchPattern[]) => number
+  findJsImportFrom: (importee?: string, from?: string) => BinaryMatchResponse
   content: string
+  file: string
+  findAttributesInTag: (
+    attributes?: string | null | (string | null | undefined)[],
+    tagName?: string
+  ) => 0 | 1
 }
-
-type StringOrArray = string | string[]
 
 export interface MatchEslintRuleUtils {
   containRuleIdMessage(str: string): number
@@ -20,29 +23,23 @@ export interface MatchEslintRuleUtils {
   results: any[]
   content: string
 }
-
-interface RulesCommonKeys {
+interface SanitizedRulesCommonKeys {
   title: string
   id: string
   debtScore: number
   description?: string
   howTo?: string
-  include?: StringOrArray
-  exclude?: StringOrArray
-  tags?: StringOrArray
+  include?: string[]
+  exclude?: string[]
+  tags?: string[]
 }
-
-export type FileRule = RulesCommonKeys & {
-  matchRule?: (utils: MatchRuleUtils) => number
-}
-
-export type EslintRule = RulesCommonKeys & {
-  matchRule?: (utils: MatchEslintRuleUtils) => number
+export type SanitizedFileRule = SanitizedRulesCommonKeys & {
+  matchRule: (utils: MatchRuleUtils) => number
 }
 
 export type WalkConfig = {
   gitCommand: string
-  parser: (gitResult: string) => string[]
+  parser: Parser
   limit?: number
   report?: {
     packages?: {
@@ -50,63 +47,41 @@ export type WalkConfig = {
     }
   }
 }
-
-export interface UserConfig {
-  include: StringOrArray
-  exclude: StringOrArray
-  walkConfig?: WalkConfig
-  fileRules?: FileRule[]
-  eslintConfigPath?: string
-  eslintRules?: EslintRule[]
-  eslintConfig?: { [key: string]: unknown }
-}
-
-export interface Config {
-  include: string[]
-  exclude: string[]
-  walkConfig?: WalkConfig
-  fileRules?: SanitizedFileRule[]
-  eslintConfigPath?: string
-  eslintRules?: SanitizedEslintRule[]
-  eslintConfig?: { [key: string]: unknown }
-}
-
-interface SanitizedRulesCommonKeys {
+interface UserFileRuleBase {
   title: string
   id: string
   debtScore: number
   description?: string
   howTo?: string
-  include: string[]
-  exclude?: string[]
-  tags?: string[]
+  include?: string | string[]
+  exclude?: string | string[]
+  tags?: string | string[]
 }
 
-export type SanitizedFileRule = SanitizedRulesCommonKeys & {
+export type UserFileRule = UserFileRuleBase & {
   matchRule: (utils: MatchRuleUtils) => number
 }
 
-export type SanitizedEslintRule = SanitizedRulesCommonKeys & {
-  matchRule: (utils: MatchEslintRuleUtils) => number
+export type UserConfig = {
+  include: string[]
+  exclude?: string[]
+  walkConfig?: WalkConfig
+  fileRules?: UserFileRule[]
 }
 
-/* RESULTS */
-
-type FilePath = string
+export interface Config {
+  include: string[]
+  exclude?: string[]
+  walkConfig?: WalkConfig
+  fileRules?: SanitizedFileRule[]
+}
 
 export type BrokenRule = {
   ruleTitle: string
   ruleId: string
   occurences: number
   ruleTotalSore: number
-  debtScore: number
-}
-
-export type FileResults = {
-  filePath: string
-  fileShortPath: string
-  totalScore: number
-  brokenRules: BrokenRule[]
+  debtScore?: number
 }
 
 export type GitRevision = {
@@ -115,25 +90,48 @@ export type GitRevision = {
   name: string
 }
 
+export type Parser = (result: string) => GitRevision[]
+
 export type RevisionResults = GitRevision & {
+  totalScore: number
+  results?: FileResults[]
+  brokenRules?: BrokenRule[]
+}
+
+export type WalkLoopResult = { [filePath: string]: FileResults }
+
+export type WalkResults = {
+  rev: GitRevision
+  results: WalkLoopResult
+}[]
+
+type TagName = string
+type RuleId = string
+export type WalkReportTagList = Record<TagName, RuleId[]>
+
+export type FileResults = {
+  filePath: string
+  fileShortPath: string
   totalScore: number
   brokenRules: BrokenRule[]
 }
-
-export interface WalkResults {
-  config: Config
-  revsResults: RevisionResults[]
-}
-
 export interface CheckResults {
   config: Config
-  results: {
-    [file: FilePath]: FileResults
-  }
+  results: FileResults[]
+}
+
+export type FileComparison = {
+  file: string
+  rev: number
+  current: number
+  trend: number
 }
 
 export interface CompareResults {
   config: Config
   previousRevResult: RevisionResults
   currentRevResult: RevisionResults
+  noChangesFiles: FileComparison[]
+  lessDeptFiles: FileComparison[]
+  moreDeptFiles: FileComparison[]
 }

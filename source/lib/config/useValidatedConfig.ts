@@ -1,24 +1,45 @@
 import { useEffect, useState } from 'react'
-import { UserConfig, Config } from '../types'
-import getConfigPath from './getConfigPath'
-import validateConfig from './validateConfig'
+import type { Config, UserConfig } from '../types.js'
+import getConfigPath from './getConfigPath.js'
+import validateConfig from './validateConfig.js'
+
+type PendingConfig = {
+  isConfigValid: null
+  sanitizedConfig: null
+  configErrors: null
+  userConfig: null
+}
+
+type SuccessConfig = {
+  isConfigValid: true
+  sanitizedConfig: Config
+  configErrors: null
+  userConfig: UserConfig
+}
+
+type ErrorConfig = {
+  isConfigValid: false
+  sanitizedConfig: null
+  configErrors: string[]
+  userConfig: null
+}
 
 const useValidatedConfig = (
   config?: string
-): {
-  isConfigValid: boolean | null
-  sanitizedConfig: Config | null
-  configErrors: string[] | null
-  userConfig: UserConfig | null
-} => {
-  const [isConfigValid, setIsConfigValid] = useState<boolean | null>(null)
-  const [sanitizedConfig, setSanitizedConfig] = useState<Config | null>(null)
-  const [configErrors, setConfigErrors] = useState<string[] | null>(null)
-  const [userConfig, setUserConfig] = useState<UserConfig | null>(null)
+): PendingConfig | SuccessConfig | ErrorConfig => {
+  const [result, setResult] = useState<
+    PendingConfig | SuccessConfig | ErrorConfig
+  >({
+    isConfigValid: null,
+    sanitizedConfig: null,
+    configErrors: null,
+    userConfig: null,
+  })
 
   useEffect(() => {
     ;(async () => {
-      const configPath = getConfigPath(config)
+      const configPath = getConfigPath(config ?? '')
+
       try {
         const {
           isConfigValid: isValid,
@@ -27,23 +48,33 @@ const useValidatedConfig = (
           userConfig: baseConfig,
         } = await validateConfig(configPath)
 
-        setUserConfig(baseConfig)
-        setSanitizedConfig(cleanConfig)
-        setIsConfigValid(isValid)
-        setConfigErrors(errors)
-      } catch (e) {
-        setIsConfigValid(false)
-        setConfigErrors([e.message])
+        if (!isValid) {
+          setResult({
+            isConfigValid: false,
+            sanitizedConfig: null,
+            configErrors: errors,
+            userConfig: null,
+          })
+        } else {
+          setResult({
+            isConfigValid: true,
+            sanitizedConfig: cleanConfig,
+            configErrors: null,
+            userConfig: baseConfig,
+          })
+        }
+      } catch (e: unknown) {
+        setResult({
+          isConfigValid: false,
+          sanitizedConfig: null,
+          configErrors: [e instanceof Error ? e.message : 'Unknown error'],
+          userConfig: null,
+        })
       }
     })()
   }, [])
 
-  return {
-    isConfigValid,
-    sanitizedConfig,
-    configErrors,
-    userConfig,
-  }
+  return result
 }
 
 export default useValidatedConfig

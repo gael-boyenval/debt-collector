@@ -1,11 +1,11 @@
-export default (data: string) => `
+export default (data: string): string => `
 <!DOCTYPE html>
 <html>
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.14.0/babel.min.js"></script>
     <script type="text/babel" data-presets="es2017, stage-3" data-plugins="syntax-async-functions,transform-class-properties"></script>
-    <script src="https://unpkg.com/react/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
     <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
      <style type="text/css">
@@ -28,7 +28,7 @@ const ReportDebtPaymentProjection = ({period, title}) => (
     <div>At an avarage rythme of <b>{Math.round(period.tendencyMonth*100)/100} points/month</b>,<br/> it would require <b>{period.daysToReachZero} days</b> to reach zero debt.<br/> Debt would be payed in full on <b>{
       new Date(
         period.estimatedendDate
-      ).toDateString()}</b>
+      ).toLocaleDateString()}</b>
     </div>
   </div>
 )
@@ -135,7 +135,7 @@ const rulesActives = rules.reduce((acc, rule) => {
    const renderTooltip = ({payload}) => {
     if (!payload || !payload.length) { return null }
      return <div style={{ backgroundColor: 'white', padding: 15, borderRadius: 10, boxShadow: '0 0 10px rgba(0,0,0,0.2)' }}>
-      <h4 style={{ margin: 0, marginBottom: 5}}>{payload[0].payload.commit.date}</h4>
+      <h4 style={{ margin: 0, marginBottom: 5}}>{new Date(payload[0].payload.commit.date).toLocaleDateString()}</h4>
       <h4 style={{ margin: 0, marginBottom: 15}}>
         Total : {payload.reduce((totalScore, {value}) => totalScore + value, 0)}
       </h4>
@@ -363,10 +363,10 @@ const rulesActives = rules.reduce((acc, rule) => {
                 LAST PERDIOD
             </button>
 
-          <h2 style={{margin: 0, marginTop: 30}}>Current score : {result.enDateEstimlations.global.currentScore}</h2>
+          <h2 style={{margin: 0, marginTop: 30}}>Current score : {result.endDateEstimations.global.currentScore}</h2>
           <h3 style={{margin: 0}}>Estimated date for full reimbursment:</h3>
           <div style={{display: 'flex'}}>
-            <ReportDebtPaymentProjection period={result.enDateEstimlations.global[estimationsBasedOn]}/>
+            <ReportDebtPaymentProjection period={result.endDateEstimations.global[estimationsBasedOn]}/>
           </div>
           <div style={{textAlign: 'right', marginBottom: 200}}>
             <table width="100%" style={{textAlign: 'right', marginBottom: 200}}>
@@ -380,20 +380,20 @@ const rulesActives = rules.reduce((acc, rule) => {
                 </tr>
               </thead>
               <tbody>
-                {Object.keys(result.enDateEstimlations.rules).map(ruleId => {
+                {Object.keys(result.endDateEstimations.rules).map(ruleId => {
                   const {
                     tendencyMonth,
                     daysToReachZero,
                     estimatedendDate
-                  } = result.enDateEstimlations.rules[ruleId][estimationsBasedOn]
-                  const {currentScore} = result.enDateEstimlations.rules[ruleId]
+                  } = result.endDateEstimations.rules[ruleId][estimationsBasedOn]
+                  const {currentScore} = result.endDateEstimations.rules[ruleId]
                   return (
                     <tr key={ruleId} style={{color: tendencyMonth >= 0 ? 'red' : '#222'}}>
                       <td style={{textAlign: 'left'}}>{ruleId}</td>
                       <td>{currentScore} points</td>
                       <td>{Math.round(tendencyMonth*100)/100} points/month</td>
                       <td>{daysToReachZero ? daysToReachZero + ' days' : 'never'} </td>
-                      <td>{estimatedendDate === 'never' ? estimatedendDate : new Date(estimatedendDate).toDateString()}</td>
+                      <td>{estimatedendDate === 'never' ? estimatedendDate : new Date(estimatedendDate).toLocaleDateString()}</td>
                     </tr>
                   )
                 })}

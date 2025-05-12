@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
-import type { Config } from '../config'
+import type { Config, GitRevision } from '../types.js'
 import {
   getIsHistoryDirty,
   getCurrentBranch,
   checkoutTo,
   getRevList,
   walkCommits,
-} from './gitUtils'
-import type { GitRev } from '../results/results'
+  execWalkCommand,
+} from './gitUtils.js'
 
 type GitError = {
   errorType: 'GIT_ERROR'
@@ -20,15 +20,16 @@ type GitUtils = {
   isHistoryDirty: boolean | null
   checkoutTo: (branch: string) => Promise<void> | null
   walkCommits: typeof walkCommits
-  revList: GitRev[] | null
+  revList: GitRevision[] | null
   gitErrors: GitError[] | null
+  execWalkCommand: (command: string) => Promise<string> | null
 }
 
 const useGitUtils = (config: Config): GitUtils => {
   const [isGitReady, setIsGitReady] = useState<boolean>(false)
   const [currentBranch, setCurrentBranch] = useState<null | string>(null)
   const [isHistoryDirty, setIsHistoryDirty] = useState<null | boolean>(null)
-  const [revList, setRevList] = useState<null | string[]>(null)
+  const [revList, setRevList] = useState<GitRevision[] | null>(null)
   const [gitErrors, setGitErrors] = useState<GitError[]>([])
 
   useEffect(() => {
@@ -40,22 +41,25 @@ const useGitUtils = (config: Config): GitUtils => {
           setCurrentBranch(currentBranchRes)
           setIsHistoryDirty(isHistoryDirtyRes)
 
-          if (config.walkConfig?.gitCommand && config.walkConfig?.parser) {
+          if (config.walkConfig?.gitCommand && !!config.walkConfig?.parser) {
             const { gitCommand, parser, limit } = config.walkConfig
-            const revListRes = await getRevList(gitCommand, parser, limit)
+            const revListRes: GitRevision[] = await getRevList(
+              gitCommand,
+              parser,
+              limit
+            )
             setRevList(revListRes)
           }
 
           setIsGitReady(true)
-        } catch (e) {
-          setGitErrors(
-            gitErrors.push([
-              {
-                errorType: 'GIT_ERROR',
-                message: e.message,
-              },
-            ])
-          )
+        } catch (e: unknown) {
+          setGitErrors((prevErrors) => [
+            ...prevErrors,
+            {
+              errorType: 'GIT_ERROR',
+              message: e instanceof Error ? e.message : 'Unknown error',
+            },
+          ])
           setIsGitReady(true)
         }
       })()
@@ -70,6 +74,7 @@ const useGitUtils = (config: Config): GitUtils => {
     revList,
     gitErrors,
     walkCommits,
+    execWalkCommand,
   }
 }
 

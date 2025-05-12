@@ -105,3 +105,8 @@ dist
 
 #vscode config
 .vscode
+
+# build
+dist
+
+hello-world/

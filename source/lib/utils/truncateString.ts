@@ -1,4 +1,4 @@
-const truncateString = (str: string, max: number): string => {
+export const truncateString = (str: string, max: number): string => {
   if (str.length < max) return str
   const charArr = str.split('')
   const strStart = [...charArr].filter((_char, i) => i >= 0 && i < max / 2)
@@ -7,5 +7,3 @@ const truncateString = (str: string, max: number): string => {
   )
   return [...strStart, '....', ...strEnd].join('')
 }
-
-export default truncateString

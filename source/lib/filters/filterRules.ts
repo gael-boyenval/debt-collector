@@ -1,14 +1,28 @@
-import minimatch from 'minimatch'
-import { SanitizedFileRule, SanitizedEslintRule, Config } from '../config'
+import { minimatch } from 'minimatch'
+import type { SanitizedFileRule, Config } from '../types.js'
 
-const doesMatchPath = ({ include = ['**/*'] }, file: string): boolean =>
-  include.filter((glob) =>
-    minimatch(file.replace('./', ''), glob.replace('./', ''))
-  ).length > 0
+const doesMatchPath = (
+  { include = [], exclude = [] }: SanitizedFileRule,
+  file: string
+): boolean => {
+  if (include.length === 0 && exclude.length === 0) {
+    return true
+  }
+
+  const cleanPath = (str: string) => str.replace('./', '')
+  const isIncluded = include.some((glob) =>
+    minimatch(cleanPath(file), cleanPath(glob))
+  )
+
+  const isExcluded = exclude.some((glob) =>
+    minimatch(cleanPath(file), cleanPath(glob))
+  )
+
+  return isIncluded && !isExcluded
+}
 
 type RulesForFile = {
   fileRules?: SanitizedFileRule[]
-  eslintRules?: SanitizedEslintRule[]
 }
 
 export const getRulesForFile = (
@@ -18,14 +32,8 @@ export const getRulesForFile = (
   const rulesForFile: RulesForFile = {}
 
   if (options.fileRules) {
-    rulesForFile.fileRules = options.fileRules.filter((rule) =>
-      doesMatchPath(rule, filePath)
-    )
-  }
-
-  if (options.eslintRules) {
-    rulesForFile.eslintRules = options.eslintRules.filter((rule) =>
-      doesMatchPath(rule, filePath)
+    rulesForFile.fileRules = options.fileRules.filter(
+      (rule: SanitizedFileRule) => doesMatchPath(rule, filePath)
     )
   }
 
@@ -33,17 +41,15 @@ export const getRulesForFile = (
 }
 
 const filterRulesByTagAndId = (
-  rules: SanitizedFileRule[] | SanitizedEslintRule[],
-  ruleId: string,
-  tags: string[]
+  rules: SanitizedFileRule[],
+  ruleId: string | null,
+  tags: string[] | null
 ) =>
   rules
-    .filter((rule: SanitizedFileRule | SanitizedEslintRule) =>
-      ruleId ? ruleId === rule.id : true
-    )
-    .filter((rule: SanitizedFileRule | SanitizedEslintRule) =>
+    .filter((rule: SanitizedFileRule) => (ruleId ? ruleId === rule.id : true))
+    .filter((rule: SanitizedFileRule) =>
       tags && tags.length > 0
-        ? tags.some((tag) => rule.tags.includes(tag))
+        ? tags.some((tag) => rule.tags?.includes(tag))
         : true
     )
 
@@ -53,20 +59,17 @@ export const filtersRulesFromOptions = (
   tags: string[] | null = null
 ) => {
   let { fileRules } = options
-  let { eslintRules } = options
   const cleanTag = tags && tags.filter((tag) => !!tag)
 
   if (ruleId || cleanTag?.length) {
-    fileRules = filterRulesByTagAndId(options.fileRules ?? [], ruleId, cleanTag)
-    eslintRules = filterRulesByTagAndId(
-      options.eslintRules ?? [],
+    fileRules = filterRulesByTagAndId(
+      options.fileRules ?? [],
       ruleId,
       cleanTag
-    )
+    ) as SanitizedFileRule[]
   }
 
   return {
     fileRules,
-    eslintRules,
   }
 }
