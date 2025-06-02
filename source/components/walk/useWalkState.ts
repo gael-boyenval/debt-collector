@@ -3,10 +3,13 @@ import { useValidatedConfig } from '../../lib/config/index.js'
 import { useGitUtils } from '../../lib/git/index.js'
 import { TaskProps, useTaskList } from './useTaskList.js'
 import { getTagListFromConfig } from '../../lib/config/getTagListFromConfig.js'
-import { getCommitResult, formatWalkResults } from './getCommitResult.js'
+import { getCommitResult } from './getCommitResult.js'
+import { formatWalkResults } from './formatWalkResults.js'
 import { getEndDatesEstimations } from './getEndDatesEstimations.js'
 import buildWalkReport from '../../lib/reporters/buildWalkReport.js'
 import buildWalkEntries from '../../lib/reporters/buildWalkEntries.js'
+
+import fs from 'fs'
 
 import {
   Config,
@@ -14,9 +17,11 @@ import {
   WalkLoopResult,
   WalkReportTagList,
   UserConfig,
+  WalkReportData,
 } from '../../lib/types.js'
 
 import { useDevLogger, DevLogger } from '../hooks/useDevLogger.js'
+import { filterNoScoresFilesFromWalkResult } from './filterNoScoresFilesFromWalkResult.js'
 
 type WalkOptions = {
   config?: string
@@ -111,6 +116,7 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
         )
 
         setResults(walkResults)
+
         setIsReady(true)
       }
     })()
@@ -143,6 +149,7 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
             config: sanitizedConfig as Config,
             results: formatedResult,
           })
+
           buildWalkReport({
             userConfig: userConfig as UserConfig,
             tags,
@@ -154,6 +161,25 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
         })
 
         buildWalkEntries(reportsLinks, openReport)
+        const cachePath = `${process.cwd()}/node_modules/.cache/debt-collector`
+
+        if (sanitizedConfig && results) {
+          const walkReportData: WalkReportData = {
+            config: sanitizedConfig,
+            results,
+          }
+
+          const filteredResults =
+            filterNoScoresFilesFromWalkResult(walkReportData)
+
+          fs.mkdir(cachePath, { recursive: true }, (err) => {
+            if (err) throw err
+            fs.writeFileSync(
+              `${cachePath}/${sanitizedConfig.projectName}-results.json`,
+              JSON.stringify(filteredResults, null, 2)
+            )
+          })
+        }
 
         setIsFinished(true)
       }

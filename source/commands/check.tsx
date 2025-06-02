@@ -1,8 +1,9 @@
+import { useMemo } from 'react'
 import { Text, Box } from 'ink'
-import { TaskList, Task } from 'ink-task-list';
-import spinners from 'cli-spinners';
+import { TaskList, Task } from 'ink-task-list'
+import spinners from 'cli-spinners'
 import zod from 'zod'
-import { option } from 'pastel';
+import { option } from 'pastel'
 
 import {
   Results,
@@ -11,35 +12,73 @@ import {
   useCheckState,
 } from '../components/check/index.js'
 import { useDevLogger } from '../components/hooks/useDevLogger.js'
-import { LogViewer } from '../components/DevLogger/LogViewer.js';
+import { LogViewer } from '../components/DevLogger/LogViewer.js'
 
 export const options = zod.object({
-	rule: zod.string().optional().describe(option({ description: 'rule id', alias: 'r'})),
-	tags: zod.string().array().optional().describe(option({ description: 'a list of tags', alias: 't'})),
-	config: zod.string().optional().describe(option({ description: 'an alternative path to the configuration file', alias: 'c'})),
-  include: zod.string().optional().describe(option({ description: 'a glob pattern to override the include configuration', alias: 'g'})),
-  reportFormat: zod.enum(['filesOnly', 'noMatchRules', 'standard']).default('standard').optional().describe(option({ description: 'report format', alias: 'f'})),
-  changedSince: zod.string().optional().describe(option({ description: 'a revision to filter files changed since (commit hash or branch name)', alias: 's'})),
-  limitTop: zod.number().optional().describe(option({ description: 'limit the number of results ordered by score', alias: 'l'})),
-});
-export const alias = 'c';
+  rule: zod
+    .string()
+    .optional()
+    .describe(option({ description: 'rule id', alias: 'r' })),
+  tags: zod
+    .string()
+    .array()
+    .optional()
+    .describe(option({ description: 'a list of tags', alias: 't' })),
+  config: zod
+    .string()
+    .optional()
+    .describe(
+      option({
+        description: 'an alternative path to the configuration file',
+        alias: 'c',
+      })
+    ),
+  include: zod
+    .string()
+    .optional()
+    .describe(
+      option({
+        description: 'a glob pattern to override the include configuration',
+        alias: 'g',
+      })
+    ),
+  reportFormat: zod
+    .enum(['filesOnly', 'noMatchRules', 'standard'])
+    .default('standard')
+    .optional()
+    .describe(option({ description: 'report format', alias: 'f' })),
+  changedSince: zod
+    .string()
+    .optional()
+    .describe(
+      option({
+        description:
+          'a revision to filter files changed since (commit hash or branch name)',
+        alias: 's',
+      })
+    ),
+  limitTop: zod
+    .number()
+    .optional()
+    .describe(
+      option({
+        description: 'limit the number of results ordered by score',
+        alias: 'l',
+      })
+    ),
+})
+export const alias = 'c'
 
-type Props = {
-	options: zod.infer<typeof options>;
-};
+type Props = Readonly<{
+  options: zod.infer<typeof options>
+}>
 
-function Check({options}: Props) {
-  const {
-    rule,
-    tags,
-    config,
-    include,
-    reportFormat,
-    changedSince,
-    limitTop,
-  } = options
+function Check({ options }: Props) {
+  const { rule, tags, config, include, reportFormat, changedSince, limitTop } =
+    options
 
-  const logger = useDevLogger();
+  const logger = useDevLogger()
+
   const {
     results,
     fileList,
@@ -57,27 +96,27 @@ function Check({options}: Props) {
     changedSince,
   })
 
+  const configState = useMemo(() => {
+    if (isConfigValid === null) return 'loading'
+    if (isConfigValid) return 'success'
+    return 'error'
+  }, [isConfigValid])
+
+  const configStatus = useMemo(() => {
+    if (isConfigValid === null) return 'checking configuration'
+    if (isConfigValid) return 'success'
+    return 'error'
+  }, [isConfigValid])
+
   return (
     <>
       <LogViewer logs={logger.logs} />
       <TaskList>
         <Task
-          state={
-            isConfigValid === null
-              ? 'loading'
-              : isConfigValid
-              ? 'success'
-              : 'error'
-          }
+          state={configState}
           spinner={spinners.dots}
           label="validating configuration"
-          status={
-            isConfigValid === null
-              ? 'checking configuration'
-              : isConfigValid
-              ? 'success'
-              : 'error'
-          }
+          status={configStatus}
         />
         <Task
           state={fileList === null ? 'loading' : 'success'}

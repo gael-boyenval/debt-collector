@@ -283,6 +283,7 @@ describe('getFileResult', () => {
         filePath: 'src/nonexistent.ts',
         fileShortPath: 'src/nonexistent.ts',
         brokenRules: [],
+        adoptionRules: [],
         totalScore: 0,
       })
       expect(mockIncrementCounter).toHaveBeenCalledTimes(1)
@@ -304,9 +305,100 @@ describe('getFileResult', () => {
         filePath: 'src/empty.ts',
         fileShortPath: 'src/empty.ts',
         brokenRules: [],
+        adoptionRules: [],
         totalScore: 0,
       })
       expect(mockIncrementCounter).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('adoptionRules', () => {
+    const baseAdoptionRule: SanitizedFileRule = {
+      id: 'prefer-const',
+      title: 'Prefer const',
+      debtScore: 1,
+      include: ['**/*'],
+      matchRule: (utils) => utils.countAll(/const /g),
+    }
+
+    const baseConfig: Config = {
+      include: ['src/**/*'],
+      adoptionRules: [baseAdoptionRule],
+    }
+
+    it('should return empty adoptionRules if no matches', async () => {
+      mockFileContent('let a = 1;')
+      const result = await getFileResult(
+        baseConfig,
+        'src/utils/const.ts',
+        mockIncrementCounter
+      )
+      expect(result.adoptionRules).toEqual([])
+    })
+
+    it('should detect and report adoption rule matches', async () => {
+      mockFileContent('const a = 1; const b = 2;')
+      const result = await getFileResult(
+        baseConfig,
+        'src/utils/const.ts',
+        mockIncrementCounter
+      )
+      expect(result.adoptionRules).toEqual([
+        {
+          ruleTitle: 'Prefer const',
+          ruleId: 'prefer-const',
+          occurences: 2,
+          ruleTotalSore: 2,
+        },
+      ])
+    })
+
+    it('should handle multiple adoption rules', async () => {
+      const config: Config = {
+        ...baseConfig,
+        adoptionRules: [
+          baseAdoptionRule,
+          {
+            id: 'prefer-let',
+            title: 'Prefer let',
+            debtScore: 2,
+            include: ['**/*'],
+            matchRule: (utils) => utils.countAll(/let /g),
+          },
+        ],
+      }
+      mockFileContent('const a = 1; let b = 2; let c = 3;')
+      const result = await getFileResult(
+        config,
+        'src/utils/constlet.ts',
+        mockIncrementCounter
+      )
+      expect(result.adoptionRules).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            ruleId: 'prefer-const',
+            occurences: 1,
+          }),
+          expect.objectContaining({
+            ruleId: 'prefer-let',
+            occurences: 2,
+          }),
+        ])
+      )
+    })
+
+    it('should handle config with no adoptionRules', async () => {
+      const config: Config = {
+        include: ['src/**/*'],
+        adoptionRules: undefined,
+      }
+      mockFileContent('const a = 1;')
+      const result = await getFileResult(
+        config,
+        'src/utils/const.ts',
+        mockIncrementCounter
+      )
+      expect(result.adoptionRules).toEqual([])
     })
   })
 })

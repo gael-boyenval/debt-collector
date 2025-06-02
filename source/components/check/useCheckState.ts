@@ -6,7 +6,7 @@ import {
 import { checkFileList } from '../../lib/results/checkFileList.js'
 import { useValidatedConfig } from '../../lib/config/index.js'
 import { cleanTagFilterParam } from '../../lib/utils/index.js'
-import type { CheckResults, Config } from '../../lib/types.js'
+import type { CheckResults } from '../../lib/types.js'
 import { useDevLogger } from '../hooks/useDevLogger.js'
 
 type CheckOptions = {
@@ -38,7 +38,7 @@ export function useCheckState(options: CheckOptions) {
         try {
           logger.info('Getting file list')
           const result = await getFileList({
-            config: sanitizedConfig as Config,
+            config: sanitizedConfig,
             commonAncestor: false,
             compare: changedSince,
             globOption: include,
@@ -68,6 +68,7 @@ export function useCheckState(options: CheckOptions) {
           tags,
           increment: incrementFn,
         })
+
         setResults({
           results: checkResults,
           config: sanitizedConfig,

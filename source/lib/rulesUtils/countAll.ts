@@ -7,7 +7,8 @@ export const countAll =
     let regexp: RegExp
 
     if (str instanceof RegExp) {
-      regexp = str
+      const flags = str.flags.includes('g') ? str.flags : str.flags + 'g'
+      regexp = new RegExp(str.source, flags)
     } else {
       regexp = new RegExp(escapeStringRegexp(str), 'g')
     }
@@ -15,4 +16,4 @@ export const countAll =
     const resArr = Array.from(res, (m) => m[0])
 
     return resArr.length
-  } 
+  }

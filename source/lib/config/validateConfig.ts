@@ -16,8 +16,13 @@ const validateConfig = async (
 
   const returnValues: ValidateConfigReturn = {
     isConfigValid: true,
-    sanitizedConfig: { include: [], exclude: [], fileRules: [] },
-    userConfig: { include: [], fileRules: [] },
+    sanitizedConfig: {
+      include: [],
+      exclude: [],
+      fileRules: [],
+      projectName: '',
+    },
+    userConfig: { include: [], fileRules: [], projectName: '' },
     configErrors: [],
   }
 
@@ -33,6 +38,13 @@ const validateConfig = async (
 
   const hasIncludeKey = !!userConfig?.include
   const hasFileRules = !!userConfig?.fileRules
+
+  if (!userConfig.projectName) {
+    returnValues.isConfigValid = false
+    returnValues.configErrors.push(
+      'Your config does not have a "projectName" key, please create "projectName" key with a string'
+    )
+  }
 
   if (!hasIncludeKey) {
     returnValues.isConfigValid = false

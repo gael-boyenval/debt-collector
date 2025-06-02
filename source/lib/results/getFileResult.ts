@@ -3,11 +3,13 @@ import { getRulesForFile } from '../filters/filterRules.js'
 import type { FileResults, BrokenRule, Config } from '../types.js'
 import getfileRulesErrors from './getFileRulesErrors.js'
 import { truncateString, getConfigRuleById } from '../utils/index.js'
+import getAdoptionRulesResults from './getAdoptionRulesResults.js'
 
 const updateResults = (
   config: Config,
   brokenRules: Partial<BrokenRule>[],
-  fileResults: FileResults
+  fileResults: FileResults,
+  key: 'brokenRules' | 'adoptionRules' = 'brokenRules'
 ) => {
   const updatedFileResults = {
     ...fileResults,
@@ -16,17 +18,24 @@ const updateResults = (
   if (brokenRules.length > 0) {
     brokenRules.forEach(({ ruleId, occurences }) => {
       if (ruleId === undefined || occurences === undefined) return
-      const rule = getConfigRuleById(config, ruleId)
+      let rule
+      if (key === 'adoptionRules') {
+        rule = config.adoptionRules?.find((r) => r.id === ruleId)
+      } else {
+        rule = getConfigRuleById(config, ruleId)
+      }
       const ruleTotalSore = (rule?.debtScore ?? 0) * occurences
 
-      updatedFileResults.brokenRules.push({
+      updatedFileResults[key].push({
         ruleTitle: rule?.title ?? '',
         ruleId,
         occurences,
         ruleTotalSore,
       })
 
-      updatedFileResults.totalScore += ruleTotalSore
+      if (key === 'brokenRules') {
+        updatedFileResults.totalScore += ruleTotalSore
+      }
     })
   }
   return updatedFileResults
@@ -40,10 +49,14 @@ const runFileChecks = async (
     filePath,
     fileShortPath: truncateString(filePath, 80),
     brokenRules: [],
+    adoptionRules: [],
     totalScore: 0,
   }
 
-  if (config.fileRules?.length === 0) {
+  if (
+    (config.fileRules?.length ?? 0) === 0 &&
+    (config.adoptionRules?.length ?? 0) === 0
+  ) {
     return fileResults
   }
 
@@ -59,9 +72,28 @@ const runFileChecks = async (
   if (!!config.fileRules?.length) {
     if (data) {
       const brokenRules = getfileRulesErrors(config, filePath, data)
-      fileResults = updateResults(config, brokenRules, fileResults)
+      fileResults = updateResults(
+        config,
+        brokenRules,
+        fileResults,
+        'brokenRules'
+      )
     } else {
-      fileResults = updateResults(config, [], fileResults)
+      fileResults = updateResults(config, [], fileResults, 'brokenRules')
+    }
+  }
+
+  if (!!config.adoptionRules?.length) {
+    if (data) {
+      const adoptionRules = getAdoptionRulesResults(config, filePath, data)
+      fileResults = updateResults(
+        config,
+        adoptionRules,
+        fileResults,
+        'adoptionRules'
+      )
+    } else {
+      fileResults = updateResults(config, [], fileResults, 'adoptionRules')
     }
   }
 

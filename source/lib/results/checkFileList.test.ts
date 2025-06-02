@@ -68,6 +68,7 @@ describe('checkFileList', () => {
           ruleTotalSore: 1,
         },
       ],
+      adoptionRules: [],
       totalScore: 1,
     })
     expect(result[1]).toEqual({
@@ -81,6 +82,7 @@ describe('checkFileList', () => {
           ruleTotalSore: 1,
         },
       ],
+      adoptionRules: [],
       totalScore: 1,
     })
     expect(baseIncrement).toHaveBeenCalledTimes(2)
@@ -140,12 +142,14 @@ describe('checkFileList', () => {
       filePath: 'file1.ts',
       fileShortPath: 'file1.ts',
       brokenRules: [],
+      adoptionRules: [],
       totalScore: 0,
     })
     expect(result[1]).toEqual({
       filePath: 'file2.ts',
       fileShortPath: 'file2.ts',
       brokenRules: [],
+      adoptionRules: [],
       totalScore: 0,
     })
     expect(baseIncrement).toHaveBeenCalledTimes(2)
