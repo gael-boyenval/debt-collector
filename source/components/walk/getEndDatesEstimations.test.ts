@@ -44,6 +44,7 @@ const baseRevision: RevisionResults = {
       fileShortPath: 'file1.ts',
       totalScore: 10,
       brokenRules: [baseBrokenRule],
+      adoptionRules: [],
     },
   ],
 }

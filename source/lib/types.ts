@@ -29,6 +29,7 @@ interface SanitizedRulesCommonKeys {
   debtScore: number
   description?: string
   howTo?: string
+  startTrackingDate?: string
   include?: string[]
   exclude?: string[]
   tags?: string[]
@@ -52,6 +53,7 @@ interface UserFileRuleBase {
   id: string
   debtScore: number
   description?: string
+  startTrackingDate?: string
   howTo?: string
   include?: string | string[]
   exclude?: string | string[]
@@ -63,17 +65,33 @@ export type UserFileRule = UserFileRuleBase & {
 }
 
 export type UserConfig = {
+  projectName: string
   include: string[]
   exclude?: string[]
   walkConfig?: WalkConfig
   fileRules?: UserFileRule[]
+  adoptionRules?: UserFileRule[]
+  trackAdoptionMetrics?: {
+    label: string
+    id: string
+    debtRules: string[]
+    adoptionRules: string[]
+  }[]
 }
 
 export interface Config {
+  projectName: string
   include: string[]
   exclude?: string[]
   walkConfig?: WalkConfig
   fileRules?: SanitizedFileRule[]
+  adoptionRules?: SanitizedFileRule[]
+  trackAdoptionMetrics?: {
+    label: string
+    id: string
+    debtRules: string[]
+    adoptionRules: string[]
+  }[]
 }
 
 export type BrokenRule = {
@@ -114,6 +132,7 @@ export type FileResults = {
   fileShortPath: string
   totalScore: number
   brokenRules: BrokenRule[]
+  adoptionRules: BrokenRule[]
 }
 export interface CheckResults {
   config: Config
@@ -134,4 +153,9 @@ export interface CompareResults {
   noChangesFiles: FileComparison[]
   lessDeptFiles: FileComparison[]
   moreDeptFiles: FileComparison[]
+}
+
+export type WalkReportData = {
+  config: Config
+  results: WalkResults
 }

@@ -13,4 +13,4 @@ export const countAllOf =
     }
 
     return count
-  } 
+  }

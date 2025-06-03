@@ -28,7 +28,7 @@ export const checkFileList = async ({
   }
 
   const tasks = fileList.map(
-    (file) => () => getFileResult(fileListConfig, file, increment)
+    (file) => async () => await getFileResult(fileListConfig, file, increment)
   )
 
   const results = await runWithConcurrency(tasks, 20, { delayBetweenTasks: 0 })

@@ -24,20 +24,22 @@ vi.mock('../../lib/git/index.js', () => ({
     revList: null,
     gitErrors: null,
   }),
-  getChangedFilesSinceRev: () => Promise.resolve([
-    {
-      status: 'modified',
-      filePath: 'file1.ts',
-    },
-    {
-      status: 'modified',
-      filePath: 'file2.tsx',
-    },
-  ]),
+  getChangedFilesSinceRev: () =>
+    Promise.resolve([
+      {
+        status: 'modified',
+        filePath: 'file1.ts',
+      },
+      {
+        status: 'modified',
+        filePath: 'file2.tsx',
+      },
+    ]),
 }))
 
 describe('useCompareState', () => {
   const mockConfig: Config = {
+    projectName: 'test-project',
     include: ['**/*.ts', '**/*.tsx'],
     exclude: ['**/node_modules/**'],
     fileRules: [],
@@ -135,4 +137,4 @@ describe('useCompareState', () => {
       })
     })
   })
-}) 
+})
