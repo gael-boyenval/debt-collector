@@ -4,10 +4,8 @@ import { useGitUtils } from '../../lib/git/index.js'
 import { TaskProps, useTaskList } from './useTaskList.js'
 import { getTagListFromConfig } from '../../lib/config/getTagListFromConfig.js'
 import { getCommitResult } from './getCommitResult.js'
-import { formatWalkResults } from './formatWalkResults.js'
-import { getEndDatesEstimations } from './getEndDatesEstimations.js'
-import buildWalkReport from '../../lib/reporters/buildWalkReport.js'
-import buildWalkEntries from '../../lib/reporters/buildWalkEntries.js'
+import path from 'path'
+import { execSync, exec } from 'child_process'
 
 import fs from 'fs'
 
@@ -16,7 +14,6 @@ import {
   WalkResults,
   WalkLoopResult,
   WalkReportTagList,
-  UserConfig,
   WalkReportData,
 } from '../../lib/types.js'
 
@@ -34,6 +31,8 @@ type UseWalkStateResult = {
   currentCommit: { commit: string; index: number }
   isHistoryDirty: boolean | null
   isReady: boolean | null
+  configErrors: string[] | null
+  isConfigValid: boolean | null
   tags: WalkReportTagList
   tasks: TaskProps[]
   logs: DevLogger['logs']
@@ -51,7 +50,7 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
   const [tags, setTags] = useState<WalkReportTagList>({})
   const [isFinished, setIsFinished] = useState(false)
 
-  const { isConfigValid, sanitizedConfig, userConfig } =
+  const { isConfigValid, sanitizedConfig, configErrors } =
     useValidatedConfig(config)
 
   const {
@@ -116,7 +115,6 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
         )
 
         setResults(walkResults)
-
         setIsReady(true)
       }
     })()
@@ -125,42 +123,6 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
   useEffect(() => {
     ;(async () => {
       if (isReady) {
-        const hasPackagesConfig =
-          isConfigValid && !!sanitizedConfig?.walkConfig?.report?.packages
-
-        const reports = hasPackagesConfig
-          ? (sanitizedConfig?.walkConfig?.report?.packages ?? {})
-          : { global: sanitizedConfig?.include ?? [] }
-
-        const reportsLinks = Object.keys(reports).map((report) => ({
-          name: report,
-          link: `./report-${report}.html`,
-        }))
-
-        Object.keys(reports).forEach((reportName) => {
-          const formatedResult = formatWalkResults({
-            config: sanitizedConfig as Config,
-            results: results as WalkResults,
-            globFilter: reports[reportName as keyof typeof reports] as string,
-            hasPackagesConfig: hasPackagesConfig ?? false,
-          })
-          // console.log('formatedResult', userConfig)
-          const endDateEstimations = getEndDatesEstimations({
-            config: sanitizedConfig as Config,
-            results: formatedResult,
-          })
-
-          buildWalkReport({
-            userConfig: userConfig as UserConfig,
-            tags,
-            results: formatedResult as any,
-            endDateEstimations,
-            reportName,
-            reportsLinks,
-          })
-        })
-
-        buildWalkEntries(reportsLinks, openReport)
         const cachePath = `${process.cwd()}/node_modules/.cache/debt-collector`
 
         if (sanitizedConfig && results) {
@@ -178,6 +140,51 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
               `${cachePath}/${sanitizedConfig.projectName}-results.json`,
               JSON.stringify(filteredResults, null, 2)
             )
+
+            if (openReport) {
+              try {
+                fs.writeFileSync(
+                  `${cachePath}/projects-config.json`,
+                  JSON.stringify(
+                    {
+                      projects: [
+                        {
+                          name: sanitizedConfig.projectName,
+                          description: 'unknown',
+                          publicUrl: 'unknown',
+                          repoUrl: 'unknown',
+                          resultTag: sanitizedConfig.projectName,
+                        },
+                      ],
+                    },
+                    null,
+                    2
+                  )
+                )
+                const __dirname = import.meta.url
+                const executionPath = path
+                  .dirname(__dirname.replace('file://', ''))
+                  .split(path.sep)
+                const distPathIndex = executionPath.lastIndexOf('dist')
+                const dashboardPath =
+                  executionPath.slice(0, distPathIndex + 1).join(path.sep) +
+                  path.sep +
+                  'dashboard'
+                execSync(`cp -L -R ${dashboardPath}/* ${cachePath}`)
+
+                const serve = exec(`npx serve ${cachePath}`)
+
+                serve.stdout?.on('data', (data) => {
+                  console.log(`dashboard server: ${data}`)
+                })
+              } catch (e) {
+                // eslint-disable-next-line no-console
+                console.log(
+                  'tried to open file but could not... it may be because we are in a virtual env'
+                )
+                console.log(e)
+              }
+            }
           })
         }
 
@@ -190,6 +197,8 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
     tasks,
     results,
     currentCommit,
+    configErrors,
+    isConfigValid,
     isHistoryDirty,
     isReady,
     tags,

@@ -43,7 +43,8 @@ export function useCompareState(options: CompareOptions) {
     Record<string, FileResult>[] | null
   >(null)
 
-  const { isConfigValid, sanitizedConfig } = useValidatedConfig(config)
+  const { isConfigValid, sanitizedConfig, configErrors } =
+    useValidatedConfig(config)
   const { isGitReady, checkoutTo, currentBranch } = useGitUtils(
     sanitizedConfig as Config
   )
@@ -172,6 +173,7 @@ export function useCompareState(options: CompareOptions) {
     checkedRevisionFileCount,
     finalResult,
     isConfigValid,
+    configErrors,
     sanitizedConfig,
     currentBranch,
     revision,
