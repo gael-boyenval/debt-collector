@@ -17,7 +17,7 @@ export const loadConfig = async (
 > => {
   const fullPath = path.resolve(process.cwd(), configPath)
   try {
-    const configData = await import(fullPath)
+    const configData = await import(`file:///` + fullPath)
     return {
       isSuccess: true,
       config: configData.default,

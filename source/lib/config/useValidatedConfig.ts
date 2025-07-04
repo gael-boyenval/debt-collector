@@ -39,7 +39,6 @@ const useValidatedConfig = (
   useEffect(() => {
     ;(async () => {
       const configPath = getConfigPath(config ?? '')
-
       try {
         const {
           isConfigValid: isValid,
