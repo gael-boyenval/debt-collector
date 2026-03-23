@@ -2,6 +2,7 @@ import { glob } from 'glob'
 import { mergeAndDedupArrays, filterIgnoredFiles } from '../utils/index.js'
 import type { Config } from '../types.js'
 import { getChangedFilesSinceRev } from '../git/index.js'
+import { getGitIgnoreFilter } from '../fileSystem/getGitIgnoreFilter.js'
 
 const removeDotSlash = (str: string): string => str.replace(/^\.\//, '')
 
@@ -30,6 +31,18 @@ type GetFileListOptions =
   | CompareGetFileListOptions
   | WalkGetFileListOptions
 
+const applyGitIgnoreFilter = (
+  files: string[],
+  config: Config
+): string[] => {
+  if (config.useGitIgnore === false) return files
+
+  const gitIgnore = getGitIgnoreFilter()
+  if (!gitIgnore) return files
+
+  return files.filter((file) => !gitIgnore.ignores(file))
+}
+
 export const getFileList = async ({
   config,
   commonAncestor,
@@ -55,7 +68,6 @@ export const getFileList = async ({
           compare,
           commonAncestor
         )
-        // const ignoreDeletedfiles = changedFiles.filter(({ status }) => status === 'A' || status === 'M')
         const allChanges = changedFiles.map((item) => item.filePath)
 
         const files = filterIgnoredFiles(
@@ -64,7 +76,7 @@ export const getFileList = async ({
           includedGlob
         )
 
-        resolve(files)
+        resolve(applyGitIgnoreFilter(files, config))
       } catch (error) {
         reject(error)
       }
@@ -86,7 +98,7 @@ export const getFileList = async ({
       const files =
         mergeAndDedupArrays<string>(filesFromSource).map(removeDotSlash)
 
-      resolve(files)
+      resolve(applyGitIgnoreFilter(files, config))
     } catch (error) {
       reject(error)
     }

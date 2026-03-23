@@ -1,5 +1,6 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import { getRulesForFile } from '../filters/filterRules.js'
+import { createMatchRuleUtils } from '../rulesUtils/index.js'
 import type { FileResults, BrokenRule, Config } from '../types.js'
 import getfileRulesErrors from './getFileRulesErrors.js'
 import { truncateString, getConfigRuleById } from '../utils/index.js'
@@ -63,37 +64,32 @@ const runFileChecks = async (
   let data = ''
 
   try {
-    data = fs.readFileSync(filePath).toString()
-  } catch (error) {
-    // console.error(`error while reading file ${filePath} \n ${error.message}`)
+    data = await fs.promises.readFile(filePath, 'utf-8')
+  } catch {
     data = ''
   }
 
-  if (!!config.fileRules?.length) {
-    if (data) {
-      const brokenRules = getfileRulesErrors(config, filePath, data)
+  if (data) {
+    // Build utils once per file — all rule checks share the same pre-parsed
+    // DOM tags, closures, and content string rather than rebuilding independently.
+    const utils = createMatchRuleUtils(filePath, data)
+
+    if (config.fileRules?.length) {
       fileResults = updateResults(
         config,
-        brokenRules,
+        getfileRulesErrors(config, utils),
         fileResults,
         'brokenRules'
       )
-    } else {
-      fileResults = updateResults(config, [], fileResults, 'brokenRules')
     }
-  }
 
-  if (!!config.adoptionRules?.length) {
-    if (data) {
-      const adoptionRules = getAdoptionRulesResults(config, filePath, data)
+    if (config.adoptionRules?.length) {
       fileResults = updateResults(
         config,
-        adoptionRules,
+        getAdoptionRulesResults(config, utils),
         fileResults,
         'adoptionRules'
       )
-    } else {
-      fileResults = updateResults(config, [], fileResults, 'adoptionRules')
     }
   }
 

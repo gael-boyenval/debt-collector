@@ -61,6 +61,16 @@ const validateConfig = async (
     )
   }
 
+  if (
+    userConfig.useGitIgnore !== undefined &&
+    typeof userConfig.useGitIgnore !== 'boolean'
+  ) {
+    returnValues.isConfigValid = false
+    returnValues.configErrors.push(
+      'The "useGitIgnore" key must be a boolean (true or false)'
+    )
+  }
+
   if (!hasFileRules) {
     returnValues.isConfigValid = false
     returnValues.configErrors.push(

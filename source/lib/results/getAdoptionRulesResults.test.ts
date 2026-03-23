@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import getAdoptionRulesResults from './getAdoptionRulesResults.js'
+import { createMatchRuleUtils } from '../rulesUtils/index.js'
 import type { Config, SanitizedFileRule } from '../types.js'
+
+const makeUtils = (content: string) => createMatchRuleUtils('test.ts', content)
 
 describe('getAdoptionRulesResults', () => {
   const mockConfig: Config = {
@@ -25,14 +28,12 @@ describe('getAdoptionRulesResults', () => {
   }
 
   it('should return empty array when no adoption rules match', () => {
-    const fileContent = 'This is a sample file without any matches'
-    const result = getAdoptionRulesResults(mockConfig, 'test.ts', fileContent)
+    const result = getAdoptionRulesResults(mockConfig, makeUtils('This is a sample file without any matches'))
     expect(result).toEqual([])
   })
 
   it('should detect adoption rules and return them with occurrences', () => {
-    const fileContent = 'This is an adopt file with adopt and import'
-    const result = getAdoptionRulesResults(mockConfig, 'test.ts', fileContent)
+    const result = getAdoptionRulesResults(mockConfig, makeUtils('This is an adopt file with adopt and import'))
     expect(result).toHaveLength(2)
     expect(result).toEqual(
       expect.arrayContaining([
@@ -51,11 +52,8 @@ describe('getAdoptionRulesResults', () => {
   })
 
   it('should handle empty config', () => {
-    const emptyConfig: Config = {
-      include: ['**/*.ts'],
-      exclude: [],
-    }
-    const result = getAdoptionRulesResults(emptyConfig, 'test.ts', 'content')
+    const emptyConfig: Config = { include: ['**/*.ts'], exclude: [] }
+    const result = getAdoptionRulesResults(emptyConfig, makeUtils('content'))
     expect(result).toEqual([])
   })
 
@@ -65,28 +63,17 @@ describe('getAdoptionRulesResults', () => {
       exclude: [],
       adoptionRules: undefined,
     }
-    const result = getAdoptionRulesResults(
-      configWithoutRules,
-      'test.ts',
-      'content'
-    )
+    const result = getAdoptionRulesResults(configWithoutRules, makeUtils('content'))
     expect(result).toEqual([])
   })
 
   it('should count multiple occurrences correctly', () => {
-    const fileContent = 'adopt adopt adopt import import'
-    const result = getAdoptionRulesResults(mockConfig, 'test.ts', fileContent)
+    const result = getAdoptionRulesResults(mockConfig, makeUtils('adopt adopt adopt import import'))
     expect(result).toHaveLength(2)
     expect(result).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          ruleId: 'adopt-rule-1',
-          occurences: 1,
-        }),
-        expect.objectContaining({
-          ruleId: 'adopt-rule-2',
-          occurences: 2,
-        }),
+        expect.objectContaining({ ruleId: 'adopt-rule-1', occurences: 1 }),
+        expect.objectContaining({ ruleId: 'adopt-rule-2', occurences: 2 }),
       ])
     )
   })
@@ -101,23 +88,14 @@ describe('getAdoptionRulesResults', () => {
           title: 'Import Rule',
           debtScore: 1,
           include: ['**/*.ts'],
-          matchRule: ({ findJsImportFrom }) =>
-            findJsImportFrom('React', 'react'),
+          matchRule: ({ findJsImportFrom }) => findJsImportFrom('React', 'react'),
         } as SanitizedFileRule,
       ],
     }
-    const fileContent = "import React from 'react'"
-    const result = getAdoptionRulesResults(
-      configWithImport,
-      'test.ts',
-      fileContent
-    )
+    const result = getAdoptionRulesResults(configWithImport, makeUtils("import React from 'react'"))
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual(
-      expect.objectContaining({
-        ruleId: 'import-rule',
-        occurences: 1,
-      })
+      expect.objectContaining({ ruleId: 'import-rule', occurences: 1 })
     )
   })
 })

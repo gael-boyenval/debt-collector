@@ -4,10 +4,11 @@ import { useGitUtils } from '../../lib/git/index.js'
 import { TaskProps, useTaskList } from './useTaskList.js'
 import { getTagListFromConfig } from '../../lib/config/getTagListFromConfig.js'
 import { getCommitResult } from './getCommitResult.js'
+import { getCachePath } from '../../lib/fileSystem/getCachePath.js'
 import path from 'path'
-import { execSync, exec } from 'child_process'
-
 import fs from 'fs'
+import open from 'open'
+import { execSync, exec } from 'child_process'
 
 import {
   Config,
@@ -123,7 +124,7 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
   useEffect(() => {
     ;(async () => {
       if (isReady) {
-        const cachePath = `${process.cwd()}/node_modules/.cache/debt-collector`
+        const cachePath = getCachePath()
 
         if (sanitizedConfig && results) {
           const walkReportData: WalkReportData = {
@@ -163,16 +164,17 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
                 )
                 const __dirname = import.meta.url
                 const executionPath = path
-                  .dirname(__dirname.replace('file://', ''))
+                  .dirname(__dirname.replace(`file:${path.sep}${path.sep}`, ''))
                   .split(path.sep)
                 const distPathIndex = executionPath.lastIndexOf('dist')
                 const dashboardPath =
                   executionPath.slice(0, distPathIndex + 1).join(path.sep) +
                   path.sep +
                   'dashboard'
-                execSync(`cp -L -R ${dashboardPath}/* ${cachePath}`)
-
-                const serve = exec(`npx serve ${cachePath}`)
+                execSync(`cp -L -R ${dashboardPath}${path.sep}* ${cachePath}`)
+                const port = 9000
+                const serve = exec(`npx serve ${cachePath} -p ${port}`)
+                open(`http://localhost:${port}`)
 
                 serve.stdout?.on('data', (data) => {
                   console.log(`dashboard server: ${data}`)
@@ -182,6 +184,7 @@ export const useWalkState = (walkOptions: WalkOptions): UseWalkStateResult => {
                 console.log(
                   'tried to open file but could not... it may be because we are in a virtual env'
                 )
+
                 console.log(e)
               }
             }

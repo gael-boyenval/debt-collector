@@ -15,6 +15,7 @@ const mockLoadConfig = (result: any) => {
 }
 
 const mockConfig: UserConfig = {
+  projectName: 'test-project',
   include: ['**/*.ts'],
   exclude: ['node_modules'],
   fileRules: [
@@ -38,8 +39,24 @@ describe('validateConfig', () => {
     expect(result.userConfig).toBeDefined()
   })
 
+  it('should handle missing projectName', async () => {
+    const invalidConfig: Partial<UserConfig> = {
+      include: ['**/*.ts'],
+      fileRules: mockConfig.fileRules,
+    }
+    mockLoadConfig(invalidConfig)
+    const result = await validateConfig('any-path')
+    expect(result.isConfigValid).toBe(false)
+    expect(result.configErrors).toMatchInlineSnapshot(`
+      [
+        "Your config does not have a "projectName" key, please create "projectName" key with a string",
+      ]
+    `)
+  })
+
   it('should handle missing include key', async () => {
     const invalidConfig: Partial<UserConfig> = {
+      projectName: 'test-project',
       fileRules: mockConfig.fileRules,
     }
     mockLoadConfig(invalidConfig)
@@ -54,6 +71,7 @@ describe('validateConfig', () => {
 
   it('should handle empty include array', async () => {
     const invalidConfig: UserConfig = {
+      projectName: 'test-project',
       include: [],
       fileRules: mockConfig.fileRules,
     }
@@ -69,6 +87,7 @@ describe('validateConfig', () => {
 
   it('should handle non-array include value', async () => {
     const invalidConfig = {
+      projectName: 'test-project',
       include: '**/*.ts',
       fileRules: mockConfig.fileRules,
     }
@@ -84,6 +103,7 @@ describe('validateConfig', () => {
 
   it('should handle empty include array in rule', async () => {
     const invalidConfig: UserConfig = {
+      projectName: 'test-project',
       include: ['**/*.ts'],
       fileRules: [
         {
@@ -105,6 +125,7 @@ describe('validateConfig', () => {
 
   it('should handle non-array include value in rule', async () => {
     const invalidConfig = {
+      projectName: 'test-project',
       include: ['**/*.ts'],
       fileRules: [
         {
@@ -126,6 +147,7 @@ describe('validateConfig', () => {
 
   it('should handle missing rules', async () => {
     const invalidConfig: UserConfig = {
+      projectName: 'test-project',
       include: ['**/*.ts'],
       exclude: ['node_modules'],
     }
@@ -139,6 +161,7 @@ describe('validateConfig', () => {
 
   it('should handle duplicate rule IDs', async () => {
     const invalidConfig: UserConfig = {
+      projectName: 'test-project',
       include: ['**/*.ts'],
       fileRules: [
         {
@@ -167,6 +190,7 @@ describe('validateConfig', () => {
 
   it('should handle rules without include or matchRule', async () => {
     const invalidConfig: UserConfig = {
+      projectName: 'test-project',
       include: ['**/*.ts'],
       fileRules: [
         // @ts-expect-error - This is a test
@@ -182,6 +206,36 @@ describe('validateConfig', () => {
     expect(result.isConfigValid).toBe(false)
     expect(result.configErrors).toContain(
       'Rule "RULE_1" at index 0 must have either an "include" pattern or a "matchRule" function.'
+    )
+  })
+
+  it('should accept useGitIgnore set to false', async () => {
+    mockLoadConfig({ ...mockConfig, useGitIgnore: false })
+    const result = await validateConfig('any-path')
+    expect(result.isConfigValid).toBe(true)
+    expect(result.sanitizedConfig.useGitIgnore).toBe(false)
+  })
+
+  it('should accept useGitIgnore set to true', async () => {
+    mockLoadConfig({ ...mockConfig, useGitIgnore: true })
+    const result = await validateConfig('any-path')
+    expect(result.isConfigValid).toBe(true)
+    expect(result.sanitizedConfig.useGitIgnore).toBe(true)
+  })
+
+  it('should accept config without useGitIgnore (defaults to enabled)', async () => {
+    mockLoadConfig(mockConfig)
+    const result = await validateConfig('any-path')
+    expect(result.isConfigValid).toBe(true)
+    expect(result.sanitizedConfig.useGitIgnore).toBeUndefined()
+  })
+
+  it('should reject non-boolean useGitIgnore', async () => {
+    mockLoadConfig({ ...mockConfig, useGitIgnore: 'yes' })
+    const result = await validateConfig('any-path')
+    expect(result.isConfigValid).toBe(false)
+    expect(result.configErrors).toContain(
+      'The "useGitIgnore" key must be a boolean (true or false)'
     )
   })
 

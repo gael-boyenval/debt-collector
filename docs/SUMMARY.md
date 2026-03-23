@@ -6,4 +6,5 @@
   * [The Check command](commands-overview/the-check-command.md)
   * [The Compare command](commands-overview/the-compare-command.md)
   * [The Walk command](commands-overview/the-walk-command.md)
+  * [The WalkDryRun command](commands-overview/the-walkdryrun-command.md)
 * [Configuration overview](configuration-overview.md)

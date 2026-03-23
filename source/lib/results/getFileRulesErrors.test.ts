@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import getFileRulesErrors from './getFileRulesErrors.js'
+import { createMatchRuleUtils } from '../rulesUtils/index.js'
 import type { Config, SanitizedFileRule } from '../types.js'
+
+const makeUtils = (content: string) => createMatchRuleUtils('test.ts', content)
 
 describe('getFileRulesErrors', () => {
   const mockConfig: Config = {
@@ -25,15 +28,13 @@ describe('getFileRulesErrors', () => {
   }
 
   it('should return empty array when no rules are broken', () => {
-    const fileContent = 'This is a sample file without any matches'
-    const result = getFileRulesErrors(mockConfig, 'test.ts', fileContent)
+    const result = getFileRulesErrors(mockConfig, makeUtils('This is a sample file without any matches'))
     expect(result).toEqual([])
   })
 
   it('should detect broken rules and return them with occurrences', () => {
-    const fileContent = 'This is a test file with test and import'
-    const result = getFileRulesErrors(mockConfig, 'test.ts', fileContent)
-    
+    const result = getFileRulesErrors(mockConfig, makeUtils('This is a test file with test and import'))
+
     expect(result).toHaveLength(2)
     expect(result).toEqual(
       expect.arrayContaining([
@@ -52,11 +53,8 @@ describe('getFileRulesErrors', () => {
   })
 
   it('should handle empty config', () => {
-    const emptyConfig: Config = {
-      include: ['**/*.ts'],
-      exclude: [],
-    }
-    const result = getFileRulesErrors(emptyConfig, 'test.ts', 'content')
+    const emptyConfig: Config = { include: ['**/*.ts'], exclude: [] }
+    const result = getFileRulesErrors(emptyConfig, makeUtils('content'))
     expect(result).toEqual([])
   })
 
@@ -66,25 +64,18 @@ describe('getFileRulesErrors', () => {
       exclude: [],
       fileRules: undefined,
     }
-    const result = getFileRulesErrors(configWithoutRules, 'test.ts', 'content')
+    const result = getFileRulesErrors(configWithoutRules, makeUtils('content'))
     expect(result).toEqual([])
   })
 
   it('should count multiple occurrences correctly', () => {
-    const fileContent = 'test test test import import'
-    const result = getFileRulesErrors(mockConfig, 'test.ts', fileContent)
-    
+    const result = getFileRulesErrors(mockConfig, makeUtils('test test test import import'))
+
     expect(result).toHaveLength(2)
     expect(result).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          ruleId: 'test-rule-1',
-          occurences: 1,
-        }),
-        expect.objectContaining({
-          ruleId: 'test-rule-2',
-          occurences: 2,
-        }),
+        expect.objectContaining({ ruleId: 'test-rule-1', occurences: 1 }),
+        expect.objectContaining({ ruleId: 'test-rule-2', occurences: 2 }),
       ])
     )
   })
@@ -104,16 +95,11 @@ describe('getFileRulesErrors', () => {
       ],
     }
 
-    const fileContent = "import React from 'react'"
-    const result = getFileRulesErrors(configWithImport, 'test.ts', fileContent)
-    
+    const result = getFileRulesErrors(configWithImport, makeUtils("import React from 'react'"))
+
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual(
-      expect.objectContaining({
-        ruleId: 'import-rule',
-        occurences: 1,
-      })
+      expect.objectContaining({ ruleId: 'import-rule', occurences: 1 })
     )
   })
 })
-

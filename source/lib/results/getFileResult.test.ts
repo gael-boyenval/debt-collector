@@ -3,18 +3,20 @@ import getFileResult from './getFileResult.js'
 import type { Config, SanitizedFileRule } from '../types.js'
 import fs from 'fs'
 
-// We only need to mock fs.readFileSync since it's the only external dependency
 vi.mock('fs', () => ({
   default: {
-    readFileSync: vi.fn(),
+    promises: {
+      readFile: vi.fn(),
+    },
   },
-  readFileSync: vi.fn(),
 }))
 
 const mockFileContent = (content: string | Error) => {
-  return (
-    fs.readFileSync as unknown as ReturnType<typeof vi.fn>
-  ).mockReturnValue(content)
+  if (content instanceof Error) {
+    vi.mocked(fs.promises.readFile).mockRejectedValue(content)
+  } else {
+    vi.mocked(fs.promises.readFile).mockResolvedValue(content as any)
+  }
 }
 
 describe('getFileResult', () => {

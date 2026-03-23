@@ -6,25 +6,27 @@ description: How to install and run your first analysis
 
 ### Requirements
 
-* having node-js installed (tested with node 16 and 18 but probably working fine with other versions)
+* Having Node.js installed (version 18 or higher)
 
 ### Install Debt-collector in your project
 
 ```shell
 npm i debt-collector -D
 yarn add -D debt-collector
+pnpm add -D debt-collector
 ```
 
 {% hint style="warning" %}
 As long as debt-collector is an `alpha` version, **we recommend you to lock the package version number**. Breaking changes (including bugs or api changes) may occur without warnings.\
 As Debt-collector is not messing with your production code, it's pretty safe to use even as an Alpha version though. \
 \
-Long story short : **Use it but lock the version** ! 🥰
+Long story short : **Use it but lock the version** !
 {% endhint %}
 
 ```shell
-npm i debt-collector@1.0.0-alpha.5 -D
-yarn add -D debt-collector@1.0.0-alpha.5
+npm i debt-collector@1.0.0-alpha.13 -D
+yarn add -D debt-collector@1.0.0-alpha.13
+pnpm add -D debt-collector@1.0.0-alpha.13
 ```
 
 ### Create a configuration file
@@ -34,26 +36,32 @@ Create a configuration file named `debt-collector.config.js` in your project's r
 then add the following content :
 
 ```javascript
-module.exports = {
-  include: './src/**/*',
+export default {
+  projectName: 'my-project',
+  include: ['./src/**/*'],
   fileRules: [
     {
       id: 'REMOVE_FOO',
-      title: 'we should get rid of all "Foo" occurences'
+      title: 'we should get rid of all "Foo" occurences',
       debtScore: 3,
       matchRule: ({ countAll }) => countAll('foo'),
     }, {
       id: 'MIGRATE_CSS_TO_SCSS',
-      title: 'use scss instead of css'
+      title: 'use scss instead of css',
       debtScore: 5,
-      include: '**/*.css'
+      include: ['**/*.css'],
     }
   ]
 }
 ```
 
+{% hint style="info" %}
+If your project does not use `"type": "module"` in `package.json`, you can use `module.exports = { ... }` instead of `export default`.
+{% endhint %}
+
 #### What we've done here :&#x20;
 
+* defined a project name for identification
 * defined that debt-collector should track all files contained in the `src` directory
 * created two file rules :&#x20;
   * the first one will monitor for every occurences of "foo" in every files and increment your debt score of 3 points for every occurences
@@ -67,15 +75,15 @@ module.exports = {
 }
 ```
 
-### Let’s try it :&#x20;
+### Let's try it :&#x20;
 
 Open your command line and run :
 
 ```shell
 npm run debt:check
 yarn debt:check
+pnpm debt:check
 ```
 
 That's it, you've installed debt-collector and created your first rules. \
 But debt-collector is a lot more than a glorified search engine.&#x20;
-

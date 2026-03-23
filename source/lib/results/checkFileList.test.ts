@@ -2,15 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { checkFileList } from './checkFileList.js'
 import fs from 'fs'
 
-// Mock fs module correctly
-vi.mock('fs', () => {
-  return {
-    default: {
-      readFileSync: vi.fn(),
+vi.mock('fs', () => ({
+  default: {
+    promises: {
+      readFile: vi.fn(),
     },
-    readFileSync: vi.fn(),
-  }
-})
+  },
+}))
 
 describe('checkFileList', () => {
   const baseConfig = {
@@ -32,8 +30,7 @@ describe('checkFileList', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    // Mock fs.readFileSync to return a test content
-    vi.mocked(fs.readFileSync).mockReturnValue('test content')
+    vi.mocked(fs.promises.readFile).mockResolvedValue('test content' as any)
   })
 
   it('should return empty array when fileList is empty', async () => {
@@ -125,9 +122,7 @@ describe('checkFileList', () => {
   })
 
   it('should handle file read errors gracefully', async () => {
-    vi.mocked(fs.readFileSync).mockImplementation(() => {
-      throw new Error('File not found')
-    })
+    vi.mocked(fs.promises.readFile).mockRejectedValue(new Error('File not found'))
 
     const result = await checkFileList({
       fileList: baseFileList,

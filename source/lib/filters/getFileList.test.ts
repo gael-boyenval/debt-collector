@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getFileList } from './getFileList.js'
 import { glob } from 'glob'
 import { getChangedFilesSinceRev } from '../git/index.js'
+import { getGitIgnoreFilter } from '../fileSystem/getGitIgnoreFilter.js'
 
-// Mock dependencies
 vi.mock('glob', () => ({
   glob: {
     sync: vi.fn(),
@@ -14,6 +14,10 @@ vi.mock('../git', () => ({
   getChangedFilesSinceRev: vi.fn(),
 }))
 
+vi.mock('../fileSystem/getGitIgnoreFilter.js', () => ({
+  getGitIgnoreFilter: vi.fn(),
+}))
+
 describe('getFileList', () => {
   const mockConfig = {
     include: ['**/*.ts', '**/*.tsx'],
@@ -22,6 +26,7 @@ describe('getFileList', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(getGitIgnoreFilter).mockReturnValue(null)
   })
 
   it('should return empty array when no files match glob patterns', async () => {
@@ -112,5 +117,78 @@ describe('getFileList', () => {
         compare: 'HEAD~1',
       })
     ).rejects.toThrow('Git error')
+  })
+
+  describe('gitignore filtering', () => {
+    const mockIgnoreFilter = {
+      ignores: vi.fn((file: string) =>
+        file.startsWith('coverage/') || file.endsWith('.log')
+      ),
+      add: vi.fn(),
+      filter: vi.fn(),
+      createFilter: vi.fn(),
+      test: vi.fn(),
+    }
+
+    it('should filter files using .gitignore patterns by default', async () => {
+      vi.mocked(getGitIgnoreFilter).mockReturnValue(mockIgnoreFilter as any)
+      vi.mocked(glob.sync).mockReturnValue([
+        './src/index.ts',
+        './coverage/report.ts',
+        './debug.log',
+      ])
+
+      const result = await getFileList({
+        config: mockConfig,
+        commonAncestor: false,
+      })
+
+      expect(result).toEqual(['src/index.ts'])
+      expect(getGitIgnoreFilter).toHaveBeenCalled()
+    })
+
+    it('should not filter gitignored files when useGitIgnore is false', async () => {
+      vi.mocked(getGitIgnoreFilter).mockReturnValue(mockIgnoreFilter as any)
+      vi.mocked(glob.sync).mockReturnValue([
+        './src/index.ts',
+        './coverage/report.ts',
+      ])
+
+      const result = await getFileList({
+        config: { ...mockConfig, useGitIgnore: false },
+        commonAncestor: false,
+      })
+
+      expect(result).toEqual(['src/index.ts', 'coverage/report.ts'])
+      expect(getGitIgnoreFilter).not.toHaveBeenCalled()
+    })
+
+    it('should apply gitignore filter in compare mode', async () => {
+      vi.mocked(getGitIgnoreFilter).mockReturnValue(mockIgnoreFilter as any)
+      vi.mocked(getChangedFilesSinceRev).mockResolvedValue([
+        { filePath: 'src/file1.ts', status: 'M' },
+        { filePath: 'coverage/lcov.ts', status: 'A' },
+      ])
+
+      const result = await getFileList({
+        config: mockConfig,
+        commonAncestor: false,
+        compare: 'HEAD~1',
+      })
+
+      expect(result).toEqual(['src/file1.ts'])
+    })
+
+    it('should handle missing .gitignore gracefully', async () => {
+      vi.mocked(getGitIgnoreFilter).mockReturnValue(null)
+      vi.mocked(glob.sync).mockReturnValue(['./src/index.ts'])
+
+      const result = await getFileList({
+        config: mockConfig,
+        commonAncestor: false,
+      })
+
+      expect(result).toEqual(['src/index.ts'])
+    })
   })
 })

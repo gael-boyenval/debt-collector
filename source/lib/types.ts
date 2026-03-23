@@ -1,3 +1,5 @@
+import type { DomMatchChain } from './rulesUtils/domMatch.js'
+
 type MatchUtil<Res extends number> = (content: MatchPattern) => Res
 type BinaryMatchResponse = 0 | 1
 export type MatchPattern = string | RegExp
@@ -15,6 +17,7 @@ export interface MatchRuleUtils {
     attributes?: string | null | (string | null | undefined)[],
     tagName?: string
   ) => 0 | 1
+  domMatch: DomMatchChain
 }
 
 export interface MatchEslintRuleUtils {
@@ -68,6 +71,7 @@ export type UserConfig = {
   projectName: string
   include: string[]
   exclude?: string[]
+  useGitIgnore?: boolean
   walkConfig?: WalkConfig
   fileRules?: UserFileRule[]
   adoptionRules?: UserFileRule[]
@@ -83,6 +87,7 @@ export interface Config {
   projectName: string
   include: string[]
   exclude?: string[]
+  useGitIgnore?: boolean
   walkConfig?: WalkConfig
   fileRules?: SanitizedFileRule[]
   adoptionRules?: SanitizedFileRule[]
