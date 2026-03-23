@@ -1,6 +1,6 @@
 {
   "name": "debt-collector",
-  "version": "1.0.0-alpha.15",
+  "version": "1.0.0-alpha.16",
   "description": "a nodejs tool to identify, track and mesure technical debt",
   "bin": "./dist/cli.js",
   "type": "module",
@@ -17,7 +17,7 @@
     "test": "vitest",
     "test:watch": "vitest watch --ui",
     "test:coverage": "vitest run --coverage",
-    "release": "f() { git pull --rebase origin master && npm version ${1:-patch} && pnpm build && npm publish --tag latest --access public && git push --set-upstream origin main && git push --tags; }; f"
+    "release": "f() { git pull --rebase origin master && npm version ${1:-patch} && pnpm build && npm publish --tag latest --access public && git push --set-upstream origin master && git push --tags; }; f"
   },
   "files": [
     "dist"
